@@ -271,11 +271,11 @@ class ProposalController extends Controller
                     $viewId            = $request->input("view_id-$i");
                     $propertyType      = $request->input("property_type-$i");
 
-                    if ($request->input("period_from-$key")) {
-                        $periodFrom = Carbon::createFromFormat('d/m/Y', $request->input("period_from-$key"))->format('Y-m-d');
+                    if ($request->input("period_from-$i")) {
+                        $periodFrom = Carbon::createFromFormat('d/m/Y', $request->input("period_from-$i"))->format('Y-m-d');
                     }
-                    if ($request->input("period_to-$key")) {
-                        $periodTo = Carbon::createFromFormat('d/m/Y', $request->input("period_to-$key"))->format('Y-m-d');
+                    if ($request->input("period_to-$i")) {
+                        $periodTo = Carbon::createFromFormat('d/m/Y', $request->input("period_to-$i"))->format('Y-m-d');
                     }
                     $city                     = $request->input("city-$i");
                     $totalArea                = $request->input("total_area-$i");
@@ -303,16 +303,16 @@ class ProposalController extends Controller
                     $ewa_limit_mode           = $request->input("ewa_limit_mode-$i");
                     $ewa_limit                = $request->input("ewa_limit-$i");
                     $notice_period            = $request->input("notice_period-$i");
-                     $baseAmount  = (float)$request->input("rent_amount-$i");
+                    $baseAmount  = (float)$request->input("rent_amount-$i");
 
-                if ($rentMode === $paymentMode) {
+                    if ($rentMode === $paymentMode) {
 
-                    $rentAmount = $baseAmount;
-                } else {
-                    $rentAmount = calc_rent_amount($rentMode, $paymentMode, $baseAmount, $rentAmount);
-                    $total_net_rent_amount = ($rentAmount * ($vat_percentage / 100 )) + $rentAmount;
-                    $security_deposit_amount = $rentAmount * $security_deposit;
-                }
+                        $rentAmount = $baseAmount;
+                    } else {
+                        $rentAmount = calc_rent_amount($rentMode, $paymentMode, $baseAmount, $rentAmount);
+                        $total_net_rent_amount = ($rentAmount * ($vat_percentage / 100)) + $rentAmount;
+                        $security_deposit_amount = $rentAmount * $security_deposit;
+                    }
                     $proposal_units           = (new ProposalUnits())->setConnection('tenant')->create([
                         'proposal_id'              => $proposal->id,
                         'property_id'              => $propertyId,
@@ -974,14 +974,14 @@ class ProposalController extends Controller
                         $notice_period            = $request->input("notice_period-$i");
                         $baseAmount  = (float)$request->input("rent_amount-$i");
 
-                // if ($rentMode === $paymentMode) {
+                        // if ($rentMode === $paymentMode) {
 
-                //     $rentAmount = $baseAmount;
-                // } else {
-                //     $rentAmount = calc_rent_amount($rentMode, $paymentMode, $baseAmount, $rentAmount);
-                //     $total_net_rent_amount = ($rentAmount * ($vat_percentage / 100 )) + $rentAmount;
-                //     $security_deposit_amount = $rentAmount * $security_deposit;
-                // }
+                        //     $rentAmount = $baseAmount;
+                        // } else {
+                        //     $rentAmount = calc_rent_amount($rentMode, $paymentMode, $baseAmount, $rentAmount);
+                        //     $total_net_rent_amount = ($rentAmount * ($vat_percentage / 100 )) + $rentAmount;
+                        //     $security_deposit_amount = $rentAmount * $security_deposit;
+                        // }
                         $booking_units            = (new BookingUnits())->setConnection('tenant')->create([
                             'booking_id'               => $booking->id,
                             'property_id'              => $propertyId,
@@ -1172,7 +1172,7 @@ class ProposalController extends Controller
                         $totalAreaAmount = $request->input("total_area_amount-$i");
                         $amount          = $request->input("amount-$i");
                         $rentAmount      = $request->input("rent_amount-$i");
-                        $baseAmount      = $request->input("rent_amount-$i"); 
+                        $baseAmount      = $request->input("rent_amount-$i");
                         $rentMode        = $request->input("rent_mode-$i");
                         $rentalGl        = $request->input("rental_gl-$i");
                         if ($request->input("lease_break_date-$i")) {
@@ -1188,7 +1188,7 @@ class ProposalController extends Controller
                         $ewa_limit_mode           = $request->input("ewa_limit_mode-$i");
                         $ewa_limit                = $request->input("ewa_limit_monthly-$i");
                         $notice_period            = $request->input("notice_period-$i");
-                        
+
                         // if ($rentMode === $paymentMode) {
 
                         //     $rentAmount = $baseAmount;

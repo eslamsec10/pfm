@@ -17,11 +17,10 @@ class TenantImportController extends Controller
     public function import_page(Request $request)
     {
         $instructions = '
-        <p>1. ' . ui_change('download_the_format_file_and_fill_it_with_proper_data.') . '</p>
-        <p>2. ' . ui_change('tenant_type_required._and_must_be_one_from_individual_or_company.') . '</p>
-        <p>3. ' . ui_change('country_and_nationality _are_required') . '</p>
-        <p>4. ' . ui_change('tenant_type_must_be_one_of_individual_or_company') . '</p>
-        <p>5. ' . ui_change('geneder_must_be_one_of_male_female') . '</p>
+        <p>1. ' . ui_change('Download_the_file_format_and_fill_the_correct_Data.') . '</p>
+        <p>2. ' . ui_change('Tenant_Type_is_Mandatory_(_Individual_/_Company)') . '</p>
+        <p>3. ' . ui_change('Country_and_Nationality_is_mandatory') . '</p>
+        <p>4. ' . ui_change('Gender_field_is_Mandatory_(_Male/Female)') . '</p> 
 
     ';
 

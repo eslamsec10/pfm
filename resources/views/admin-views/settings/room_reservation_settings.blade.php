@@ -30,7 +30,8 @@
 
 
         <!-- Form -->
-        <form class="product-form text-start" action="{{ route('room_reservation.settings.room_reservation_settings.store') }}" method="POST"
+        <form class="product-form text-start"
+            action="{{ route('room_reservation.settings.room_reservation_settings.store') }}" method="POST"
             enctype="multipart/form-data" id="product_form">
             @csrf
             @method('patch')
@@ -49,18 +50,35 @@
 
                         <div class="col-md-6 col-lg-4 col-xl-3">
                             <div class="form-group">
-                                <label for="token" class="title-color">{{ ui_change('renewal_reminder_by_(days)') }}</label>
-                                <input type="number" class="form-control" name="renewal_reminder" value="{{ (isset($renewal_reminder) ? $renewal_reminder : '') }}">
+                                <label for="token"
+                                    class="title-color">{{ ui_change('renewal_reminder_by_(days)') }}</label>
+                                <input type="number" class="form-control" name="renewal_reminder"
+                                    value="{{ isset($renewal_reminder) ? $renewal_reminder : '' }}">
                             </div>
                         </div>
                         <div class="col-md-6 col-lg-4 col-xl-3">
                             <div class="form-group">
                                 <label for="booked_color" class="title-color">{{ ui_change('booked_color') }}</label>
-                                <input type="color" class="form-control" name="booked_color" value="{{ (isset($booked_color) ? $booked_color : '') }}">
+                                <input type="color" class="form-control" name="booked_color"
+                                    value="{{ isset($booked_color) ? $booked_color : '' }}">
                             </div>
                         </div>
+                        <div class="col-md-6 col-lg-4 col-xl-3">
+                            <div class="form-group">
+                                <label class="title-color d-block">
+                                    {{ ui_change('show_agreement') }}
+                                </label>
 
-
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="show_agreement"
+                                        id="show_agreement" value="1"
+                                        {{ isset($show_agreement) && $show_agreement == 1 ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="show_agreement">
+                                        Yes
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
 
                     </div>
                 </div>

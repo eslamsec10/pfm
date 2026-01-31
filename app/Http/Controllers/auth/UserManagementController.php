@@ -5,18 +5,20 @@ namespace App\Http\Controllers\auth;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\Company;
+use AuthorizesRequests;
+use App\Models\UserSettings;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Models\PropertyManagement;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
-use AuthorizesRequests;
 
 class UserManagementController extends Controller
 {
     public function index(Request $request)
     {
-         
+
         // $this->authorize('user_management', auth('web')->user());
 
         $search      = $request['search'];
@@ -38,20 +40,20 @@ class UserManagementController extends Controller
         //             ->paginate(10);
         //     }
         // } else {
-            $users = (new User())->setConnection('tenant')->when($request['search'], function ($q) use ($request) {
-                $key = explode(' ', $request['search']);
-                foreach ($key as $value) {
-                    $q->Where('name', 'like', "%{$value}%")
-                        ->orWhere('id', $value);
-                }
-            })
-                ->latest()->paginate()->appends($query_param);
-
-            if (isset($search) && empty($search)) {
-                $users = (new User())->setConnection('tenant')->with('users')
-                    ->orderBy('created_at', 'asc')
-                    ->paginate(10);
+        $users = (new User())->setConnection('tenant')->when($request['search'], function ($q) use ($request) {
+            $key = explode(' ', $request['search']);
+            foreach ($key as $value) {
+                $q->Where('name', 'like', "%{$value}%")
+                    ->orWhere('id', $value);
             }
+        })
+            ->latest()->paginate()->appends($query_param);
+
+        if (isset($search) && empty($search)) {
+            $users = (new User())->setConnection('tenant')->with('users')
+                ->orderBy('created_at', 'asc')
+                ->paginate(10);
+        }
         // }
 
 
@@ -60,7 +62,7 @@ class UserManagementController extends Controller
             'search' => $search,
         ];
 
-       
+
         return view("admin-views.users.all_users", $data);
     }
 
@@ -77,7 +79,7 @@ class UserManagementController extends Controller
         // $this->authorize('edit_user');
         $user = (new User())->setConnection('tenant')->findOrFail($id);
         $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
-        $roles = (new Role())->setConnection('tenant')->select('id' , 'name')->get();
+        $roles = (new Role())->setConnection('tenant')->select('id', 'name')->get();
 
 
 
@@ -94,18 +96,18 @@ class UserManagementController extends Controller
     {
         // $this->authorize('create_user');
         $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
-        $roles = (new Role())->setConnection('tenant')->select('id' , 'name')->get();
-        return view("admin-views.users.create", compact("roles" , 'dail_code_main'));
+        $roles = (new Role())->setConnection('tenant')->select('id', 'name')->get();
+        return view("admin-views.users.create", compact("roles", 'dail_code_main'));
     }
     public function store(Request $request)
     {
         // $this->authorize('create_user');
-        $master_user = auth()->user(); 
-        $userCount  = DB::connection('tenant')->table('companies')->value('user_count');    
-        $users      = DB::connection('tenant')->table('users')->count();    
-        if($userCount == $users)  {
+        $master_user = auth()->user();
+        $userCount  = DB::connection('tenant')->table('companies')->value('user_count');
+        $users      = DB::connection('tenant')->table('users')->count();
+        if ($userCount == $users) {
             return redirect()->back()->with("error", __('general.you_have_reached_the_maximum_limit'));
-        }  
+        }
         $request->validate([
             'name'              => "required",
             'user_name'         => "required|unique:users,user_name",
@@ -119,8 +121,8 @@ class UserManagementController extends Controller
         ]);
         // $role = Role::where("id", $request->role_id)->first();
         DB::connection('tenant')->beginTransaction();
-        try { 
-            $role = (new Role())->setConnection('tenant')->select('id' , 'name')->where('id' , $request->role_id)->first();
+        try {
+            $role = (new Role())->setConnection('tenant')->select('id', 'name')->where('id', $request->role_id)->first();
             $user = (new User())->setConnection('tenant')->create([
                 'name' => $request->name,
                 'user_name' =>  $request->user_name,
@@ -134,6 +136,13 @@ class UserManagementController extends Controller
                 'company_id'    => $master_user->company_id,
                 'branch_id'    => 1,
             ]);
+            $buildingIds = PropertyManagement::pluck('id')->toArray();
+
+            UserSettings::create([
+                'user_id'        => $user->id,
+                'building_ids'   => json_encode($buildingIds),
+            ]);
+ 
             DB::connection('tenant')->commit();
             return redirect()->route('user_management')->with("success", __("general.added_successfully"));
         } catch (\Exception $e) {
@@ -154,21 +163,21 @@ class UserManagementController extends Controller
                 'max:255',
                 Rule::unique('users')->ignore($user->id),
             ],
-            'email'             => [ Rule::unique('users' , 'email')->ignore($user->id),'nullable'] ,
+            'email'             => [Rule::unique('users', 'email')->ignore($user->id), 'nullable'],
             'password'          => "required",
         ], [
             'user_name.unique' =>  __('general.username_is_already_token'),
         ]);
         $user->update([
-                'name' => $request->name,
-                'user_name' =>  $request->user_name,
-                'role_name' => $role->name  ?? 'user',
-                'role_id' => $request->role_id ?? 1,
-                'email' => $request->email ?? null,
-                'phone' => $request->phone ?? null,
-                'phone_dail_code' => $request->phone_dail_code ?? null,
-                'password' => Hash::make($request->password),
-                'my_name'   => $request->password,
+            'name' => $request->name,
+            'user_name' =>  $request->user_name,
+            'role_name' => $role->name  ?? 'user',
+            'role_id' => $request->role_id ?? 1,
+            'email' => $request->email ?? null,
+            'phone' => $request->phone ?? null,
+            'phone_dail_code' => $request->phone_dail_code ?? null,
+            'password' => Hash::make($request->password),
+            'my_name'   => $request->password,
         ]);
         if ($request->filled('password')) {
             $user->update([

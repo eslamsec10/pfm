@@ -57,7 +57,7 @@
                             class="topbar-text dropdown disable-autohide {{ Session::get('direction') === 'rtl' ? 'ml-3' : 'm-1' }} text-capitalize">
                             <a class="topbar-link dropdown-toggle d-flex align-items-center title-color" href="#"
                                 data-toggle="dropdown">
-                                {{ ui_change('user_buildings') }}
+                                {{ ui_change('select_buildings') }}
                             </a>
                             <ul class="dropdown-menu">
                                 <form action="{{ route('user.user_settings.update_buildings') }}" method="POST"

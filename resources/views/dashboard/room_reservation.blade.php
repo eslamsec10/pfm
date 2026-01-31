@@ -54,6 +54,12 @@
                  <div class="accordion-item ">
                      <h2 class="accordion-header list-group-item">
                          <a class="accordion-button"
+                             href="{{ route('customer.list') }}">{{ ui_change('customer', 'room_reservation') }}</a>
+                     </h2>
+                 </div>
+                 <div class="accordion-item ">
+                     <h2 class="accordion-header list-group-item">
+                         <a class="accordion-button"
                              href="{{ route('rental_type.list') }}">{{ ui_change('rental_type', 'room_reservation') }}</a>
                      </h2>
                  </div>

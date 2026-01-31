@@ -85,8 +85,21 @@
 
                         {{-- Customer --}}
                         <div class="col-md-4">
-                            <p>
-                                <strong>Customer :</strong>
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">Customer :</label>
+                                <select name="tenant_id" class="js-select2-custom form-control" required>
+                                    <option value="">{{ ui_change('select_tenant') }}</option>
+                                    @foreach ($tenants as $tenant)
+                                        <option value="{{ $tenant->id }}" data-mobile="{{ $tenant->contact_no ?? '' }}"
+                                            data-passport="{{ $tenant->id_number ?? '' }}">
+                                            {{ $tenant->name ?? $tenant->company_name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            {{-- <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">Customer :</label>
                                 <select name="tenant_id" class="js-select2-custom form-control" required>
                                     <option value="">{{ ui_change('select_tenant') }}</option>
                                     @foreach ($tenants as $tenants_item)
@@ -94,11 +107,32 @@
                                             {{ $tenants_item->name ?? $tenants_item->company_name }}</option>
                                     @endforeach
                                 </select>
-                            </p>
+                            </div> --}}
 
-                            {{-- @if ($booking_r->tenant?->country)
-                                <p>{{ $booking_r->tenant->country }}</p>
-                            @endif --}}
+                            <div class="form-group row">
+                                <label
+                                    class="col-sm-4 col-form-label">{{ ui_change('rental_type', 'room_reservation') }}</label>
+                                <div class="col-sm-8">
+                                    <select name="rental_type_id" class="js-select2-custom form-control" required>
+                                        @foreach ($rental_types as $rental_types_item)
+                                            <option value="{{ $rental_types_item->id }}">
+                                                {{ $rental_types_item->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+
+
+                            <div class="form-group row">
+                                <label
+                                    class="col-sm-4 col-form-label">{{ ui_change('check_in_date', 'room_reservation') }}</label>
+                                <div class="col-sm-8">
+                                    <input type="text" disabled name="check_in_date" class="form-control date"
+                                        value="{{ \Carbon\Carbon::now()->format('d/m/Y') }}">
+                                </div>
+                            </div>
+
+
                         </div>
 
                         {{-- Dates --}}
@@ -127,29 +161,6 @@
                                         value="{{ \Carbon\Carbon::now()->addDays(1)->format('d/m/Y') }}">
                                 </div>
                             </div>
-                            <div class="form-group row">
-                                <label
-                                    class="col-sm-4 col-form-label">{{ ui_change('rental_type', 'room_reservation') }}</label>
-                                <div class="col-sm-8">
-                                    <select name="rental_type_id" class="js-select2-custom form-control" required>
-                                        @foreach ($rental_types as $rental_types_item)
-                                            <option value="{{ $rental_types_item->id }}">
-                                                {{ $rental_types_item->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-
-
-                            <div class="form-group row">
-                                <label
-                                    class="col-sm-4 col-form-label">{{ ui_change('check_in_date', 'room_reservation') }}</label>
-                                <div class="col-sm-8">
-                                    <input type="text" disabled name="check_in_date" class="form-control date"
-                                        value="{{ \Carbon\Carbon::now()->format('d/m/Y') }}">
-                                </div>
-                            </div>
-
                             <div class="form-group row">
                                 <label
                                     class="col-sm-4 col-form-label">{{ ui_change('Check-In_Time', 'room_reservation') }}</label>
@@ -188,7 +199,7 @@
                                 </li>
                             </ul>
                         </div>
-                     
+
 
 
                     </div>
@@ -247,6 +258,34 @@
 
 
 @push('script')
+    <script>
+     $(document).ready(function() {
+    $('.js-select2-custom').select2({
+        placeholder: "{{ ui_change('select_tenant') }}",
+        allowClear: true,
+        matcher: function(params, data) {
+            if ($.trim(params.term) === '') return data;
+
+            var term = params.term.toLowerCase();
+ 
+            var text = data.text ? data.text.toLowerCase() : '';
+ 
+            var mobile = data.element ? $(data.element).data('mobile') : '';
+            var passport = data.element ? $(data.element).data('passport') : '';
+
+            mobile = mobile ? mobile.toString() : '';
+            passport = passport ? passport.toString() : '';
+
+            if (text.indexOf(term) > -1 || mobile.indexOf(term) > -1 || passport.indexOf(term) > -1) {
+                return data;
+            }
+
+            return null;
+        }
+    });
+});
+
+    </script>
     <script>
         $(document).ready(function() {
             function updateGuests(type) {

@@ -2,15 +2,25 @@
 
 namespace App\Exports;
 
+use App\Models\ServiceMaster;
 use App\Models\UnitManagement;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Events\AfterSheet;
 
-class UnitManagementExport implements FromCollection, WithHeadings
+class UnitManagementExport implements FromCollection, WithHeadings, WithEvents
+// class UnitManagementExport implements FromCollection, WithHeadings
 {
     /**
      * @return \Illuminate\Support\Collection
      */
+    protected $services;
+
+    public function __construct()
+    {
+        $this->services = ServiceMaster::pluck('name')->toArray();
+    }
     public function collection()
     {
         return UnitManagement::with(
@@ -22,9 +32,9 @@ class UnitManagementExport implements FromCollection, WithHeadings
             'unit_management_main:id,name,code'
         )->get()->map(function ($unit) {
             return [
-                '', // Date (عميل هيملاه)
-                '', // Agreement No (عميل هيملاه)
-                '', // Tenant Name (عميل هيملاه)
+                '',
+                '',
+                '',
 
                 optional($unit->property_unit_management)->name ?? '', // Property Name
                 optional($unit->property_unit_management)->code ?? '', // Prop Code
@@ -74,7 +84,7 @@ class UnitManagementExport implements FromCollection, WithHeadings
             'Lease Start Date',
             'Lease End Date',
             'Rental Income Ledger',
-            'Invoice Frequncy',
+            'Invoice Frequency', //Frequency
             'Rent Start Date',
             'Rent End Date',
             'Currency',
@@ -90,6 +100,35 @@ class UnitManagementExport implements FromCollection, WithHeadings
             // 'Unit Type',
             // 'Unit Condition',
             // 'View',
+        ];
+    }
+
+
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
+                $sheet = $event->sheet->getDelegate();
+ 
+                $column = 'T';
+                $lastRow = $sheet->getHighestRow();
+ 
+                $servicesString = implode(',', $this->services);
+ 
+                for ($row = 2; $row <= $lastRow; $row++) {
+                    $sheet->getCell($column . $row)
+                        ->getDataValidation()
+                        ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
+                        ->setErrorStyle(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::STYLE_STOP)
+                        ->setAllowBlank(true)
+                        ->setShowInputMessage(true)
+                        ->setShowErrorMessage(true)
+                        ->setShowDropDown(true)
+                        ->setErrorTitle('Invalid input')
+                        ->setError('Value is not in list')
+                        ->setFormula1('"' . $servicesString . '"');  
+                }
+            },
         ];
     }
 }

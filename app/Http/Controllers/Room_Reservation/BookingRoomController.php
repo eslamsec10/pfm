@@ -97,6 +97,7 @@ class BookingRoomController extends Controller
         $proposal_color  = BusinessSetting::whereType('proposal_color')->value('value');
         $enquiry_color   = BusinessSetting::whereType('enquiry_color')->value('value');
         $booked_color    = optional(ReservationSettings::where('setting_name', 'booked_color')->first())->setting_value;
+        $show_agreement    = optional(ReservationSettings::where('setting_name', 'show_agreement')->first())->setting_value;
 
         $data = [
             'property_items' => $property,
@@ -116,6 +117,7 @@ class BookingRoomController extends Controller
             'proposal_color'   => $proposal_color,
             'enquiry_color'   => $enquiry_color,
             'booked_color'   => $booked_color,
+            'show_agreement'   => $show_agreement,
         ];
         return view('admin-views.room_reservation.booking_room.book', $data);
     }
@@ -126,7 +128,7 @@ class BookingRoomController extends Controller
         if ($ids == null) {
             return redirect()->back()->with('error', 'Please Select Unit');
         }
-        $tenant = Tenant::select('id', 'name', 'company_name', 'address1')->get();
+        $tenant = Tenant::select('id', 'name', 'company_name', 'address1' , 'id_number','contact_no')->get();
         $unit_managements = UnitManagement::whereIn('id', $ids)->get();
         $room_options = RoomOption::select('id', 'name')->get();
         $rental_types = RentalType::select('id', 'name')->get();

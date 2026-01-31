@@ -25,7 +25,7 @@ class PropertyMasterImportController extends Controller
     public function import_page(Request $request)
     {
         $instructions = '
-        <p>1. ' . ui_change('download_the_format_file_and_fill_it_with_proper_data.') . '</p>
+        <p>1. ' . ui_change('Download_the_file_format_and_fill_the_correct_Data.') . '</p>
         <p>2. ' . ui_change('you_can_download_the_example_file_to_understand_how_the_data_must_be_filled.') . '</p>
         <p>3. ' . ui_change('once_you_have_downloaded_and_filled_the_format_file') . ', ' . ui_change('upload_it_in_the_form_below_and_submit.') . '</p>
 

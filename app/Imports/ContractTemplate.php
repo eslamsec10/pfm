@@ -251,7 +251,7 @@ class ContractTemplate implements ToCollection, WithHeadingRow
                         6 => ['yearly', 'annually', 'per year'],
                     ];
 
-                    $excelValue = strtolower(trim($row['invoicing_frequncy']));
+                    $excelValue = strtolower(trim($row['invoicing_frequency']));//Frequency
                     $excelValue = preg_replace('/\s+/', ' ', $excelValue);
 
                     $paymentModeKey = null;

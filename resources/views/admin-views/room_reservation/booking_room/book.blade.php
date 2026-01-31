@@ -367,24 +367,26 @@
  @section('content')
      <div class="container list-container">
          <div class="row mt-5 @if ($lang == 'ar') rtl text-start @else ltr @endif">
- <div id="unitContextMenu" class="context-menu">
-                             <ul>
-                                 <li data-action="enquiry">{{ ui_change('enquiry') }}</li>
-                                 <li data-action="proposal">{{ ui_change('proposal') }}</li>
-                                 <li data-action="booking">{{ ui_change('booking') }}</li>
-                                 <li data-action="agreement">{{ ui_change('agreement') }}</li>
-                                 <li data-action="book_now">{{ ui_change('book_now') }}</li>
-                                 <li data-action="check_in">{{ ui_change('check_in') }}</li>
-                                 {{-- <li data-action="check_out">{{ ui_change('check_out') }}</li>
-                                 <li data-action="cancel_booking">{{ ui_change('cancel_booking') }}</li>
-                                 <li data-action="invoice">{{ ui_change('invoice') }}</li>
-                                 <li data-action="occupy_room">{{ ui_change('occupy_room') }}</li> --}}
-                             </ul>
-                         </div>
+             <div id="unitContextMenu" class="context-menu">
+                 <ul>
+                     @if ($show_agreement == 1)
+                         <li data-action="enquiry">{{ ui_change('enquiry') }}</li>
+                         <li data-action="proposal">{{ ui_change('proposal') }}</li>
+                         <li data-action="booking">{{ ui_change('booking') }}</li>
+                         <li data-action="agreement">{{ ui_change('agreement') }}</li>
+                     @endif
+                     <li data-action="book_now">{{ ui_change('book_now') }}</li>
+                     <li data-action="check_in">{{ ui_change('check_in') }}</li>
+                     <li data-action="check_out">{{ ui_change('check_out') }}</li>
+                     <li data-action="cancel_booking">{{ ui_change('cancel_booking') }}</li>
+                     <li data-action="invoice">{{ ui_change('invoice') }}</li>
+                     <li data-action="occupy_room">{{ ui_change('occupy_room') }}</li>
+                 </ul>
+             </div>
              <div class="col-md-12">
                  <div class="card">
                      <div class="px-3 py-4">
-                        
+
                          <div class="legend">
                              <div><span style="background-color: #fff;"></span>
                                  {{ ui_change('Empty_Units', 'property_transaction') }}</div>
@@ -702,7 +704,7 @@
              });
          });
      </script>
-     
+
      <script>
          let currentUnitId = null;
          const menu = document.getElementById('unitContextMenu');

@@ -9,7 +9,7 @@ use App\Models\hierarchy\MainLedger;
 
 class RentalTypeController extends Controller
 {
-      public function index(Request $request)
+    public function index(Request $request)
     {
         $ids = $request->bulk_ids;
 
@@ -23,7 +23,7 @@ class RentalTypeController extends Controller
             }
         })
             ->latest()->paginate()->appends($query_param);
-        $ledger = MainLedger::select('id' , 'name')->get();
+        $ledger = MainLedger::select('id', 'name')->get();
         $data = [
             'main'   => $rental_type,
             'search' => $search,
@@ -36,7 +36,7 @@ class RentalTypeController extends Controller
 
     public function store(Request $request)
     {
-       
+
         $request->validate([
             'name' => 'required|unique:rental_types,name',
             'ledger_id' => 'required',
@@ -49,13 +49,13 @@ class RentalTypeController extends Controller
 
         try {
             $rental_type = RentalType::create([
-                'name' => $request->name, 
+                'name' => $request->name,
                 'to_period' => $request->period_to,
                 'from_period' => $request->period_from,
                 'to' => $request->to,
                 'from' => $request->from,
-                'ledger_id' => $request->ledger_id, 
-                                'color'     => $request->color,
+                'ledger_id' => $request->ledger_id,
+                'color'     => $request->color,
 
             ]);
             return redirect()->route('rental_type.list')->with('success', ui_change('added_successfully'));
@@ -64,8 +64,8 @@ class RentalTypeController extends Controller
         }
     }
 
-    public function update(Request $request )
-    { 
+    public function update(Request $request)
+    {
         $rental_type = RentalType::findOrFail($request->id);
 
         $request->validate([
@@ -79,19 +79,18 @@ class RentalTypeController extends Controller
 
         try {
             $rental_type->update([
-             'name' => $request->name, 
+                'name' => $request->name,
                 'to_period' => $request->period_to,
                 'from_period' => $request->period_from,
                 'to' => $request->to,
                 'from' => $request->from,
-                'ledger_id' => $request->ledger_id, 
+                'ledger_id' => $request->ledger_id,
                 'color'     => $request->color,
             ]);
 
             return redirect()
                 ->route('rental_type.list')
                 ->with('success', ui_change('updated_successfully'));
-
         } catch (\Exception $e) {
             return redirect()
                 ->back()

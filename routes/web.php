@@ -65,6 +65,7 @@ use App\Http\Controllers\property_master\UnitDescriptionController;
 use App\Http\Controllers\property_transactions\AgreementController;
 use App\Http\Controllers\property_master\BusinessActivityController;
 use App\Http\Controllers\Room_Reservation\Management\RoomController;
+use App\Http\Controllers\Room_Reservation\Master\CustomerController;
 use App\Http\Controllers\Room_Reservation\Master\RoomTypeController;
 use App\Http\Controllers\facility_master\ComplaintCategoryController;
 use App\Http\Controllers\property_management\RentPriceListController;
@@ -1120,7 +1121,15 @@ Route::group(['prefix' => 'investors'], function () {
 
 Route::group(['prefix' => 'room_reservation/master'], function () {
 
-    // ------------------------ room types ----------------------
+    // ------------------------ customer types ----------------------
+    Route::group(['prefix' => 'customer', 'middleware' => 'auth:web'], function () {
+        Route::get('list', [CustomerController::class, 'index'])->name('customer.list');
+        Route::post('store', [CustomerController::class, 'store'])->name('customer.store');
+        Route::patch('update', [CustomerController::class, 'update'])->name('customer.update');
+        Route::get('delete', [CustomerController::class, 'delete'])->name('customer.delete');
+        Route::get('edit/{id}', [CustomerController::class, 'edit'])->name('customer.edit');
+    });
+    // ------------------------ rental types ----------------------
     Route::group(['prefix' => 'rental-type', 'middleware' => 'auth:web'], function () {
         Route::get('list', [RentalTypeController::class, 'index'])->name('rental_type.list');
         Route::post('store', [RentalTypeController::class, 'store'])->name('rental_type.store');

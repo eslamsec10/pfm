@@ -6,6 +6,8 @@ use App\Events\CompanyCreated;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Auth\Events\Registered;
 use App\Listeners\CreateCompanyDatabase;
+use App\Events\PropertyManagementCreated;
+use App\Listeners\CreateGroupAndCostCenter;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
@@ -22,6 +24,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         CompanyCreated::class =>[
             CreateCompanyDatabase::class,
+        ],
+        PropertyManagementCreated::class =>[
+            CreateGroupAndCostCenter::class,
         ],
     ];
 

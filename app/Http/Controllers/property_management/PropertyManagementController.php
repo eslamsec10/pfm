@@ -138,27 +138,27 @@ class PropertyManagementController extends Controller
                 'status'                => $request->input('status'),
             ]);
             // master_group
-            $group = (new Groups())->setConnection('tenant')->create([
-                'code'                     => $request->input('code'),
-                'property_id'              => $property_management->id,
-                'name'                     => $request->input('name'),
-                'display_name'             => $request->input('name'),
-                'group_id'                 => $master_group->id,
-                'is_projects_parent_group' => $master_group->is_projects_parent_group ?: 0,
-                'enable_auto_code'         => $master_group->enable_auto_code ?: 0,
-                'status'                   => 'active',
-                'tax_applicable'           => $master_group->tax_applicable ?: 0,
-                'is_taxable'               => $master_group->is_taxable ?: 0,
-                'vat_applicable_from'      => $master_group->vat_applicable_from ?? null,
-                'tax_rate'                 => $master_group->tax_rate ?: 0,
-            ]);
-            $cost_center = (new CostCenterCategory())->setConnection('tenant')->create([
-                'code'      => $request->input('code'),
-                'name'      => $request->input('name'),
-                'main_id'   => $property_management->id,
-                'main_type' => 'property',
-                'status'    => 'active',
-            ]);
+            // $group = (new Groups())->setConnection('tenant')->create([
+            //     'code'                     => $request->input('code'),
+            //     'property_id'              => $property_management->id,
+            //     'name'                     => $request->input('name'),
+            //     'display_name'             => $request->input('name'),
+            //     'group_id'                 => $master_group->id,
+            //     'is_projects_parent_group' => $master_group->is_projects_parent_group ?: 0,
+            //     'enable_auto_code'         => $master_group->enable_auto_code ?: 0,
+            //     'status'                   => 'active',
+            //     'tax_applicable'           => $master_group->tax_applicable ?: 0,
+            //     'is_taxable'               => $master_group->is_taxable ?: 0,
+            //     'vat_applicable_from'      => $master_group->vat_applicable_from ?? null,
+            //     'tax_rate'                 => $master_group->tax_rate ?: 0,
+            // ]);
+            // $cost_center = (new CostCenterCategory())->setConnection('tenant')->create([
+            //     'code'      => $request->input('code'),
+            //     'name'      => $request->input('name'),
+            //     'main_id'   => $property_management->id,
+            //     'main_type' => 'property',
+            //     'status'    => 'active',
+            // ]);
             if ($property_management) {
                 $property_management->property_types()->sync($request->property_type_id);
             }

@@ -32,13 +32,13 @@ class UnitManagementController extends Controller
         $search = $request['search'];
         $query_param = $search ? ['search' => $request['search']] : '';
 
-        $userId =  auth()->id(); 
-        $settings = UserSettings::where('user_id', $userId)->first(); 
-        $buildingIds = $settings?->building_ids ?? []; 
+        $userId =  auth()->id();
+        $settings = UserSettings::where('user_id', $userId)->first();
+        $buildingIds = $settings?->building_ids ?? [];
         if (is_string($buildingIds)) {
             $buildingIds = json_decode($buildingIds, true) ?? [];
-        } 
-        $unit_management = (new UnitManagement())->setConnection('tenant')->whereIn('property_management_id',$buildingIds)->join('units', 'unit_management.unit_id', '=', 'units.id')->when($request['search'], function ($q) use ($request) {
+        }
+        $unit_management = (new UnitManagement())->setConnection('tenant')->whereIn('property_management_id', $buildingIds)->join('units', 'unit_management.unit_id', '=', 'units.id')->when($request['search'], function ($q) use ($request) {
             $key = explode(' ', $request['search']);
             foreach ($key as $value) {
                 $q->Where('units.name', 'like', "%{$value}%")
@@ -46,7 +46,7 @@ class UnitManagementController extends Controller
             }
         })
             ->select('unit_management.*', 'units.name as block_name')
-            ->latest()->paginate()->appends($query_param);  
+            ->latest()->paginate()->appends($query_param);
 
         $data = [
             'unit_management' => $unit_management,
@@ -186,53 +186,53 @@ class UnitManagementController extends Controller
                 }
 
                 /** ================= LEDGER ================= */
-                (new MainLedger())
-                    ->setConnection('tenant')
-                    ->create([
-                        'code'      => $unit->name,
-                        'name'      =>
-                        $unit_management->property_unit_management->code . '-' .
-                            $unit_management->block_unit_management->block->code . '-' .
-                            $unit_management->floor_unit_management->floor_management_main->name . '-' .
-                            $unit_management->unit_management_main->name,
+                // (new MainLedger())
+                //     ->setConnection('tenant')
+                //     ->create([
+                //         'code'      => $unit->name,
+                //         'name'      =>
+                //         $unit_management->property_unit_management->code . '-' .
+                //             $unit_management->block_unit_management->block->code . '-' .
+                //             $unit_management->floor_unit_management->floor_management_main->name . '-' .
+                //             $unit_management->unit_management_main->name,
 
-                        'currency'  => $company->currency_code,
-                        'country_id' =>
-                        $unit_management->property_unit_management
-                            ?->country_master
-                            ?->country
-                            ?->id,
+                //         'currency'  => $company->currency_code,
+                //         'country_id' =>
+                //         $unit_management->property_unit_management
+                //             ?->country_master
+                //             ?->country
+                //             ?->id,
 
-                        'group_id'            => $group?->id,
-                        'main_id'             => $unit_management->id,
-                        'is_taxable'          => $group->is_taxable ?? 0,
-                        'vat_applicable_from' => $group->vat_applicable_from ?? null,
-                        'tax_rate'            => $group->tax_rate ?? 0,
-                        'tax_applicable'      => $group->tax_applicable ?? 0,
-                        'status'              => 'active',
-                    ]);
+                //         'group_id'            => $group?->id,
+                //         'main_id'             => $unit_management->id,
+                //         'is_taxable'          => $group->is_taxable ?? 0,
+                //         'vat_applicable_from' => $group->vat_applicable_from ?? null,
+                //         'tax_rate'            => $group->tax_rate ?? 0,
+                //         'tax_applicable'      => $group->tax_applicable ?? 0,
+                //         'status'              => 'active',
+                //     ]);
 
-                /** ================= COST CENTER ================= */
-                $propertyCost = (new CostCenterCategory())
-                    ->setConnection('tenant')
-                    ->where('main_id', $unit_management->property_management_id)
-                    ->where('main_type', 'property')
-                    ->first();
+                // /** ================= COST CENTER ================= */
+                // $propertyCost = (new CostCenterCategory())
+                //     ->setConnection('tenant')
+                //     ->where('main_id', $unit_management->property_management_id)
+                //     ->where('main_type', 'property')
+                //     ->first();
 
-                (new CostCenter())
-                    ->setConnection('tenant')
-                    ->create([
-                        'name' =>
-                        $unit_management->property_unit_management->name . '-' .
-                            $unit_management->unit_management_main->name . '-' .
-                            $unit_management->block_unit_management->block->name . '-' .
-                            $unit_management->floor_unit_management->floor_management_main->name,
+                // (new CostCenter())
+                //     ->setConnection('tenant')
+                //     ->create([
+                //         'name' =>
+                //         $unit_management->property_unit_management->name . '-' .
+                //             $unit_management->unit_management_main->name . '-' .
+                //             $unit_management->block_unit_management->block->name . '-' .
+                //             $unit_management->floor_unit_management->floor_management_main->name,
 
-                        'main_id'   => $unit_management->id,
-                        'main_type' => 'unit',
-                        'cost_center_category_id' => $propertyCost?->id,
-                        'status'    => 'active',
-                    ]);
+                //         'main_id'   => $unit_management->id,
+                //         'main_type' => 'unit',
+                //         'cost_center_category_id' => $propertyCost?->id,
+                //         'status'    => 'active',
+                //     ]);
             }
 
             DB::commit();
@@ -633,11 +633,11 @@ class UnitManagementController extends Controller
                 'view_id'                       => ($request->view != 0) ? $request->view : null,
                 'long_status'                   => $request->type,
             ]);
-             if ($request->has('unit_facilities')) {
-            $selected_unit->facilities()->sync($request->unit_facilities);
-        } else { 
-            $selected_unit->facilities()->sync([]);
-        }
+            if ($request->has('unit_facilities')) {
+                $selected_unit->facilities()->sync($request->unit_facilities);
+            } else {
+                $selected_unit->facilities()->sync([]);
+            }
             return redirect()->route('unit_management.index')->with('success', __('region.added_successfully'));
         } catch (\Exception $e) {
             return redirect()->back()->with("error", $e->getMessage());

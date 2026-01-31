@@ -1,0 +1,49 @@
+<?php
+
+namespace App\Listeners;
+
+use App\Models\general\Groups;
+use App\Events\PropertyManagementCreated;
+use App\Models\hierarchy\CostCenterCategory;
+ 
+class CreateGroupAndCostCenter
+{
+    public function handle(PropertyManagementCreated $event)
+    {
+        $property = $event->property;
+
+        $master_group = (new Groups())
+            ->setConnection('tenant')
+            ->where('id', 48)
+            ->first();
+
+        if (!$master_group) {
+            return;
+        }
+
+        // Create Group
+        (new Groups())->setConnection('tenant')->create([
+            'code'                     => $property->code,
+            'property_id'              => $property->id,
+            'name'                     => $property->name,
+            'display_name'             => $property->name,
+            'group_id'                 => $master_group->id,
+            'is_projects_parent_group' => $master_group->is_projects_parent_group ?? 0,
+            'enable_auto_code'         => $master_group->enable_auto_code ?? 0,
+            'status'                   => 'active',
+            'tax_applicable'           => $master_group->tax_applicable ?? 0,
+            'is_taxable'               => $master_group->is_taxable ?? 0,
+            'vat_applicable_from'      => $master_group->vat_applicable_from,
+            'tax_rate'                 => $master_group->tax_rate ?? 0,
+        ]);
+
+        // Create Cost Center
+        (new CostCenterCategory())->setConnection('tenant')->create([
+            'code'      => $property->code,
+            'name'      => $property->name,
+            'main_id'   => $property->id,
+            'main_type' => 'property',
+            'status'    => 'active',
+        ]);
+    }
+}

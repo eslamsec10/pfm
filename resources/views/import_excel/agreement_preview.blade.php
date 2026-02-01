@@ -27,24 +27,27 @@
                             <thead class="bg-light text-capitalize">
                                 <tr>
                                     <th class="text-center fw-bold sticky-top"
-                                        style="top:0; background:#4f99e4; z-index:10;">{{ ui_change('sl') }}</th>
-                                    @foreach ($data[0] as $header)
+                                        style="top:0; background:#4f99e4; z-index:10;">
+                                        {{ ui_change('sl') }}
+                                    </th>
+
+                                    @foreach (array_keys($validRows->first()) as $header)
                                         <th class="text-center fw-bold sticky-top"
                                             style="top:0; background:#4f99e4; z-index:10;">
-                                            {{ $header }}
+                                            {{ ui_change($header) }}
                                         </th>
                                     @endforeach
                                 </tr>
                             </thead>
+
                             <tbody>
-                                @foreach ($data->skip(1) as $rowIndex => $row)
+                                @foreach ($validRows as $rowIndex => $row)
                                     <tr>
                                         <td>{{ $rowIndex + 1 }}</td>
-                                        @foreach ($row as $colIndex => $value)
-                                            @php
-                                                $columnName = $data[0][$colIndex];
 
-                                                // تحويل التواريخ لو الرقم كبير
+                                        @foreach ($row as $value)
+                                            @php
+                                                // تحويل Excel serial date
                                                 if (is_numeric($value) && $value > 10000) {
                                                     try {
                                                         $date = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject(
@@ -62,6 +65,7 @@
                             </tbody>
                         </table>
                     </div>
+
                 </div>
 
                 <div class="card-footer d-flex justify-content-end">

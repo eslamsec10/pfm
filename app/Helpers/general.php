@@ -51,6 +51,53 @@ if (! function_exists('database_creation')) {
 
     }
 }
+
+if(! function_exists('normalizeDate')){
+   function normalizeDate($value): ?string
+{
+    if (empty($value)) {
+        return null;
+    }
+
+    // Excel serial number
+    if (is_numeric($value)) {
+        try {
+            return \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value)
+                ->format('Y-m-d');
+        } catch (\Exception $e) {}
+    }
+
+    // DateTime object
+    if ($value instanceof \DateTimeInterface) {
+        return $value->format('Y-m-d');
+    }
+
+    // String dates
+    $formats = [
+        'd.m.Y',
+        'd-m-Y',
+        'd/m/Y',
+        'Y-m-d',
+        'Y/m/d',
+        'm/d/Y',
+    ];
+
+    foreach ($formats as $format) {
+        try {
+            $date = \Carbon\Carbon::createFromFormat($format, trim($value));
+            return $date->format('Y-m-d');
+        } catch (\Exception $e) {}
+    }
+
+    // fallback – Carbon smart parse
+    try {
+        return \Carbon\Carbon::parse($value)->format('Y-m-d');
+    } catch (\Exception $e) {}
+
+    return null;
+}
+
+}
 // if (! function_exists('company_id')) {
 //     function company_id()
 //     {

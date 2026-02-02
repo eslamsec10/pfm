@@ -46,7 +46,7 @@ class PropertyMasterImportController extends Controller
         $request->validate([
             'file' => 'required|mimes:xlsx,csv',
         ]);
-        
+
         $data = Excel::toCollection(null, $request->file('file'))->first();
 
         session([
@@ -90,54 +90,68 @@ class PropertyMasterImportController extends Controller
 
         if (!$rows) {
             return back()->withErrors('No preview data found');
-        } 
+        }
         foreach ($rows->skip(1) as $row) {
-            $rowArray = $row->toArray();
- 
-            $assocRow = array_combine($headers, $rowArray);
 
+            $rowArray = $row->toArray();
+            $assocRow = array_combine($headers, $rowArray);
             $normalizedRow = $this->normalizeRow($assocRow);
 
             if (empty(array_filter($normalizedRow))) {
                 continue;
             }
- 
-            if ($normalizedRow['property_type']) {
-                $propertyType = PropertyType::firstOrCreate([
-                    'name' => $normalizedRow['property_type'] ?? null,
-                    'code' => $normalizedRow['property_type'] ?? null,
-                ]);
+
+            /*
+    |--------------------------------------------------------------------------
+    | Property Type (unique by name)
+    |--------------------------------------------------------------------------
+    */
+            $propertyType = null;
+            if (!empty($normalizedRow['property_type'])) {
+                $propertyType = PropertyType::firstOrCreate(
+                    ['name' => $normalizedRow['property_type']],
+                    ['code' => $normalizedRow['property_type']]
+                );
             }
- 
+
+            /*
+    |--------------------------------------------------------------------------
+    | Property (unique by name)
+    |--------------------------------------------------------------------------
+    */
             $property = PropertyManagement::firstOrCreate(
-                ['name' => $normalizedRow['property_name'] ?? null],
+                ['name' => $normalizedRow['property_name']],
                 ['code' => $normalizedRow['property_code'] ?? null]
             );
 
-            if ($property && $propertyType) {
+            if ($propertyType) {
                 $property->property_types()->syncWithoutDetaching([$propertyType->id]);
             }
 
-            // ---------------------
-            // Block
-            // ---------------------
-            $blockName = Block::firstOrCreate([
-                'name' => $normalizedRow['block_name'],
-                'code' => $normalizedRow['block_code'] ?? null,
-            ]);
+            /*
+    |--------------------------------------------------------------------------
+    | Block (unique by name)
+    |--------------------------------------------------------------------------
+    */
+            $blockName = Block::firstOrCreate(
+                ['name' => $normalizedRow['block_name']],
+                ['code' => $normalizedRow['block_code'] ?? null]
+            );
 
             $block = BlockManagement::firstOrCreate([
                 'block_id'               => $blockName->id,
                 'property_management_id' => $property->id,
             ]);
 
-            // ---------------------
-            // Floor
-            // ---------------------
-            $floorName = Floor::firstOrCreate([
-                'name' => $normalizedRow['floor_name'] ?? null,
-                'code' => $normalizedRow['floor_code'] ?? null,
-            ]);
+            /*
+    |--------------------------------------------------------------------------
+    | Floor (unique by name)
+    |--------------------------------------------------------------------------
+    */
+            $floorName = Floor::firstOrCreate(
+                ['name' => $normalizedRow['floor_name']],
+                ['code' => $normalizedRow['floor_code'] ?? null]
+            );
 
             $floor = FloorManagement::firstOrCreate([
                 'floor_id'               => $floorName->id,
@@ -145,50 +159,60 @@ class PropertyMasterImportController extends Controller
                 'property_management_id' => $property->id,
             ]);
 
-            // ---------------------
-            // Units
-            // ---------------------
-            $totalUnits = ! empty($normalizedRow['total_no_of_units'])
-                ? (int) $normalizedRow['total_no_of_units']
-                : 1;
-
-            // ---------------------
-            // Units
-            // ---------------------
+            /*
+    |--------------------------------------------------------------------------
+    | Unit (unique by name)
+    |--------------------------------------------------------------------------
+    */
             $unitBaseName = $normalizedRow['unit_name'] ?? 'Unit';
-            $unitFullName = $unitBaseName;
+            $unitNo       = $normalizedRow['unit_no'] ?? null;
 
-            $unitNo = $normalizedRow['unit_no'] ?? null;
+            $unitName = Unit::firstOrCreate(
+                ['name' => $unitBaseName],
+                ['code' => $unitNo ?? $unitBaseName]
+            );
 
-            $unitName = Unit::firstOrCreate([
-                'name' => $unitFullName,
-                'code' => $unitNo ?? $unitFullName,
-            ]);
-
-            // Unit Description
-            $unit_description = ! empty($normalizedRow['unit_type'])
-                ? UnitDescription::firstOrCreate([
-                    'name' => $normalizedRow['unit_type'],
-                    'code' => $normalizedRow['unit_type'],
-                ])
+            /*
+    |--------------------------------------------------------------------------
+    | Unit Description
+    |--------------------------------------------------------------------------
+    */
+            $unit_description = !empty($normalizedRow['unit_type'])
+                ? UnitDescription::firstOrCreate(
+                    ['name' => $normalizedRow['unit_type']],
+                    ['code' => $normalizedRow['unit_type']]
+                )
                 : null;
 
-            // Unit Condition
-            $unit_condition = ! empty($normalizedRow['unit_condition'])
-                ? UnitCondition::firstOrCreate([
-                    'name' => $normalizedRow['unit_condition'],
-                    'code' => $normalizedRow['unit_condition'],
-                ])
+            /*
+    |--------------------------------------------------------------------------
+    | Unit Condition
+    |--------------------------------------------------------------------------
+    */
+            $unit_condition = !empty($normalizedRow['unit_condition'])
+                ? UnitCondition::firstOrCreate(
+                    ['name' => $normalizedRow['unit_condition']],
+                    ['code' => $normalizedRow['unit_condition']]
+                )
                 : null;
 
-            // View
-            $view = ! empty($normalizedRow['view'])
-                ? View::firstOrCreate([
-                    'name' => $normalizedRow['view'],
-                    'code' => $normalizedRow['view'],
-                ])
+            /*
+    |--------------------------------------------------------------------------
+    | View
+    |--------------------------------------------------------------------------
+    */
+            $view = !empty($normalizedRow['view'])
+                ? View::firstOrCreate(
+                    ['name' => $normalizedRow['view']],
+                    ['code' => $normalizedRow['view']]
+                )
                 : null;
 
+            /*
+    |--------------------------------------------------------------------------
+    | Unit Management
+    |--------------------------------------------------------------------------
+    */
             UnitManagement::firstOrCreate(
                 [
                     'unit_id'                => $unitName->id,
@@ -203,6 +227,119 @@ class PropertyMasterImportController extends Controller
                 ]
             );
         }
+
+        // foreach ($rows->skip(1) as $row) {
+        //     $rowArray = $row->toArray();
+
+        //     $assocRow = array_combine($headers, $rowArray);
+
+        //     $normalizedRow = $this->normalizeRow($assocRow);
+
+        //     if (empty(array_filter($normalizedRow))) {
+        //         continue;
+        //     }
+
+        //     if ($normalizedRow['property_type']) {
+        //         $propertyType = PropertyType::firstOrCreate([
+        //             'name' => $normalizedRow['property_type'] ?? null,
+        //             'code' => $normalizedRow['property_type'] ?? null,
+        //         ]);
+        //     }
+
+        //     $property = PropertyManagement::firstOrCreate(
+        //         ['name' => $normalizedRow['property_name'] ?? null],
+        //         ['code' => $normalizedRow['property_code'] ?? null]
+        //     );
+
+        //     if ($property && $propertyType) {
+        //         $property->property_types()->syncWithoutDetaching([$propertyType->id]);
+        //     }
+
+        //     // ---------------------
+        //     // Block
+        //     // ---------------------
+        //     $blockName = Block::firstOrCreate([
+        //         'name' => $normalizedRow['block_name'],
+        //         'code' => $normalizedRow['block_code'] ?? null,
+        //     ]);
+
+        //     $block = BlockManagement::firstOrCreate([
+        //         'block_id'               => $blockName->id,
+        //         'property_management_id' => $property->id,
+        //     ]);
+
+        //     // ---------------------
+        //     // Floor
+        //     // ---------------------
+        //     $floorName = Floor::firstOrCreate([
+        //         'name' => $normalizedRow['floor_name'] ?? null,
+        //         'code' => $normalizedRow['floor_code'] ?? null,
+        //     ]);
+
+        //     $floor = FloorManagement::firstOrCreate([
+        //         'floor_id'               => $floorName->id,
+        //         'block_management_id'    => $block->id,
+        //         'property_management_id' => $property->id,
+        //     ]);
+
+        //     // ---------------------
+        //     // Units
+        //     // ---------------------
+        //     $totalUnits = ! empty($normalizedRow['total_no_of_units'])
+        //         ? (int) $normalizedRow['total_no_of_units']
+        //         : 1;
+
+        //     // ---------------------
+        //     // Units
+        //     // ---------------------
+        //     $unitBaseName = $normalizedRow['unit_name'] ?? 'Unit';
+        //     $unitFullName = $unitBaseName;
+
+        //     $unitNo = $normalizedRow['unit_no'] ?? null;
+
+        //     $unitName = Unit::firstOrCreate([
+        //         'name' => $unitFullName,
+        //         'code' => $unitNo ?? $unitFullName,
+        //     ]);
+
+        //     // Unit Description
+        //     $unit_description = ! empty($normalizedRow['unit_type'])
+        //         ? UnitDescription::firstOrCreate([
+        //             'name' => $normalizedRow['unit_type'],
+        //             'code' => $normalizedRow['unit_type'],
+        //         ])
+        //         : null;
+
+        //     // Unit Condition
+        //     $unit_condition = ! empty($normalizedRow['unit_condition'])
+        //         ? UnitCondition::firstOrCreate([
+        //             'name' => $normalizedRow['unit_condition'],
+        //             'code' => $normalizedRow['unit_condition'],
+        //         ])
+        //         : null;
+
+        //     // View
+        //     $view = ! empty($normalizedRow['view'])
+        //         ? View::firstOrCreate([
+        //             'name' => $normalizedRow['view'],
+        //             'code' => $normalizedRow['view'],
+        //         ])
+        //         : null;
+
+        //     UnitManagement::firstOrCreate(
+        //         [
+        //             'unit_id'                => $unitName->id,
+        //             'property_management_id' => $property->id,
+        //             'block_management_id'    => $block->id,
+        //             'floor_management_id'    => $floor->id,
+        //         ],
+        //         [
+        //             'unit_description_id' => $unit_description->id ?? null,
+        //             'unit_condition_id'   => $unit_condition->id ?? null,
+        //             'view_id'             => $view->id ?? null,
+        //         ]
+        //     );
+        // }
 
         return redirect()->route('property_management.index')->with('success', ui_change('imported_successfully'));
     }

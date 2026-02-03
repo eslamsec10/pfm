@@ -67,13 +67,14 @@ class CreateCompanyDatabase
 
     $tablesToCopy = [
         'roles', 'sections', 'permissions', 'regions', 'business_settings',
-        'countries', 'country_masters', 'ownerships', 'property_types',
-        'views', 'business_activities', 'live_withs',
-        'enquiry_statuses', 'enquiry_request_statuses',
-        'departments', 'employee_types' ,
+        'countries', 'country_masters', 'ownerships',
+         'property_types',
+         'business_activities', 'live_withs',
+        'enquiry_statuses', 'enquiry_request_statuses','admins' ,
+        //'departments', 'employee_types', 'views',
         // 'departments', 'employee_types', 'employees', 'agents',
-        'complaint_categories', 'maintenance_types', 'warranty_types',
-        'receipt_settings', 'service_masters', 'company_settings', 'admins'
+      //  'complaint_categories', 'maintenance_types', 'warranty_types',
+        //'receipt_settings', 'service_masters', 'company_settings'
     ];
 
     foreach ($tablesToCopy as $table) {

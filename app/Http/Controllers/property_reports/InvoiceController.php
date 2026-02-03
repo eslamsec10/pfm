@@ -60,7 +60,7 @@ class InvoiceController extends Controller
         }
         $invoices = $invoices_query->paginate();
         // dd($invoices);
-        $all_building    = (new PropertyManagement())->setConnection('tenant')->forUser()->all();
+        $all_building    = (new PropertyManagement())->setConnection('tenant')->forUser()->get();
         $tenants         = (new Tenant())->setConnection('tenant')->get();
         $unit_management = (new UnitManagement())->setConnection('tenant')->with(['property_unit_management', 'block_unit_management', 'floor_unit_management', 'unit_management_main', 'unit_description'])->get();
         return view('admin-views.property_reports.invoices.invoices', compact('invoices', 'unit_management', 'all_building', 'tenants'));
@@ -117,11 +117,7 @@ class InvoiceController extends Controller
                 $schedules = $schedulesQuery->where(function ($query) {
                     $query->where('invoice_status', 'pending')
                         ->orWhereNull('invoice_status');
-                })->get();
-                // $lastInvoiceNumber = (new Invoice())->setConnection('tenant')->orderBy('invoice_number', 'desc')->first();
-                // $invoice_number    = $lastInvoiceNumber
-                // ? 'INV-' . sprintf('%05d', (int) str_replace('INV-', '', $lastInvoiceNumber->invoice_number) + 1)
-                // : 'INV-00001';
+                })->get(); 
                 $lastInvoiceNumber = Invoice::orderBy('id', 'desc')->value('invoice_number');
                 $nextNumber        = $lastInvoiceNumber
                     ? 'INV-' . sprintf('%05d', (int) str_replace('INV-', '', $lastInvoiceNumber) + 1)
@@ -163,12 +159,12 @@ class InvoiceController extends Controller
                             ]);
                             if ($schedule->category == 'service') {
                                 $service = ServiceMaster::find($schedule->service_id);
-                                $service->service_ledger->update([
+                                $service->service_ledger?->update([
                                     'credit'         => $invoice_item->total,
                                 ]);
                             } elseif ($schedule->category == 'rent') {
                                 $unit_management = UnitManagement::find($schedule->unit_id);
-                                $unit_management->unit_ledger->update([
+                                $unit_management->unit_ledger?->update([
                                     'credit'         => $invoice_item->total,
                                 ]);
                             }
@@ -180,7 +176,7 @@ class InvoiceController extends Controller
                             ]);
                         }
                     }
-                    $ledger = MainLedger::where('group_id', 49)->where('main_id', $tenant_invoice->id)->first();
+                    $ledger = MainLedger::where('name','LIKE', '%Tenants%')->where('main_id', $tenant_invoice->id)->first();
                     if ($ledger) {
                         $ledger->update([
                             'debit' => $tenant_debit,

@@ -154,7 +154,7 @@ class ScheduleController extends Controller
             }
             $schedules = $report_query->where('category', 'rent')->orderBy('created_at', 'asc')->paginate();
         }
-        $all_building    = (new PropertyManagement())->setConnection('tenant')->forUser()->all();
+        $all_building    = (new PropertyManagement())->setConnection('tenant')->forUser()->get();
         $unit_management = (new UnitManagement())->setConnection('tenant')->with(['property_unit_management', 'block_unit_management', 'block_unit_management.block',
          'floor_unit_management', 'floor_unit_management.floor_management_main', 'unit_management_main', 'unit_description'])->get();
         $tenants         = DB::connection('tenant')->table('tenants')->get();

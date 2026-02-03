@@ -109,7 +109,7 @@ Route::get('lang/{locale}', function ($locale) {
     }
     return redirect()->back();
 })->name('lang');
-Route::group(['prefix' => 'custom-role'], function () {
+Route::group(['prefix' => 'custom-role' ,'middleware' => 'auth:web'], function () {
     Route::get('create', [CustomRoleController::class, 'create'])->name('role_admin.create');
     Route::post('create', [CustomRoleController::class, 'store'])->name('role_admin.store');
     Route::get('update/{id}', [CustomRoleController::class, 'edit'])->name('role_admin.update');
@@ -203,7 +203,7 @@ Route::get('/search_unit-side', [DashboardController::class, 'search_unit_side']
 Route::get('/general_search_units_in_dashboard', [DashboardController::class, 'general_search_units_in_dashboard'])->name('general_search_units_in_dashboard');
 Route::get('/get_unit_type_by_unit_descrption_id/{id}', [EnquiryController::class, 'get_unit_type_by_unit_descrption_id'])->name('get_unit_type_by_unit_descrption_id');
 
-Route::group(['prefix' => 'companies'], function () {
+Route::group(['prefix' => 'companies' ,'middleware' => 'auth:web'], function () {
 
     Route::get('/', [CompanyManagementController::class, 'index'])->name('companies');
     // Route::get('/create', [CompanyManagementController::class , 'create'])->name('companies.create');
@@ -216,7 +216,7 @@ Route::group(['prefix' => 'companies'], function () {
 });
 
 // Roles
-Route::group(['prefix' => 'roles'], function () {
+Route::group(['prefix' => 'roles' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [RoleController::class, 'index'])->name('roles');
     Route::get('/create', [RoleController::class, 'create'])->name('roles.create');
     Route::post('/store', [RoleController::class, 'store'])->name('roles.store');
@@ -224,13 +224,13 @@ Route::group(['prefix' => 'roles'], function () {
     Route::post('/{id}/update', [RoleController::class, 'update'])->name('roles.update');
     Route::delete('/delete', [RoleController::class, 'destroy'])->name('roles.delete');
 });
-Route::group(['prefix' => 'general_property_list'], function () {
+Route::group(['prefix' => 'general_property_list' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [PropertyListController::class, 'index'])->name('general_property_list');
     Route::get('/list_view/{id}', [PropertyListController::class, 'list_view'])->name('general_property_list_view');
     Route::get('/image_view/{id}', [PropertyListController::class, 'image_view'])->name('general_property_image_view');
 });
 // User Managment
-Route::group(['prefix' => 'user_management'], function () {
+Route::group(['prefix' => 'user_management' ,'middleware' => 'auth:web'], function () {
 
     Route::get('/', [UserManagementController::class, 'index'])->name('user_management');
     Route::get('/create', [UserManagementController::class, 'create'])->name('user_management.create');
@@ -257,7 +257,7 @@ Route::group(['prefix' => 'user_management'], function () {
 //     Route::patch('/complaint/update', [ComplaintSettingsController::class, 'complaintUpdate'])->name('complaint_settings.store');
 
 // });
-Route::group(['prefix' => 'transactions_settings'], function () {
+Route::group(['prefix' => 'transactions_settings' ,'middleware' => 'auth:web'], function () {
     Route::get('/receipt_settings', [ReceiptSettingsController::class, 'receiptIndex'])->name('receipt_settings');
     Route::patch('/receipt_settings/update', [ReceiptSettingsController::class, 'ReceiptUpdate'])->name('receipt_settings.update');
     Route::get('/receipt_settings/edit/{id}', [ReceiptSettingsController::class, 'edit'])->name('receipt_settings.edit');
@@ -277,7 +277,7 @@ Route::group(['prefix' => 'transactions_settings'], function () {
     // Route::patch('/invoice_settings/update', [ReceiptSettingsController::class,'invoiceUpdate'])->name('invoice_settings.store');
 
 });
-Route::group(['prefix' => 'region'], function () {
+Route::group(['prefix' => 'region' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [RegionController::class, 'index'])->name('region');
     Route::post('/create', [RegionController::class, 'store'])->name('region.store');
     Route::get('/edit/{id}', [RegionController::class, 'edit'])->name('region.edit');
@@ -285,7 +285,7 @@ Route::group(['prefix' => 'region'], function () {
     Route::get('/delete', [RegionController::class, 'delete'])->name('region.delete');
 });
 
-Route::group(['prefix' => 'countries'], function () {
+Route::group(['prefix' => 'countries' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [CountryController::class, 'index'])->name('country');
     Route::post('/create', [CountryController::class, 'store'])->name('country.store');
     Route::get('/edit/{id}', [CountryController::class, 'edit'])->name('country.edit');
@@ -294,7 +294,7 @@ Route::group(['prefix' => 'countries'], function () {
 });
 
 ###################################################### Hierarchy ###################################################
-Route::group(['prefix' => 'ledgers'], function () {
+Route::group(['prefix' => 'ledgers' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [LedgerController::class, 'index'])->name('ledgers.index');
     Route::post('/', [LedgerController::class, 'store'])->name('ledgers.store');
     Route::get('/create', [LedgerController::class, 'create'])->name('ledgers.create');
@@ -303,7 +303,7 @@ Route::group(['prefix' => 'ledgers'], function () {
     Route::patch('/update/{id}', [LedgerController::class, 'update'])->name('ledgers.update');
     Route::get('/delete', [LedgerController::class, 'delete'])->name('ledgers.delete');
 });
-Route::group(['prefix' => 'groups'], function () {
+Route::group(['prefix' => 'groups' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [GroupController::class, 'index'])->name('groups.index');
     Route::post('/', [GroupController::class, 'store'])->name('groups.store');
     Route::get('/edit/{id}', [GroupController::class, 'edit'])->name('groups.edit');
@@ -312,12 +312,12 @@ Route::group(['prefix' => 'groups'], function () {
     Route::get('/delete', [GroupController::class, 'delete'])->name('groups.delete');
     Route::get('/get_group_by_id/{id}', [GroupController::class, 'get_group_by_id'])->name('get_group_by_id');
 });
-Route::group(['prefix' => 'chart_of_account'], function () {
+Route::group(['prefix' => 'chart_of_account' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [GroupController::class, 'chart_of_account'])->name('chart_of_account');
 });
 
 // Cost Center Category
-Route::group(['prefix' => 'category-cost-center'], function () {
+Route::group(['prefix' => 'category-cost-center' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [CostCenterCategoryController::class, 'index'])->name('cost_center_category.index');
     Route::post('store', [CostCenterCategoryController::class, 'store'])->name('cost_center_category.store');
     Route::get('/edit/{id}', [CostCenterCategoryController::class, 'edit'])->name('cost_center_category.edit');
@@ -328,7 +328,7 @@ Route::group(['prefix' => 'category-cost-center'], function () {
 
 // Cost Center
 
-Route::group(['prefix' => 'cost_center'], function () {
+Route::group(['prefix' => 'cost_center' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [CostCenterController::class, 'index'])->name('cost_center.index');
     Route::post('store', [CostCenterController::class, 'store'])->name('cost_center.store');
     Route::get('/edit/{id}', [CostCenterController::class, 'edit'])->name('cost_center.edit');
@@ -340,7 +340,7 @@ Route::group(['prefix' => 'cost_center'], function () {
 ################################################## Start Propert_master #############################################
 
 // ownership
-Route::group(['prefix' => 'ownership'], function () {
+Route::group(['prefix' => 'ownership' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [OwnershipController::class, 'index'])->name('ownership.index');
     Route::post('store', [OwnershipController::class, 'store'])->name('ownership.store');
     Route::get('/edit/{id}', [OwnershipController::class, 'edit'])->name('ownership.edit');
@@ -350,7 +350,7 @@ Route::group(['prefix' => 'ownership'], function () {
 });
 
 // property type
-Route::group(['prefix' => 'property_type'], function () {
+Route::group(['prefix' => 'property_type' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [PropertyTypeController::class, 'index'])->name('property_type.index');
     Route::post('store', [PropertyTypeController::class, 'store'])->name('property_type.store');
     Route::get('/edit/{id}', [PropertyTypeController::class, 'edit'])->name('property_type.edit');
@@ -360,7 +360,7 @@ Route::group(['prefix' => 'property_type'], function () {
 });
 
 // services
-Route::group(['prefix' => 'services'], function () {
+Route::group(['prefix' => 'services' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [ServiceController::class, 'index'])->name('services.index');
     Route::post('store', [ServiceController::class, 'store'])->name('services.store');
     Route::get('/edit/{id}', [ServiceController::class, 'edit'])->name('services.edit');
@@ -370,7 +370,7 @@ Route::group(['prefix' => 'services'], function () {
 });
 
 // Blocks
-Route::group(['prefix' => 'block'], function () {
+Route::group(['prefix' => 'block' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [BlockController::class, 'index'])->name('block.index');
     Route::post('store', [BlockController::class, 'store'])->name('block.store');
     Route::get('/edit/{id}', [BlockController::class, 'edit'])->name('block.edit');
@@ -380,7 +380,7 @@ Route::group(['prefix' => 'block'], function () {
 });
 
 // Unit Description
-Route::group(['prefix' => 'unit_description'], function () {
+Route::group(['prefix' => 'unit_description' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [UnitDescriptionController::class, 'index'])->name('unit_description.index');
     Route::post('store', [UnitDescriptionController::class, 'store'])->name('unit_description.store');
     Route::get('/edit/{id}', [UnitDescriptionController::class, 'edit'])->name('unit_description.edit');
@@ -390,7 +390,7 @@ Route::group(['prefix' => 'unit_description'], function () {
 });
 
 // Levy
-Route::group(['prefix' => 'levy'], function () {
+Route::group(['prefix' => 'levy' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [LevyController::class, 'index'])->name('levy.index');
     Route::post('store', [LevyController::class, 'store'])->name('levy.store');
     Route::get('/edit/{id}', [LevyController::class, 'edit'])->name('levy.edit');
@@ -400,7 +400,7 @@ Route::group(['prefix' => 'levy'], function () {
 });
 
 // Unit Type
-Route::group(['prefix' => 'unit_type'], function () {
+Route::group(['prefix' => 'unit_type' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [UnitTypeController::class, 'index'])->name('unit_type.index');
     Route::post('store', [UnitTypeController::class, 'store'])->name('unit_type.store');
     Route::get('/edit/{id}', [UnitTypeController::class, 'edit'])->name('unit_type.edit');
@@ -410,7 +410,7 @@ Route::group(['prefix' => 'unit_type'], function () {
 });
 
 // Unit Condition
-Route::group(['prefix' => 'unit_condition'], function () {
+Route::group(['prefix' => 'unit_condition' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [UnitConditionController::class, 'index'])->name('unit_condition.index');
     Route::post('store', [UnitConditionController::class, 'store'])->name('unit_condition.store');
     Route::get('/edit/{id}', [UnitConditionController::class, 'edit'])->name('unit_condition.edit');
@@ -420,7 +420,7 @@ Route::group(['prefix' => 'unit_condition'], function () {
 });
 
 // Unit Parking
-Route::group(['prefix' => 'unit_parking'], function () {
+Route::group(['prefix' => 'unit_parking' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [UnitParkingController::class, 'index'])->name('unit_parking.index');
     Route::post('store', [UnitParkingController::class, 'store'])->name('unit_parking.store');
     Route::get('/edit/{id}', [UnitParkingController::class, 'edit'])->name('unit_parking.edit');
@@ -430,7 +430,7 @@ Route::group(['prefix' => 'unit_parking'], function () {
 });
 
 // View
-Route::group(['prefix' => 'view'], function () {
+Route::group(['prefix' => 'view' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [ViewController::class, 'index'])->name('view.index');
     Route::post('store', [ViewController::class, 'store'])->name('view.store');
     Route::get('/edit/{id}', [ViewController::class, 'edit'])->name('view.edit');
@@ -440,7 +440,7 @@ Route::group(['prefix' => 'view'], function () {
 });
 
 // Business Activity
-Route::group(['prefix' => 'business_activity'], function () {
+Route::group(['prefix' => 'business_activity' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [BusinessActivityController::class, 'index'])->name('business_activity.index');
     Route::post('store', [BusinessActivityController::class, 'store'])->name('business_activity.store');
     Route::get('/edit/{id}', [BusinessActivityController::class, 'edit'])->name('business_activity.edit');
@@ -450,7 +450,7 @@ Route::group(['prefix' => 'business_activity'], function () {
 });
 
 // Live With
-Route::group(['prefix' => 'live_with'], function () {
+Route::group(['prefix' => 'live_with' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [LiveWithController::class, 'index'])->name('live_with.index');
     Route::post('store', [LiveWithController::class, 'store'])->name('live_with.store');
     Route::get('/edit/{id}', [LiveWithController::class, 'edit'])->name('live_with.edit');
@@ -460,7 +460,7 @@ Route::group(['prefix' => 'live_with'], function () {
 });
 
 // Enquiry Status
-Route::group(['prefix' => 'enquiry_status'], function () {
+Route::group(['prefix' => 'enquiry_status' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [EnquiryStatusController::class, 'index'])->name('enquiry_status.index');
     Route::post('store', [EnquiryStatusController::class, 'store'])->name('enquiry_status.store');
     Route::get('/edit/{id}', [EnquiryStatusController::class, 'edit'])->name('enquiry_status.edit');
@@ -470,7 +470,7 @@ Route::group(['prefix' => 'enquiry_status'], function () {
 });
 
 // Enquiry Request Status
-Route::group(['prefix' => 'enquiry_request_status'], function () {
+Route::group(['prefix' => 'enquiry_request_status' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [EnquiryRequestStatusController::class, 'index'])->name('enquiry_request_status.index');
     Route::post('store', [EnquiryRequestStatusController::class, 'store'])->name('enquiry_request_status.store');
     Route::get('/edit/{id}', [EnquiryRequestStatusController::class, 'edit'])->name('enquiry_request_status.edit');
@@ -480,7 +480,7 @@ Route::group(['prefix' => 'enquiry_request_status'], function () {
 });
 
 // Floors
-Route::group(['prefix' => 'floors'], function () {
+Route::group(['prefix' => 'floors' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [FloorController::class, 'index'])->name('floor.index');
     Route::get('/create', [FloorController::class, 'create'])->name('floor.create');
     Route::post('/floor_single', [FloorController::class, 'floor_single'])->name('floor.floor_single');
@@ -493,7 +493,7 @@ Route::group(['prefix' => 'floors'], function () {
 });
 
 // Units
-Route::group(['prefix' => 'units'], function () {
+Route::group(['prefix' => 'units' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [UnitController::class, 'index'])->name('unit.index');
     Route::get('/create', [UnitController::class, 'create'])->name('unit.create');
     Route::post('/unit_single', [UnitController::class, 'unit_single'])->name('unit.unit_single');
@@ -510,7 +510,7 @@ Route::group(['prefix' => 'units'], function () {
 ################################################## Start Propert Management ###########################################
 
 // Property Management
-Route::group(['prefix' => 'property_management'], function () {
+Route::group(['prefix' => 'property_management' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [PropertyManagementController::class, 'index'])->name('property_management.index');
     Route::get('/create', [PropertyManagementController::class, 'create'])->name('property_management.create');
     Route::post('store', [PropertyManagementController::class, 'store'])->name('property_management.store');
@@ -523,7 +523,7 @@ Route::group(['prefix' => 'property_management'], function () {
 });
 
 // Block Management
-Route::group(['prefix' => 'block_management'], function () {
+Route::group(['prefix' => 'block_management' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [BlockManagementController::class, 'index'])->name('block_management.index');
     Route::get('/create', [BlockManagementController::class, 'create'])->name('block_management.create');
     Route::post('store', [BlockManagementController::class, 'store'])->name('block_management.store');
@@ -537,7 +537,7 @@ Route::group(['prefix' => 'block_management'], function () {
 
 // Floors Management
 Route::get('/search_master', [EnquiryController::class, 'search_master'])->name('search_master');
-Route::group(['prefix' => 'floor_management'], function () {
+Route::group(['prefix' => 'floor_management' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [FloorManagementController::class, 'index'])->name('floor_management.index');
     Route::get('/create', [FloorManagementController::class, 'create'])->name('floor_management.create');
     Route::post('store', [FloorManagementController::class, 'store'])->name('floor_management.store');
@@ -551,7 +551,7 @@ Route::group(['prefix' => 'floor_management'], function () {
 });
 
 // Units Management
-Route::group(['prefix' => 'unit_management'], function () {
+Route::group(['prefix' => 'unit_management' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [UnitManagementController::class, 'index'])->name('unit_management.index');
     Route::get('/create-new', [UnitManagementController::class, 'create_new'])->name('unit_management.create_new');
     Route::get('/create', [UnitManagementController::class, 'create'])->name('unit_management.create');
@@ -567,7 +567,7 @@ Route::group(['prefix' => 'unit_management'], function () {
     Route::get('get_floors_by_block_id/{id}', [UnitManagementController::class, 'get_floors_by_block_id'])->name('unit_management.get_floors_by_block_id');
     Route::get('get_units_by_floor_id/{floor_id}/{block_id}/{property_id}', [UnitManagementController::class, 'get_units_by_floor_id'])->name('unit_management.get_units_by_floor_id');
 });
-Route::group(['prefix' => 'rent_price_list'], function () {
+Route::group(['prefix' => 'rent_price_list' , 'middleware' => 'auth:web'], function () {
     Route::get('/', [RentPriceListController::class, 'index'])->name('rent_price.index');
     Route::get('/create', [RentPriceListController::class, 'create'])->name('rent_price.create');
     Route::get('/edit/{id}', [RentPriceListController::class, 'edit'])->name('rent_price.edit');
@@ -597,7 +597,7 @@ Route::group(['prefix' => 'rent_price_list'], function () {
 // });
 
 // Tenants Management
-Route::group(['prefix' => 'tenant'], function () {
+Route::group(['prefix' => 'tenant' , 'middleware' => 'auth:web'], function () {
     Route::get('/', [TenantController::class, 'index'])->name('tenant.index');
     Route::get('/create', [TenantController::class, 'create'])->name('tenant.create');
     Route::post('store', [TenantController::class, 'store'])->name('tenant.store');
@@ -611,7 +611,7 @@ Route::group(['prefix' => 'tenant'], function () {
 });
 // Enquiry Management
 
-Route::group(['prefix' => 'proposal'], function () {
+Route::group(['prefix' => 'proposal' , 'middleware' => 'auth:web'], function () {
     Route::get('/', [ProposalController::class, 'index'])->name('proposal.index');
     Route::get('/create', [ProposalController::class, 'create'])->name('proposal.create');
     Route::post('store', [ProposalController::class, 'store'])->name('proposal.store');
@@ -637,7 +637,7 @@ Route::group(['prefix' => 'proposal'], function () {
 });
 
 // Booking Management
-Route::group(['prefix' => 'booking'], function () {
+Route::group(['prefix' => 'booking' , 'middleware' => 'auth:web'], function () {
     Route::get('/', [BookingController::class, 'index'])->name('booking.index');
     Route::get('/create', [BookingController::class, 'create'])->name('booking.create');
     Route::post('store', [BookingController::class, 'store'])->name('booking.store');
@@ -667,7 +667,7 @@ Route::group(['prefix' => 'booking'], function () {
     // Route::get('get_units_by_floor_id/{floor_id}/{block_id}/{property_id}', [EnquiryController::class, 'get_units_by_floor_id'])->name('enquiry.get_units_by_floor_id');
 
 });
-Route::group(['prefix' => 'termination'], function () {
+Route::group(['prefix' => 'termination' , 'middleware' => 'auth:web'], function () {
     Route::get('/', [TerminationController::class, 'index'])->name('termination.index');
     Route::get('/add_request/{id}', [TerminationController::class, 'create'])->name('termination.add');
     Route::post('/add_request', [TerminationController::class, 'store'])->name('termination.store');
@@ -677,13 +677,13 @@ Route::group(['prefix' => 'termination'], function () {
     Route::patch('/update_request/{id}', [TerminationController::class, 'update'])->name('termination.update');
     Route::get('/delete', [TerminationController::class, 'delete'])->name('termination.delete');
 });
-Route::group(['prefix' => 'renewal'], function () {
+Route::group(['prefix' => 'renewal' , 'middleware' => 'auth:web'], function () {
     Route::get('/{id}', [TerminationController::class, 'renewal'])->name('renewal.create');
     Route::post('/store/{id}', [TerminationController::class, 'renewal_update'])->name('renewal.update');
 });
 
 // Agreement Management
-Route::group(['prefix' => 'agreement'], function () {
+Route::group(['prefix' => 'agreement' , 'middleware' => 'auth:web'], function () {
     Route::get('/', [AgreementController::class, 'index'])->name('agreement.index');
     Route::get('/create', [AgreementController::class, 'create'])->name('agreement.create');
     Route::post('store', [AgreementController::class, 'store'])->name('agreement.store');
@@ -717,7 +717,7 @@ Route::group(['prefix' => 'agreement'], function () {
 Route::get('/general_view_image', [EnquiryController::class, 'general_view_image'])->name('general_image_view');
 Route::get('/general_list_view', [EnquiryController::class, 'general_list_view'])->name('general_list_view');
 // Enquiry Management
-Route::group(['prefix' => 'enquiry'], function () {
+Route::group(['prefix' => 'enquiry' , 'middleware' => 'auth:web'], function () {
     Route::get('/', [EnquiryController::class, 'index'])->name('enquiry.index');
     Route::get('/create', [EnquiryController::class, 'create'])->name('enquiry.create');
     Route::get('/create_with_select_unit', [EnquiryController::class, 'create_with_select_unit'])->name('enquiry.create_with_select_unit');
@@ -750,7 +750,7 @@ Route::get('/general_check_property', [EnquiryController::class, 'general_check_
 ################################################## End Facility Master #############################################
 
 // Departments
-Route::group(['prefix' => 'department'], function () {
+Route::group(['prefix' => 'department' , 'middleware' => 'auth:web'], function () {
     Route::get('/', [DepartmentController::class, 'index'])->name('department.index');
     Route::post('store', [DepartmentController::class, 'store'])->name('department.store');
     Route::get('/edit/{id}', [DepartmentController::class, 'edit'])->name('department.edit');
@@ -760,7 +760,7 @@ Route::group(['prefix' => 'department'], function () {
 });
 
 // Employee Type
-Route::group(['prefix' => 'employee_type'], function () {
+Route::group(['prefix' => 'employee_type' , 'middleware' => 'auth:web'], function () {
     Route::get('/', [EmployeeTypeController::class, 'index'])->name('employee_type.index');
     Route::post('store', [EmployeeTypeController::class, 'store'])->name('employee_type.store');
     Route::get('/edit/{id}', [EmployeeTypeController::class, 'edit'])->name('employee_type.edit');
@@ -770,7 +770,7 @@ Route::group(['prefix' => 'employee_type'], function () {
 });
 
 // Employee
-Route::group(['prefix' => 'employees'], function () {
+Route::group(['prefix' => 'employees' , 'middleware' => 'auth:web'], function () {
     Route::get('/', [EmployeeController::class, 'index'])->name('employee.index');
     Route::get('/create', [EmployeeController::class, 'create'])->name('employee.create');
     Route::post('store', [EmployeeController::class, 'store'])->name('employee.store');
@@ -781,7 +781,7 @@ Route::group(['prefix' => 'employees'], function () {
 });
 
 // Agent
-Route::group(['prefix' => 'agent'], function () {
+Route::group(['prefix' => 'agent' , 'middleware' => 'auth:web'], function () {
     Route::get('/', [AgentController::class, 'index'])->name('agent.index');
     Route::get('/create', [AgentController::class, 'create'])->name('agent.create');
     Route::post('store', [AgentController::class, 'store'])->name('agent.store');
@@ -793,7 +793,7 @@ Route::group(['prefix' => 'agent'], function () {
 });
 
 // Complaint Cataegory
-Route::group(['prefix' => 'complaint_category'], function () {
+Route::group(['prefix' => 'complaint_category' , 'middleware' => 'auth:web'], function () {
     Route::get('/', [ComplaintCategoryController::class, 'index'])->name('complaint_category.index');
     Route::get('/create', [ComplaintCategoryController::class, 'create'])->name('complaint_category.create');
     Route::post('store', [ComplaintCategoryController::class, 'store'])->name('complaint_category.store');
@@ -804,7 +804,7 @@ Route::group(['prefix' => 'complaint_category'], function () {
 });
 
 // Complaint
-Route::group(['prefix' => 'main_complaint'], function () {
+Route::group(['prefix' => 'main_complaint' , 'middleware' => 'auth:web'], function () {
     Route::get('/', [MainComplaintController::class, 'index'])->name('main_complaint.index');
     Route::get('/create', [MainComplaintController::class, 'create'])->name('main_complaint.create');
     Route::post('store', [MainComplaintController::class, 'store'])->name('main_complaint.store');
@@ -815,7 +815,7 @@ Route::group(['prefix' => 'main_complaint'], function () {
 });
 
 // Work Status
-Route::group(['prefix' => 'work_status'], function () {
+Route::group(['prefix' => 'work_status' , 'middleware' => 'auth:web'], function () {
     Route::get('/', [WorkStatusController::class, 'index'])->name('work_status.index');
     Route::get('/create', [WorkStatusController::class, 'create'])->name('work_status.create');
     Route::post('store', [WorkStatusController::class, 'store'])->name('work_status.store');
@@ -826,7 +826,7 @@ Route::group(['prefix' => 'work_status'], function () {
 });
 
 // Asset Group
-Route::group(['prefix' => 'asset_group'], function () {
+Route::group(['prefix' => 'asset_group' , 'middleware' => 'auth:web'], function () {
     Route::get('/', [AssetGroupController::class, 'index'])->name('asset_group.index');
     Route::get('/create', [AssetGroupController::class, 'create'])->name('asset_group.create');
     Route::post('store', [AssetGroupController::class, 'store'])->name('asset_group.store');
@@ -837,7 +837,7 @@ Route::group(['prefix' => 'asset_group'], function () {
 });
 
 // Priority
-Route::group(['prefix' => 'priority'], function () {
+Route::group(['prefix' => 'priority' , 'middleware' => 'auth:web'], function () {
     Route::get('/', [PriorityController::class, 'index'])->name('priority.index');
     Route::get('/create', [PriorityController::class, 'create'])->name('priority.create');
     Route::post('store', [PriorityController::class, 'store'])->name('priority.store');
@@ -848,7 +848,7 @@ Route::group(['prefix' => 'priority'], function () {
 });
 
 // Freezing
-Route::group(['prefix' => 'freezing'], function () {
+Route::group(['prefix' => 'freezing' , 'middleware' => 'auth:web'], function () {
     Route::get('/', [FreezingController::class, 'index'])->name('freezing.index');
     Route::get('/create', [FreezingController::class, 'create'])->name('freezing.create');
     Route::post('store', [FreezingController::class, 'store'])->name('freezing.store');
@@ -859,7 +859,7 @@ Route::group(['prefix' => 'freezing'], function () {
 });
 
 // Supplier
-Route::group(['prefix' => 'supplier'], function () {
+Route::group(['prefix' => 'supplier' , 'middleware' => 'auth:web'], function () {
     Route::get('/', [SupplierController::class, 'index'])->name('supplier.index');
     Route::get('/create', [SupplierController::class, 'create'])->name('supplier.create');
     Route::post('store', [SupplierController::class, 'store'])->name('supplier.store');
@@ -870,7 +870,7 @@ Route::group(['prefix' => 'supplier'], function () {
 });
 
 // Amc Providers
-Route::group(['prefix' => 'amc_providers'], function () {
+Route::group(['prefix' => 'amc_providers' , 'middleware' => 'auth:web'], function () {
     Route::get('/', [AMCProviderController::class, 'index'])->name('amc_provider.index');
     Route::get('/create', [AMCProviderController::class, 'create'])->name('amc_provider.create');
     Route::post('store', [AMCProviderController::class, 'store'])->name('amc_provider.store');
@@ -881,7 +881,7 @@ Route::group(['prefix' => 'amc_providers'], function () {
 });
 
 // Asset
-Route::group(['prefix' => 'asset'], function () {
+Route::group(['prefix' => 'asset' , 'middleware' => 'auth:web'], function () {
     Route::get('/', [AssetController::class, 'index'])->name('asset.index');
     Route::get('/create', [AssetController::class, 'create'])->name('asset.create');
     Route::post('store', [AssetController::class, 'store'])->name('asset.store');
@@ -900,7 +900,7 @@ Route::group(['prefix' => 'asset'], function () {
 ################################################## Start Property Reports #############################################
 
 // Schedules
-Route::group(['prefix' => 'schedules'], function () {
+Route::group(['prefix' => 'schedules' , 'middleware' => 'auth:web'], function () {
     Route::get('/', [ScheduleController::class, 'index'])->name('schedules.index');
     // Route::get('/create', [ScheduleController::class,'create'])->name('shedules.create');
     // Route::post('store', [ScheduleController::class,'store'])->name('shedules.store');
@@ -912,7 +912,7 @@ Route::group(['prefix' => 'schedules'], function () {
 });
 
 // Invoice
-Route::group(['prefix' => 'invoice'], function () {
+Route::group(['prefix' => 'invoice' , 'middleware' => 'auth:web'], function () {
     Route::post('/create', [InvoiceController::class, 'storeInvoice'])->name('invoice_generate.store');
     // Route::get('/', [ScheduleController::class,'create'])->name('invoice.index');
     Route::get('/all_invoices', [InvoiceController::class, 'index'])->name('invoices.all_invoices');
@@ -928,7 +928,7 @@ Route::group(['prefix' => 'invoice'], function () {
 });
 
 // Sales Return 
-Route::group(['prefix' => 'sales-return'], function () {
+Route::group(['prefix' => 'sales-return' , 'middleware' => 'auth:web'], function () {
     Route::post('/create', [InvoiceReturnController::class, 'storeInvoice'])->name('invoice_return_generate.store');
     Route::get('/get-tenant-invoices', [InvoiceReturnController::class, 'get_tenant_invoices'])->name('get.tenant.invoices');
     Route::get('/all_invoices', [InvoiceReturnController::class, 'index'])->name('invoices_return.all_invoices');
@@ -938,7 +938,7 @@ Route::group(['prefix' => 'sales-return'], function () {
     Route::post('/sales-return-store', [InvoiceReturnController::class, 'sales_return_store'])->name('sales_return.store');
 });
 // reports
-Route::group(['prefix' => 'property_reports'], function () {
+Route::group(['prefix' => 'property_reports' , 'middleware' => 'auth:web'], function () {
     Route::get('/tenant_contact_details', [ReportController::class, 'tenant_report'])->name('tenant_contact_details');
     Route::get('/occupancy_details', [ReportController::class, 'occupancy_details'])->name('occupancy_details');
     Route::get('/leased_expired_details', [ReportController::class, 'leased_expired_details'])->name('leased_expired_details');
@@ -946,7 +946,7 @@ Route::group(['prefix' => 'property_reports'], function () {
     Route::get('/tenant_financial_summary', [ReportController::class, 'tenant_financial_summary'])->name('tenant_financial_summary');
 });
 // Complaint
-Route::group(['prefix' => 'facility_transactions/complaint_registration'], function () {
+Route::group(['prefix' => 'facility_transactions/complaint_registration' , 'middleware' => 'auth:web'], function () {
     Route::get('/', [ComplaintRegisterController::class, 'index'])->name('complaint_registration');
     // Route::get('/open' , [ComplaintRegisterController::class , 'OpenComplaint'])->name('opened.complaint_registration');
     // Route::get('/freezed' , [ComplaintRegisterController::class , 'FreezedComplaintIndex'])->name('freezed.complaint_registration');
@@ -968,7 +968,7 @@ Route::group(['prefix' => 'facility_transactions/complaint_registration'], funct
 });
 
 // Complaint
-Route::group(['prefix' => 'facility_reports'], function () {
+Route::group(['prefix' => 'facility_reports' , 'middleware' => 'auth:web'], function () {
     Route::get('/open', [ComplaintRegisterController::class, 'OpenComplaint'])->name('facility_reports.open');
     Route::get('/freezed', [ComplaintRegisterController::class, 'FreezedComplaintIndex'])->name('facility_reports.freezed');
     Route::get('/closed', [ComplaintRegisterController::class, 'ClosedComplaintIndex'])->name('facility_reports.closed');
@@ -978,7 +978,7 @@ Route::group(['prefix' => 'facility_reports'], function () {
 // Route::group(['prefix'=> 'cards'], function () {
 //     Route::get('/', [CardsController::class,'index'])->name('cards.index');
 // });
-Route::group(['prefix' => 'receipts'], function () {
+Route::group(['prefix' => 'receipts' , 'middleware' => 'auth:web'], function () {
     Route::get('/', [ReceiptController::class, 'index'])->name('receipts.list');
     Route::get('/add_receipt/{id}', [ReceiptController::class, 'add_receipt'])->name('receipts.add_receipt_for_invoice');
     Route::get('/create', [ReceiptController::class, 'create'])->name('receipts.create');
@@ -1095,7 +1095,7 @@ Route::middleware([
 
 
 // Investment Management
-Route::group(['prefix' => 'investments'], function () {
+Route::group(['prefix' => 'investments' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [InvestmentController::class, 'investments_list'])->name('investment.index');
     Route::get('/create', [InvestmentController::class, 'create'])->name('investment.create');
     Route::post('store', [InvestmentController::class, 'store'])->name('investment.store');
@@ -1105,7 +1105,7 @@ Route::group(['prefix' => 'investments'], function () {
     Route::get('delete', [InvestmentController::class, 'delete'])->name('investment.delete');
 });
 // Investor Management
-Route::group(['prefix' => 'investors'], function () {
+Route::group(['prefix' => 'investors' ,'middleware' => 'auth:web'], function () {
     Route::get('/', [InvestorController::class, 'investors_list'])->name('investor.index');
     Route::get('/create', [InvestorController::class, 'create'])->name('investor.create');
     Route::post('store', [InvestorController::class, 'store'])->name('investor.store');
@@ -1119,7 +1119,7 @@ Route::group(['prefix' => 'investors'], function () {
 
 // --------------- Master ------------------------
 
-Route::group(['prefix' => 'room_reservation/master'], function () {
+Route::group(['prefix' => 'room_reservation/master' ,'middleware' => 'auth:web'], function () {
 
     // ------------------------ customer types ----------------------
     Route::group(['prefix' => 'customer', 'middleware' => 'auth:web'], function () {
@@ -1212,7 +1212,7 @@ Route::group(['prefix' => 'room_reservation/master'], function () {
 Route::group(['prefix' => 'room_reservation/booking', 'middleware' => 'auth:web'], function () {
 
     // ------------------------ room types ----------------------
-    Route::group(['prefix' => 'booking-room'], function () {
+    Route::group(['prefix' => 'booking-room','middleware' => 'auth:web'], function () {
         Route::get('book-now', [BookingRoomController::class, 'index'])->name('booking_room.book_now');
         Route::get('list', [BookingRoomController::class, 'list'])->name('booking_room.list');
         Route::get('check-in-page', [BookingRoomController::class, 'check_in_page'])->name('booking_room.check_in_page');

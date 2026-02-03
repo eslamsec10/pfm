@@ -51,7 +51,7 @@ class BlockManagementController extends Controller
         // $this->authorize('create_block');
 
         $main_block           = (new BlockManagement())->setConnection('tenant')->with('block')->findOrFail($id);
-        $property_managements = (new PropertyManagement())->setConnection('tenant')->forUser()->all();
+        $property_managements = (new PropertyManagement())->setConnection('tenant')->forUser()->get();
         $block_management     = (new BlockManagement())->setConnection('tenant')->pluck('block_id');
         // $block_management = $block_management->except($main_block->block->id);
         $blocks = Block::whereNotIn('id', $block_management)->get();

@@ -52,7 +52,7 @@ class InvoiceReturnController extends Controller
         }
         $invoices = $invoices_query->paginate();
         // dd($invoices);
-        $all_building    = PropertyManagement::forUser()->all();
+        $all_building    = PropertyManagement::forUser()->get();
         $tenants         = Tenant::get();
         $unit_management = UnitManagement::with(['property_unit_management', 'block_unit_management', 'floor_unit_management', 'unit_management_main', 'unit_description'])->get();
         return view('admin-views.property_reports.sales_return.invoices', compact('invoices', 'unit_management', 'all_building', 'tenants'));

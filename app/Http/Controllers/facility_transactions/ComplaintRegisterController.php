@@ -81,7 +81,7 @@ class ComplaintRegisterController extends Controller
         $priorities = collect(DB::connection('tenant')->select('SELECT * FROM priorities'));
        
         $departments     = collect(DB::connection('tenant')->select('SELECT * FROM departments')); //;Department::get();
-        $all_building    = (new PropertyManagement())->setConnection('tenant')->forUser()->all();
+        $all_building    = (new PropertyManagement())->setConnection('tenant')->forUser()->get();
         $unit_management = (new UnitManagement())->setConnection('tenant')->with(['property_unit_management', 'block_unit_management', 'block_unit_management.block',
             'floor_unit_management', 'floor_unit_management.floor_management_main', 'unit_management_main', 'unit_description'])->get();
 
@@ -102,7 +102,7 @@ class ComplaintRegisterController extends Controller
             $ComplaintRegistration = (new ComplaintRegistration())->setConnection('tenant')->where('status', 'open')->whereIn('id', $ids)->delete();
             return back()->with('success', __('general.deleted_successfully'));
         }
-        $all_building    = (new PropertyManagement())->setConnection('tenant')->forUser()->all();
+        $all_building    = (new PropertyManagement())->setConnection('tenant')->forUser()->get();
         $unit_management = (new UnitManagement())->setConnection('tenant')->with(['property_unit_management', 'block_unit_management', 'block_unit_management.block',
             'floor_unit_management', 'floor_unit_management.floor_management_main', 'unit_management_main', 'unit_description'])->get();
 
@@ -135,7 +135,7 @@ class ComplaintRegisterController extends Controller
         $departments     = collect(DB::connection('tenant')->select('SELECT * FROM departments')); //;Department::get();
         $tenants         = collect(DB::connection('tenant')->select('SELECT id , name FROM tenants ORDER BY created_at DESC'));
         $priorities      = collect(DB::connection('tenant')->select('SELECT * FROM priorities'));
-        $all_building    = (new PropertyManagement())->setConnection('tenant')->forUser()->all();
+        $all_building    = (new PropertyManagement())->setConnection('tenant')->forUser()->get();
         $unit_management = (new UnitManagement())->setConnection('tenant')->with(['property_unit_management', 'block_unit_management', 'block_unit_management.block',
             'floor_unit_management', 'floor_unit_management.floor_management_main', 'unit_management_main', 'unit_description'])->get();
 
@@ -163,7 +163,7 @@ class ComplaintRegisterController extends Controller
         $departments     = collect(DB::connection('tenant')->select('SELECT * FROM departments')); //;Department::get();
         $tenants         = collect(DB::connection('tenant')->select('SELECT id , name FROM tenants ORDER BY created_at DESC'));
         $priorities      = collect(DB::connection('tenant')->select('SELECT * FROM priorities'));
-        $all_building    = (new PropertyManagement())->setConnection('tenant')->forUser()->all();
+        $all_building    = (new PropertyManagement())->setConnection('tenant')->forUser()->get();
         $unit_management = (new UnitManagement())->setConnection('tenant')->with(['property_unit_management', 'block_unit_management', 'block_unit_management.block',
             'floor_unit_management', 'floor_unit_management.floor_management_main', 'unit_management_main', 'unit_description'])->get();
 

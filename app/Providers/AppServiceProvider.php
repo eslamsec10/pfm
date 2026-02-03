@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Tenant;
 use App\Models\Company;
 use App\Models\UnitManagement;
+use App\Observers\TenantObserver;
 use App\Models\PropertyManagement;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Pagination\Paginator;
@@ -31,6 +33,7 @@ class AppServiceProvider extends ServiceProvider
         Paginator::useBootstrapFour();
         PropertyManagement::observe(PropertyManagementObserver::class);
         UnitManagement::observe(UnitManagementObserver::class);
+        Tenant::observe(TenantObserver::class);
 
 
     }

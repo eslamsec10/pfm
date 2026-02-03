@@ -134,21 +134,7 @@ class TenantController extends Controller
 
             $tenant = (new Tenant())->setConnection('tenant')->storeTenant($validatedData); 
             // $company = auth()->user() ?? (new User())->setConnection()->first();
-            $company = (new Company())->setConnection('tenant')->where('id', auth()->user()->company_id)->first() ?? (new Company())->setConnection('tenant')->first();
-            $group   = (new Groups())->setConnection('tenant')->where('id', 49)->first();
-            $ledger  = (new MainLedger())->setConnection('tenant')->create([
-                'code'                => ($tenant->type == 'individual') ? $tenant->nick_name : $tenant->company_name,
-                'name'                => ($tenant->type == 'individual') ? $tenant->name : $tenant->company_name,
-                'currency'            => $company->currency_code,
-                'country_id'          => $company->countryid,
-                'group_id'            => $group->id,
-                'main_id'             => $tenant->id,
-                'is_taxable'          => $group->is_taxable ?: 0,
-                'vat_applicable_from' => $group->vat_applicable_from ?? null,
-                'tax_rate'            => $group->tax_rate ?: 0,
-                'tax_applicable'      => $group->tax_applicable ?: 0,
-                'status'              => 'active',
-            ]);
+        
 
             DB::commit();
             return redirect()->route('tenant.index')->with('success', __('property_master.added_successfully'));
@@ -235,20 +221,20 @@ class TenantController extends Controller
 
             $tenant = (new Tenant())->setConnection('tenant')->storeTenant($validatedData);
             // $company = auth()->user() ?? (new User())->setConnection('tenant')->first();
-            $company = (new Company())->setConnection('tenant')->where('id', auth()->user()?->company_id)->first() ?? (new Company())->setConnection('tenant')->first();
-            $group   = (new Groups())->setConnection('tenant')->where('id', 49)->first();
-            $ledger  = (new MainLedger())->setConnection('tenant')->create([
-                'code'                => ($tenant->type == 'individual') ? $tenant->nick_name : $tenant->group_company_name,
-                'name'                => ($tenant->type == 'individual') ? $tenant->name : $tenant->company_name,
-                'currency'            => $company->currency_code,
-                'country_id'          => $company->countryid,
-                'group_id'            => $group->id,
-                'is_taxable'          => $group->is_taxable ?: 0,
-                'vat_applicable_from' => $group->vat_applicable_from ?? null,
-                'tax_rate'            => $group->tax_rate ?: 0,
-                'tax_applicable'      => $group->tax_applicable ?: 0,
-                'status'              => 'active',
-            ]);
+            // $company = (new Company())->setConnection('tenant')->where('id', auth()->user()?->company_id)->first() ?? (new Company())->setConnection('tenant')->first();
+            // $group   = (new Groups())->setConnection('tenant')->where('id', 49)->first();
+            // $ledger  = (new MainLedger())->setConnection('tenant')->create([
+            //     'code'                => ($tenant->type == 'individual') ? $tenant->nick_name : $tenant->group_company_name,
+            //     'name'                => ($tenant->type == 'individual') ? $tenant->name : $tenant->company_name,
+            //     'currency'            => $company->currency_code,
+            //     'country_id'          => $company->countryid,
+            //     'group_id'            => $group->id,
+            //     'is_taxable'          => $group->is_taxable ?: 0,
+            //     'vat_applicable_from' => $group->vat_applicable_from ?? null,
+            //     'tax_rate'            => $group->tax_rate ?: 0,
+            //     'tax_applicable'      => $group->tax_applicable ?: 0,
+            //     'status'              => 'active',
+            // ]);
 
             DB::commit();
             return redirect()->back()->with('success', __('general.added_successfully'));

@@ -14,6 +14,7 @@ use App\Models\BlockManagement;
 use App\Models\CountryMaster;
 use App\Models\Floor;
 use App\Models\FloorManagement;
+use App\Models\hierarchy\MainLedger;
 use App\Models\PropertyManagement;
 use App\Models\ServiceMaster;
 use App\Models\Tenant;
@@ -136,26 +137,14 @@ class ContractImportController extends Controller
         session([
             'agreement_import_preview' => $validRows,
             'agreement_import_skipped' => $skippedRows,
-        ]);
-        // dd($validRows);
+        ]); 
         return view(
             'import_excel.agreement_preview',
             compact('validRows', 'skippedRows')
         );
     }
 
-    // public function preview(Request $request)
-    // {
-    //     $request->validate([
-    //         'file' => 'required|mimes:xlsx,csv',
-    //     ]);
-
-    //     $data = Excel::toCollection(null, $request->file('file'))->first();
-    //     dd($data);
-    //     session(['agreement_import_preview' => $data]);
-
-    //     return view('import_excel.agreement_preview', compact('data'));
-    // }
+    
     public function confirm_agreement(Request $request)
     {
         $data = session('agreement_import_preview');
@@ -187,25 +176,7 @@ class ContractImportController extends Controller
                         $normalizedRow[$col] = normalizeDate($normalizedRow[$col]);
                     }
                 }
-                // dd($normalizedRow);
-                // $dateColumns = [
-                //     'date',
-                //     'lease_start_date',
-                //     'lease_end_date',
-                //     'rent_start_date',
-                //     'rent_end_date',
-                // ];
-
-                // foreach ($dateColumns as $col) {
-                //     if (!empty($normalizedRow[$col]) && is_numeric($normalizedRow[$col])) {
-                //         try {
-                //             $phpDate = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject(
-                //                 $normalizedRow[$col]
-                //             );
-                //             $normalizedRow[$col] = $phpDate->format('Y-m-d');
-                //         } catch (\Exception $e) {}
-                //     }
-                // } 
+              
                 $validator = Validator::make($normalizedRow, [
                     'lease_agreement_no' => 'required',
                     'tenant_name'        => 'required',
@@ -225,48 +196,7 @@ class ContractImportController extends Controller
                 if ($validator->fails()) {
                     continue;
                 }
-                // dd($normalizedRow);
-                // try {
-                //     foreach ($data->skip(1) as $rowIndex => $row) {
-
-                //         // $normalizedRow = $this->normalizeRow(array_combine($data[0]->toArray(), $row->toArray()));
-
-                //         $normalizedRow = $this->normalizeRow(array_combine($data[0]->toArray(), $row->toArray()));
-                // dd($normalizedRow);
-                // $dateColumns = ['lease_start_date', 'lease_end_date', 'rent_start_date', 'rent_end_date', 'date'];
-
-                // foreach ($dateColumns as $col) {
-                //     if (! empty($normalizedRow[$col]) && is_numeric($normalizedRow[$col])) {
-                //         try {
-                //             $phpDate             = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($normalizedRow[$col]);
-                //             $normalizedRow[$col] = $phpDate->format('Y-m-d'); // أو 'Y-m-d H:i:s' لو عايز الوقت
-                //         } catch (\Exception $e) {
-                //             // لو فشل التحويل، سيترك القيمة كما هي وسيظهر خطأ Validation لاحقًا
-                //         }
-                //     }
-                // }
-                // $validator = Validator::make($normalizedRow, [
-                //     'lease_agreement_no'  => 'required',
-                //     'tenant_name'         => 'required',
-                //     'property_name'       => 'required',
-                //     'block_name'          => 'required',
-                //     'floor_name'          => 'required',
-                //     'unit'                => 'required',
-                //     'lease_start_date'    => 'required|date',
-                //     'lease_end_date'      => 'required|date',
-                //     'invoicing_frequency' => 'required', //Frequency
-                //     'rent_start_date'     => 'required|date',
-                //     'rent_end_date'       => 'required|date',
-                //     'currency'            => 'required',
-                //     'rent_per_month'      => 'required|numeric',
-                // ]);
-
-                // if ($validator->fails()) {
-                //     return redirect()->route('import_contract')
-                //         ->withErrors($validator)
-                //         ->withInput();
-                // }
-
+               
                 $country = CountryMaster::select('id', 'country_id', 'country_code')->first();
 
                 $tenant = Tenant::firstOrCreate(
@@ -327,21 +257,7 @@ class ContractImportController extends Controller
                     ]
                 );
 
-                // $rentModes = [
-                //     0 => ['select', 'select_rent_mode'],
-                //     1 => ['daily', 'per day'],
-                //     2 => ['monthly', 'per month'],
-                //     3 => ['bi_monthly', 'every two months', 'bimonthly'],
-                //     4 => ['quarterly', 'every 3 months'],
-                //     5 => ['half_yearly', 'semi annual', 'semi-annual'],
-                //     6 => ['yearly', 'annually', 'per year'],
-                // ];
-
-                // $excelValue     = strtolower(trim($normalizedRow['invoice_frequency'])); //Frequency
-                // // $excelValue     = strtolower(trim($normalizedRow['invoicing_frequency'])); //Frequency
-                // $paymentModeKey = collect($rentModes)->search(
-                //     fn($synonyms) => in_array($excelValue, array_map('strtolower', $synonyms))
-                // ) ?: 0;
+              
                 $rentModes = [
                     0 => ['select', 'select_rent_mode'],
                     1 => ['daily', 'per day'],
@@ -358,7 +274,7 @@ class ContractImportController extends Controller
                 });
 
                 $paymentModeKey = $paymentModeKey ?? 0;
-
+                $ledger = MainLedger::where('id' ,$unit_management->ledger_id )->select('id','name')->first();
                 $agreementUnit = AgreementUnits::updateOrCreate(
                     [
                         'agreement_id' => $agreement->id,
@@ -372,6 +288,7 @@ class ContractImportController extends Controller
                         'rent_amount'           => $normalizedRow['rent_per_month'],
                         'rent_mode'             => $paymentModeKey,
                         'total_net_rent_amount' => $normalizedRow['rent_per_month'],
+                        'rental_gl'             => ($ledger) ? $ledger->id : $normalizedRow['rental_income_ledger'],
                     ]
                 );
 

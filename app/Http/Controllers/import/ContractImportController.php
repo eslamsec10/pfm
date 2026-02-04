@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\import;
 
 use App\Exports\UnitManagementExport;
@@ -45,6 +46,7 @@ class ContractImportController extends Controller
         'Rent End Date'                       => 'rent_end_date',
         'Currency'                            => 'currency',
         'Rent per Month'                      => 'rent_per_month',
+        'Service Type'                        => 'service_type',
         'Service Frequency'                   => 'service_frequency',
         'Service Start Date'                  => 'service_start_date',
         'Service End Date'                    => 'service_end_date',
@@ -70,7 +72,7 @@ class ContractImportController extends Controller
 
     public function import_page(Request $request)
     {
- 
+
         $instructions = '
         <p>1. ' . ui_change('Download_the_file_format_and_fill_the_correct_Data.') . '</p>
         <p>2. ' . ui_change('you_can_download_the_example_file_to_understand_how_the_data_must_be_filled.') . '</p>
@@ -168,7 +170,7 @@ class ContractImportController extends Controller
                 if (! is_array($normalizedRow)) {
                     continue;
                 }
-            
+
                 $dateColumns = [
                     'date',
                     'lease_start_date',
@@ -264,18 +266,18 @@ class ContractImportController extends Controller
                 //         ->withErrors($validator)
                 //         ->withInput();
                 // }
- 
+
                 $country = CountryMaster::select('id', 'country_id', 'country_code')->first();
- 
+
                 $tenant = Tenant::firstOrCreate(
                     ['name' => trim($normalizedRow['tenant_name'])],
                     ['type' => 'individual', 'country_id' => $country->id]
-                ); 
+                );
                 $property = PropertyManagement::firstOrCreate(
                     ['name' => $normalizedRow['property_name']],
                     ['code' => $normalizedRow['prop_code'] ?? null]
                 );
- 
+
                 $blockName = Block::firstOrCreate(
                     ['name' => $normalizedRow['block_name'], 'code' => $normalizedRow['block_code'] ?? null]
                 );
@@ -283,7 +285,7 @@ class ContractImportController extends Controller
                     'block_id'               => $blockName->id,
                     'property_management_id' => $property->id,
                 ]);
- 
+
                 $floorName = Floor::firstOrCreate(
                     ['name' => $normalizedRow['floor_name'], 'code' => $normalizedRow['floor_code'] ?? null]
                 );
@@ -292,7 +294,7 @@ class ContractImportController extends Controller
                     'block_management_id'    => $block->id,
                     'property_management_id' => $property->id,
                 ]);
- 
+
                 $unit = Unit::firstOrCreate(
                     ['unit_no' => $normalizedRow['unit']],
                     ['name' => $normalizedRow['unit'], 'code' => $normalizedRow['unit']]
@@ -304,7 +306,7 @@ class ContractImportController extends Controller
                     'block_management_id'    => $block->id,
                     'floor_management_id'    => $floor->id,
                 ]);
- 
+
                 $agreement = Agreement::updateOrCreate(
                     ['agreement_no' => $normalizedRow['lease_agreement_no']],
                     [
@@ -316,7 +318,7 @@ class ContractImportController extends Controller
                         'booking_status' => 'agreement',
                     ]
                 );
- 
+
                 AgreementDetails::updateOrCreate(
                     ['agreement_id' => $agreement->id],
                     [
@@ -324,7 +326,7 @@ class ContractImportController extends Controller
                         'period_to'   => $normalizedRow['lease_end_date'],
                     ]
                 );
- 
+
                 // $rentModes = [
                 //     0 => ['select', 'select_rent_mode'],
                 //     1 => ['daily', 'per day'],
@@ -341,22 +343,21 @@ class ContractImportController extends Controller
                 //     fn($synonyms) => in_array($excelValue, array_map('strtolower', $synonyms))
                 // ) ?: 0;
                 $rentModes = [
-    0 => ['select', 'select_rent_mode'],
-    1 => ['daily', 'per day'],
-    2 => ['monthly', 'per month'],
-    3 => ['bi_monthly', 'every two months', 'bimonthly'],
-    4 => ['quarterly', 'every 3 months', 'quarter'],
-    5 => ['half_yearly', 'semi annual', 'semi-annual', 'half yearly'],
-    6 => ['yearly', 'annually', 'per year', 'year'],
-];
+                    0 => ['select', 'select_rent_mode'],
+                    1 => ['daily', 'per day'],
+                    2 => ['monthly', 'per month'],
+                    3 => ['bi_monthly', 'every two months', 'bimonthly'],
+                    4 => ['quarterly', 'every 3 months', 'quarter'],
+                    5 => ['half_yearly', 'semi annual', 'semi-annual', 'half yearly'],
+                    6 => ['yearly', 'annually', 'per year', 'year'],
+                ];
 
-                $excelValue = strtolower(trim($normalizedRow['invoice_frequency'] ?? ''));  
-$paymentModeKey = collect($rentModes)->search(function($synonyms) use ($excelValue) {
-    return in_array($excelValue, array_map('strtolower', $synonyms));
-});
+                $excelValue = strtolower(trim($normalizedRow['invoice_frequency'] ?? ''));
+                $paymentModeKey = collect($rentModes)->search(function ($synonyms) use ($excelValue) {
+                    return in_array($excelValue, array_map('strtolower', $synonyms));
+                });
 
-// لو ما اتعرفش، خلي default 0
-$paymentModeKey = $paymentModeKey ?? 0;
+                $paymentModeKey = $paymentModeKey ?? 0;
 
                 $agreementUnit = AgreementUnits::updateOrCreate(
                     [
@@ -375,7 +376,7 @@ $paymentModeKey = $paymentModeKey ?? 0;
                 );
 
                 if (! empty($normalizedRow['service_start_date'])) {
-                    $chargeMode = ServiceMaster::first();
+                    $chargeMode = ServiceMaster::where('name' ,'LIKE','%'.$normalizedRow['service_type'].'%')->firstOrCreate();
                     AgreementUnitsService::updateOrCreate(
                         ['agreement_unit_id' => $agreementUnit->id],
                         [

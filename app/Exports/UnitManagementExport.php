@@ -1,9 +1,11 @@
 <?php
+
 namespace App\Exports;
 
 use App\Models\Company;
 use App\Models\ServiceMaster;
 use App\Models\UnitManagement;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Events\AfterSheet;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -18,6 +20,8 @@ class UnitManagementExport implements FromCollection, WithHeadings, WithEvents
      */
     protected $services;
     protected $currency;
+    protected $unitLedgers = [];
+    protected $service_ledger;
     protected $invoice_frequency = [
         1 => 'daily',
         2 => 'monthly',
@@ -26,15 +30,7 @@ class UnitManagementExport implements FromCollection, WithHeadings, WithEvents
         5 => 'half_yearly',
         6 => 'yearly',
     ];
-    // protected $invoice_frequency = [
-    //     0 => ['select', 'select_rent_mode'],
-    //     1 => ['daily', 'per day'],
-    //     2 => ['monthly', 'per month'],
-    //     3 => ['bi_monthly', 'every two months', 'bimonthly'],
-    //     4 => ['quarterly', 'every 3 months'],
-    //     5 => ['half_yearly', 'semi annual', 'semi-annual'],
-    //     6 => ['yearly', 'annually', 'per year'],
-    // ];
+
     public function __construct()
     {
         $this->services = ServiceMaster::pluck('name')->toArray();
@@ -48,8 +44,14 @@ class UnitManagementExport implements FromCollection, WithHeadings, WithEvents
             'block_unit_management.block:id,name,code',
             'floor_unit_management:id,floor_id',
             'floor_unit_management.floor_management_main:id,name,code',
-            'unit_management_main:id,name,code'
+            'unit_management_main:id,name,code',
+            'unit_ledger:id,unit_management_id,name,group_id,property_management_id'
         )->get()->map(function ($unit) {
+
+            $ledgerName = $unit->unit_ledger
+                ? $unit->unit_ledger?->name
+                : ' ';
+                Log::info( $unit->unit_ledger);
             return [
                 '',
                 '',
@@ -67,7 +69,7 @@ class UnitManagementExport implements FromCollection, WithHeadings, WithEvents
                 '',
                 '',
                 '',
-                '',
+                $ledgerName,
                 '',
                 '',
                 '',
@@ -108,6 +110,7 @@ class UnitManagementExport implements FromCollection, WithHeadings, WithEvents
             'Rent End Date',
             'Currency',
             'Rent per Month',
+            'Service Type',
             'Service Frequency',
             'Service Start Date',
             'Service End Date',
@@ -122,58 +125,59 @@ class UnitManagementExport implements FromCollection, WithHeadings, WithEvents
         ];
     }
 
-  public function registerEvents(): array
-{
-    return [
-        AfterSheet::class => function (AfterSheet $event) {
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
 
-            $sheet = $event->sheet->getDelegate();
+                $sheet   = $event->sheet->getDelegate();
+                $lastRow = $sheet->getHighestRow();
 
-            // =========================
-            // Invoice Frequency (O = 15)
-            // =========================
-            $invoiceColumn  = 'O';
-            $lastRow        = $sheet->getHighestRow();
-            $frequencies    = array_values($this->invoice_frequency);
-            $frequencyString = implode(',', $frequencies);
+                // =========================
+                // Invoice Frequency (O)
+                // =========================
+                $invoiceColumn   = 'O';
+                $frequencies     = array_values($this->invoice_frequency);
+                $frequencyString = implode(',', $frequencies);
 
-            for ($row = 2; $row <= $lastRow; $row++) {
-                $sheet->getCell($invoiceColumn . $row)
-                    ->getDataValidation()
-                    ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
-                    ->setErrorStyle(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::STYLE_STOP)
-                    ->setAllowBlank(true)
-                    ->setShowInputMessage(true)
-                    ->setShowErrorMessage(true)
-                    ->setShowDropDown(true)
-                    ->setErrorTitle('Invalid input')
-                    ->setError('Value is not in list')
-                    ->setFormula1('"' . $frequencyString . '"');
-            }
+                for ($row = 2; $row <= $lastRow; $row++) {
+                    $sheet->getCell($invoiceColumn . $row)
+                        ->getDataValidation()
+                        ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
+                        ->setAllowBlank(true)
+                        ->setShowDropDown(true)
+                        ->setFormula1('"' . $frequencyString . '"');
+                }
 
-            // =========================
-            // Service Frequency (T = 20)
-            // =========================
-            $serviceColumn  = 'T';
-            $servicesString = implode(',', $this->services);
+                // =========================
+                // Service Type (S) -> services
+                // =========================
+                $serviceTypeColumn = 'T';
+                $servicesString    = implode(',', $this->services);
 
-            for ($row = 2; $row <= $lastRow; $row++) {
-                $sheet->getCell($serviceColumn . $row)
-                    ->getDataValidation()
-                    ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
-                    ->setErrorStyle(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::STYLE_STOP)
-                    ->setAllowBlank(true)
-                    ->setShowInputMessage(true)
-                    ->setShowErrorMessage(true)
-                    ->setShowDropDown(true)
-                    ->setErrorTitle('Invalid input')
-                    ->setError('Value is not in list')
-                    ->setFormula1('"' . $servicesString . '"');
-            }
+                for ($row = 2; $row <= $lastRow; $row++) {
+                    $sheet->getCell($serviceTypeColumn . $row)
+                        ->getDataValidation()
+                        ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
+                        ->setAllowBlank(true)
+                        ->setShowDropDown(true)
+                        ->setFormula1('"' . $servicesString . '"');
+                }
 
-        },
-    ];
-}
+                // =========================
+                // Service Frequency (U)
+                // =========================
+                $serviceFreqColumn = 'U';
 
-
+                for ($row = 2; $row <= $lastRow; $row++) {
+                    $sheet->getCell($serviceFreqColumn . $row)
+                        ->getDataValidation()
+                        ->setType(\PhpOffice\PhpSpreadsheet\Cell\DataValidation::TYPE_LIST)
+                        ->setAllowBlank(true)
+                        ->setShowDropDown(true)
+                        ->setFormula1('"' . $frequencyString . '"');
+                }
+            },
+        ];
+    }
 }

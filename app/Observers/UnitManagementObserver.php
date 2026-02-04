@@ -8,7 +8,7 @@ use App\Models\UnitManagement;
 use App\Models\hierarchy\CostCenter;
 use App\Models\hierarchy\MainLedger;
 use App\Models\hierarchy\CostCenterCategory;
- 
+
 
 class UnitManagementObserver
 {
@@ -25,25 +25,21 @@ class UnitManagementObserver
             ->first();
 
         // ================= LEDGER =================
-        (new MainLedger())
+        $ledger = (new MainLedger())
             ->setConnection('tenant')
             ->create([
                 'code' => $unitManagement->unit_management_main?->name,
-
                 'name' =>
-                    $unitManagement->property_unit_management?->code . '-' .
+                $unitManagement->property_unit_management?->code . '-' .
                     $unitManagement->block_unit_management?->block?->code . '-' .
                     $unitManagement->floor_unit_management?->floor_management_main?->name . '-' .
                     $unitManagement->unit_management_main?->name,
-
                 'currency'  => $company?->currency_code,
-
                 'country_id' =>
-                    $unitManagement->property_unit_management
-                        ?->country_master
-                        ?->country
-                        ?->id ?? 1,
-
+                $unitManagement->property_unit_management
+                    ?->country_master
+                    ?->country
+                    ?->id ?? 1,
                 'group_id'            => $group?->id,
                 'main_id'             => $unitManagement->id,
                 'is_taxable'          => $group?->is_taxable ?? 0,
@@ -60,19 +56,24 @@ class UnitManagementObserver
             ->where('main_type', 'property')
             ->first();
 
-        (new CostCenter())
+        $costCenter = (new CostCenter())
             ->setConnection('tenant')
             ->create([
                 'name' =>
-                    $unitManagement->property_unit_management?->name . '-' .
+                $unitManagement->property_unit_management?->name . '-' .
                     $unitManagement->unit_management_main?->name . '-' .
                     $unitManagement->block_unit_management?->block?->name . '-' .
                     $unitManagement->floor_unit_management?->floor_management_main?->name,
-
                 'main_id'   => $unitManagement->id,
                 'main_type' => 'unit',
                 'cost_center_category_id' => $propertyCost?->id,
                 'status'    => 'active',
             ]);
+
+        // ================= UPDATE UNIT =================
+        $unitManagement->update([
+            'ledger_id'       => $ledger->id,
+            'cost_center_id'  => $costCenter->id,
+        ]);
     }
 }

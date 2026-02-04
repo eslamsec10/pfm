@@ -70,6 +70,7 @@ class ContractImportController extends Controller
 
     public function import_page(Request $request)
     {
+ 
         $instructions = '
         <p>1. ' . ui_change('Download_the_file_format_and_fill_the_correct_Data.') . '</p>
         <p>2. ' . ui_change('you_can_download_the_example_file_to_understand_how_the_data_must_be_filled.') . '</p>

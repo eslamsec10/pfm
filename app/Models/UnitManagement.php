@@ -15,27 +15,30 @@ class UnitManagement extends Model
     // protected $connection = 'tenant';
     public function unit_ledger()
     {
-        return $this->hasOne(MainLedger::class, 'main_id', 'id')
-            ->whereHas('group', function ($q) {
-                $q->where('property_id', $this->property_management_id);
-            });
+        return $this->belongsTo(MainLedger::class, "ledger_id", "id");
     }
-    public function main_ledger()
-    {
-        return $this->hasOne(MainLedger::class, 'main_id', 'id')
-            ->where('group_id', $this->property_management_id);
-    }
+    // public function main_ledger()
+    // {
+    //     return $this->hasOne(MainLedger::class, 'main_id', 'id')
+    //         ->where('group_id', $this->property_management_id);
+    // }
     // public function main_ledger(){
     //     return MainLedger::where('group_id' , $this->property_management_id)->where('main_id' , $this->id)->first();
     // }
-    public function block()
+    public function main_ledger()
     {
-        return $this->belongsTo(Block::class, "block_id", "id");
+        return $this->hasOne(MainLedger::class, 'main_id', 'id');
     }
+
     public function property_unit_management()
     {
         return $this->belongsTo(PropertyManagement::class, "property_management_id", "id");
     }
+    public function block()
+    {
+        return $this->belongsTo(Block::class, "block_id", "id");
+    }
+
     public function block_unit_management()
     {
         return $this->belongsTo(BlockManagement::class, "block_management_id", "id");

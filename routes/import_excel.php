@@ -16,7 +16,7 @@ Route::get('/import_excel-side', function () {
 
 
 // Import Excel
-Route::group(['prefix' => 'import_excel'], function () {
+Route::group(['prefix' => 'import_excel', 'middleware' => 'auth:web'], function () {
     Route::get('/import_property_master', [PropertyMasterImportController::class, 'import_page'])->name('import_property_master'); 
     Route::post('/import_property_master', [PropertyMasterImportController::class, 'import'])->name('property.import'); 
     Route::get('/import_contract', [ContractImportController::class, 'import_page'])->name('import_contract'); 

@@ -5,7 +5,7 @@ namespace App\Observers;
 use App\Models\general\Groups;
 use App\Models\PropertyManagement;
 use App\Models\hierarchy\CostCenterCategory;
- 
+
 class PropertyManagementObserver
 {
     public function created(PropertyManagement $property)
@@ -19,8 +19,8 @@ class PropertyManagementObserver
             return;
         }
 
-        // Create Group
-        (new Groups())->setConnection('tenant')->create([
+        // ================= CREATE GROUP =================
+        $group = (new Groups())->setConnection('tenant')->create([
             'code'                     => $property->code,
             'property_id'              => $property->id,
             'name'                     => $property->name,
@@ -35,13 +35,19 @@ class PropertyManagementObserver
             'tax_rate'                 => $master_group->tax_rate ?? 0,
         ]);
 
-        // Create Cost Center
-        (new CostCenterCategory())->setConnection('tenant')->create([
+        // ================= CREATE COST CENTER =================
+        $costCenter = (new CostCenterCategory())->setConnection('tenant')->create([
             'code'      => $property->code,
             'name'      => $property->name,
             'main_id'   => $property->id,
             'main_type' => 'property',
             'status'    => 'active',
+        ]);
+
+        // ================= UPDATE PROPERTY =================
+        $property->update([
+            'group_id'        => $group->id,       
+            'cost_center_category_id'  => $costCenter->id,    
         ]);
     }
 }

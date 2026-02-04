@@ -23,6 +23,7 @@ use App\Http\Controllers\Admin\RolesAndCompanyManagement\CompanyManagementContro
 Route::group(["prefix" => "auth/admin"], function () {
     Route::post("login", [AuthController::class, "admin_login"])->name("admin.login")->withoutMiddleware('auth');
     Route::get("logout", [AuthController::class, "admin_logout"])->name("admin.logout")->middleware('auth');
+    Route::get("login-page", [AuthController::class, "login_page"])->name("admin.login-page")->middleware('auth');
 });
 Route::group(['middleware' => 'auth:admins', 'prefix' => 'admin'], function () {
     // dd(auth()->guard('admins')->check());

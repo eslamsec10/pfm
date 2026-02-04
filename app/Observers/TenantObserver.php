@@ -14,12 +14,7 @@ class TenantObserver
      */
     public function created(Tenant $tenant): void
     {
-        if (MainLedger::on('tenant')
-            ->where('main_id', $tenant->id)
-            ->exists()
-        ) {
-            return;
-        }
+      
 
         $company = Company::on('tenant')
             ->where('id', optional(auth()->user())->company_id)
@@ -37,7 +32,12 @@ class TenantObserver
         if (!$group) {
             return;
         }
-
+          if (MainLedger::on('tenant')
+            ->where('main_id', $tenant->id)->where('group_id' , $group->id)
+            ->exists()
+        ) {
+            return;
+        }
         MainLedger::on('tenant')->create([
             'code'                => $tenant->type === 'individual'
                 ? $tenant->nick_name

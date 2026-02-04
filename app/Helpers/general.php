@@ -11,8 +11,10 @@ use Illuminate\Http\Request;
 use App\Models\AgreementUnits;
 use App\Models\UnitManagement;
 use App\Models\BusinessSetting;
+use App\Services\WhatsAppService;
 use Illuminate\Support\Facades\DB;
 use App\Models\collections\Receipt;
+use Illuminate\Support\Facades\Log;
 use App\Models\AgreementUnitsService;
 use App\Models\collections\InvoiceSettings;
 use App\Models\collections\ReceiptSettings;
@@ -48,55 +50,56 @@ if (! function_exists('database_creation')) {
         } else {
             echo "<p style='color: red;'>Error executing script '$scriptPath'. Check script permissions and output for errors.\n";
         }
-
     }
 }
 
-if(! function_exists('normalizeDate')){
-   function normalizeDate($value): ?string
-{
-    if (empty($value)) {
+if (! function_exists('normalizeDate')) {
+    function normalizeDate($value): ?string
+    {
+        if (empty($value)) {
+            return null;
+        }
+
+        // Excel serial number
+        if (is_numeric($value)) {
+            try {
+                return \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value)
+                    ->format('Y-m-d');
+            } catch (\Exception $e) {
+            }
+        }
+
+        // DateTime object
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format('Y-m-d');
+        }
+
+        // String dates
+        $formats = [
+            'd.m.Y',
+            'd-m-Y',
+            'd/m/Y',
+            'Y-m-d',
+            'Y/m/d',
+            'm/d/Y',
+        ];
+
+        foreach ($formats as $format) {
+            try {
+                $date = \Carbon\Carbon::createFromFormat($format, trim($value));
+                return $date->format('Y-m-d');
+            } catch (\Exception $e) {
+            }
+        }
+
+        // fallback – Carbon smart parse
+        try {
+            return \Carbon\Carbon::parse($value)->format('Y-m-d');
+        } catch (\Exception $e) {
+        }
+
         return null;
     }
-
-    // Excel serial number
-    if (is_numeric($value)) {
-        try {
-            return \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value)
-                ->format('Y-m-d');
-        } catch (\Exception $e) {}
-    }
-
-    // DateTime object
-    if ($value instanceof \DateTimeInterface) {
-        return $value->format('Y-m-d');
-    }
-
-    // String dates
-    $formats = [
-        'd.m.Y',
-        'd-m-Y',
-        'd/m/Y',
-        'Y-m-d',
-        'Y/m/d',
-        'm/d/Y',
-    ];
-
-    foreach ($formats as $format) {
-        try {
-            $date = \Carbon\Carbon::createFromFormat($format, trim($value));
-            return $date->format('Y-m-d');
-        } catch (\Exception $e) {}
-    }
-
-    // fallback – Carbon smart parse
-    try {
-        return \Carbon\Carbon::parse($value)->format('Y-m-d');
-    } catch (\Exception $e) {}
-
-    return null;
-}
-
 }
 // if (! function_exists('company_id')) {
 //     function company_id()
@@ -115,11 +118,11 @@ if (! function_exists('company_id')) {
         $lastCompany = Company::orderBy('id', 'desc')->first();
 
         if ($lastCompany && $lastCompany->company_id) {
- 
+
             if (is_numeric($lastCompany->company_id)) {
                 return (int)$lastCompany->company_id + 1;
             }
- 
+
             return $lastCompany->company_id . "v-2";
         }
 
@@ -283,7 +286,6 @@ if (! function_exists('get_business_settings')) {
         $config = BusinessSetting::select('type', 'value')->whereRaw("type LIKE ?", ["$name%"])->get();
         return $config;
     }
-
 }
 if (! function_exists('get_settings')) {
 
@@ -415,9 +417,9 @@ if (! function_exists('agreementNo')) {
 if (! function_exists('investmentNo')) {
     function investmentNo()
     {
-        $investment_prefix = optional( BusinessSetting::whereType('investment_prefix')->first())->value;
-        $investment_digits = optional( BusinessSetting::whereType('investment_digits')->first())->value;
-      
+        $investment_prefix = optional(BusinessSetting::whereType('investment_prefix')->first())->value;
+        $investment_digits = optional(BusinessSetting::whereType('investment_digits')->first())->value;
+
         // define('investment_no_prefix', $investment_prefix);
         if (! defined('investment_no_prefix')) {
             define('investment_no_prefix', $investment_prefix);
@@ -480,7 +482,6 @@ if (! function_exists('invoiceNo')) {
 
         return "{$invoice_settings->invoice_prefix}{$invoice_number}{$invoice_settings->invoice_suffix}";
     }
-
 }
 if (! function_exists('receiptNo')) {
     function receiptNo($type = 0)
@@ -511,140 +512,56 @@ if (! function_exists('receiptNo')) {
         return "{$receipt_settings->prefix}{$receipt_number}{$receipt_settings->sufix}";
     }
 }
-    if (! function_exists('signed')) {
-        function signed($id)
-        {
-            $agreement            = (new Agreement())->setConnection('tenant')->findOrFail($id);
-            $units                = (new AgreementUnits())->setConnection('tenant')->where('agreement_id', $id)->get();
-            $rent_intervals       = [];
-            $total_service_amount = 0;
+if (! function_exists('signed')) {
+    function signed($id)
+    {
+        $agreement            = (new Agreement())->setConnection('tenant')->findOrFail($id);
+        $units                = (new AgreementUnits())->setConnection('tenant')->where('agreement_id', $id)->get();
+        $rent_intervals       = [];
+        $total_service_amount = 0;
 
-            foreach ($units as $unit) {
+        foreach ($units as $unit) {
 
-                $start_date = Carbon::parse($unit->commencement_date);
-                $end_date   = Carbon::parse($unit->expiry_date);
+            $start_date = Carbon::parse($unit->commencement_date);
+            $end_date   = Carbon::parse($unit->expiry_date);
 
-                $company              = auth()->user() ?? (new User())->setConnection('tenant')->first();
-                $total_service_amount = (new AgreementUnitsService())->setConnection('tenant')->where('agreement_unit_id', $unit->id ?? 0)->sum('amount') ?? 0;
-                $total_services       = (new AgreementUnitsService())->setConnection('tenant')->where('agreement_unit_id', $unit->id)->get();
+            $company              = auth()->user() ?? (new User())->setConnection('tenant')->first();
+            $total_service_amount = (new AgreementUnitsService())->setConnection('tenant')->where('agreement_unit_id', $unit->id ?? 0)->sum('amount') ?? 0;
+            $total_services       = (new AgreementUnitsService())->setConnection('tenant')->where('agreement_unit_id', $unit->id)->get();
 
-                $original_start_date = $start_date->copy();
+            $original_start_date = $start_date->copy();
 
-                if (isset($total_services)) {
-                    if ($unit->rent_mode == null) {
-                        $unit->rent_mode = 2;
-                    }
+            if (isset($total_services)) {
+                if ($unit->rent_mode == null) {
+                    $unit->rent_mode = 2;
+                }
 
-                    foreach ($total_services as $total_service_item) {
-                        $start_date = $original_start_date->copy();
+                foreach ($total_services as $total_service_item) {
+                    $start_date = $original_start_date->copy();
 
-                        if ($unit->rent_mode == 2) {
-                            while ($start_date <= $end_date) {
-                                $rent_intervals[] = [
-                                    'rent_amount'          => $total_service_item->amount,
-                                    'rent_mode'            => $unit->rent_mode,
-                                    'total_service_amount' => $total_service_amount ?? 0,
-                                    'unit_id'              => $unit->unit_id,
-                                    'agreement_id'         => $agreement->id,
-                                    'vat_amount'           => $total_service_item->vat ?? 0,
-                                    'tenant_id'            => $agreement->tenant_id,
-                                    'currency'             => $company->currency_code ?? 'BHD',
-                                    'billing_month_year'   => $start_date->format('Y-m'),
-                                    'service'              => 'yes',
-                                    'category'             => 'service',
-                                    'service_id'           => $total_service_item->other_charge_type,
-                                    'created_at'           => now(),
-                                ];
-                                $start_date->addMonth();
-                            }
-                        } elseif ($unit->rent_mode == 3) {
-                            while ($start_date <= $end_date) {
-                                $rent_intervals[] = [
-                                    'rent_amount'          => $total_service_item->amount,
-                                    'rent_mode'            => $unit->rent_mode,
-                                    'total_service_amount' => $total_service_amount ?? 0,
-                                    'unit_id'              => $unit->unit_id,
-                                    'agreement_id'         => $agreement->id,
-                                    'vat_amount'           => $total_service_item->vat ?? 0,
-                                    'tenant_id'            => $agreement->tenant_id,
-                                    'currency'             => $company->currency_code ?? 'BHD',
-                                    'billing_month_year'   => $start_date->format('Y-m'),
-                                    'service'              => 'yes',
-                                    'category'             => 'service',
-                                    'service_id'           => $total_service_item->other_charge_type,
-                                    'created_at'           => now(),
-
-                                ];
-                                $start_date->addMonths(2);
-                            }
-                        } elseif ($unit->rent_mode == 4) {
-                            while ($start_date <= $end_date) {
-                                $rent_intervals[] = [
-                                    'rent_amount'          => $total_service_item->amount,
-                                    'rent_mode'            => $unit->rent_mode,
-                                    'total_service_amount' => $total_service_amount ?? 0,
-                                    'unit_id'              => $unit->unit_id,
-                                    'agreement_id'         => $agreement->id,
-                                    'vat_amount'           => $total_service_item->vat ?? 0,
-                                    'tenant_id'            => $agreement->tenant_id,
-                                    'currency'             => $company->currency_code ?? 'BHD',
-                                    'billing_month_year'   => $start_date->format('Y-m'),
-                                    'service'              => 'yes',
-                                    'category'             => 'service',
-                                    'service_id'           => $total_service_item->other_charge_type,
-                                    'created_at'           => now(),
-
-                                ];
-                                $start_date->addMonths(3);
-                            }
-                        } elseif ($unit->rent_mode == 5) {
-                            while ($start_date <= $end_date) {
-                                $rent_intervals[] = [
-                                    'rent_amount'          => $total_service_item->amount,
-                                    'rent_mode'            => $unit->rent_mode,
-                                    'total_service_amount' => $total_service_amount ?? 0,
-                                    'unit_id'              => $unit->unit_id,
-                                    'agreement_id'         => $agreement->id,
-                                    'vat_amount'           => $total_service_item->vat ?? 0,
-                                    'tenant_id'            => $agreement->tenant_id,
-                                    'currency'             => $company->currency_code ?? 'BHD',
-                                    'billing_month_year'   => $start_date->format('Y-m'),
-                                    'service'              => 'yes',
-                                    'category'             => 'service',
-                                    'service_id'           => $total_service_item->other_charge_type,
-                                    'created_at'           => now(),
-
-                                ];
-                                $start_date->addMonths(6);
-                            }
-                        } elseif ($unit->rent_mode == 6) {
-                            while ($start_date <= $end_date) {
-                                $rent_intervals[] = [
-                                    'rent_amount'          => $total_service_item->amount,
-                                    'rent_mode'            => $unit->rent_mode,
-                                    'total_service_amount' => $total_service_amount ?? 0,
-                                    'unit_id'              => $unit->unit_id,
-                                    'agreement_id'         => $agreement->id,
-                                    'vat_amount'           => $total_service_item->vat ?? 0,
-                                    'tenant_id'            => $agreement->tenant_id,
-                                    'currency'             => $company->currency_code ?? 'BHD',
-                                    'billing_month_year'   => $start_date->format('Y-m'),
-                                    'service'              => 'yes',
-                                    'category'             => 'service',
-                                    'service_id'           => $total_service_item->other_charge_type,
-                                    'created_at'           => now(),
-
-                                ];
-                                $start_date->addMonths(12);
-                            }
+                    if ($unit->rent_mode == 2) {
+                        while ($start_date <= $end_date) {
+                            $rent_intervals[] = [
+                                'rent_amount'          => $total_service_item->amount,
+                                'rent_mode'            => $unit->rent_mode,
+                                'total_service_amount' => $total_service_amount ?? 0,
+                                'unit_id'              => $unit->unit_id,
+                                'agreement_id'         => $agreement->id,
+                                'vat_amount'           => $total_service_item->vat ?? 0,
+                                'tenant_id'            => $agreement->tenant_id,
+                                'currency'             => $company->currency_code ?? 'BHD',
+                                'billing_month_year'   => $start_date->format('Y-m'),
+                                'service'              => 'yes',
+                                'category'             => 'service',
+                                'service_id'           => $total_service_item->other_charge_type,
+                                'created_at'           => now(),
+                            ];
+                            $start_date->addMonth();
                         }
-
-                        if ($start_date->diffInDays($end_date) > 0) {
-                            $remaining_days      = $start_date->diffInDays($end_date);
-                            $daily_rent          = $unit->rent_amount / 30;
-                            $partial_rent_amount = $remaining_days * $daily_rent;
-                            $rent_intervals[]    = [
-                                'rent_amount'          => $partial_rent_amount,
+                    } elseif ($unit->rent_mode == 3) {
+                        while ($start_date <= $end_date) {
+                            $rent_intervals[] = [
+                                'rent_amount'          => $total_service_item->amount,
                                 'rent_mode'            => $unit->rent_mode,
                                 'total_service_amount' => $total_service_amount ?? 0,
                                 'unit_id'              => $unit->unit_id,
@@ -659,121 +576,99 @@ if (! function_exists('receiptNo')) {
                                 'created_at'           => now(),
 
                             ];
+                            $start_date->addMonths(2);
+                        }
+                    } elseif ($unit->rent_mode == 4) {
+                        while ($start_date <= $end_date) {
+                            $rent_intervals[] = [
+                                'rent_amount'          => $total_service_item->amount,
+                                'rent_mode'            => $unit->rent_mode,
+                                'total_service_amount' => $total_service_amount ?? 0,
+                                'unit_id'              => $unit->unit_id,
+                                'agreement_id'         => $agreement->id,
+                                'vat_amount'           => $total_service_item->vat ?? 0,
+                                'tenant_id'            => $agreement->tenant_id,
+                                'currency'             => $company->currency_code ?? 'BHD',
+                                'billing_month_year'   => $start_date->format('Y-m'),
+                                'service'              => 'yes',
+                                'category'             => 'service',
+                                'service_id'           => $total_service_item->other_charge_type,
+                                'created_at'           => now(),
+
+                            ];
+                            $start_date->addMonths(3);
+                        }
+                    } elseif ($unit->rent_mode == 5) {
+                        while ($start_date <= $end_date) {
+                            $rent_intervals[] = [
+                                'rent_amount'          => $total_service_item->amount,
+                                'rent_mode'            => $unit->rent_mode,
+                                'total_service_amount' => $total_service_amount ?? 0,
+                                'unit_id'              => $unit->unit_id,
+                                'agreement_id'         => $agreement->id,
+                                'vat_amount'           => $total_service_item->vat ?? 0,
+                                'tenant_id'            => $agreement->tenant_id,
+                                'currency'             => $company->currency_code ?? 'BHD',
+                                'billing_month_year'   => $start_date->format('Y-m'),
+                                'service'              => 'yes',
+                                'category'             => 'service',
+                                'service_id'           => $total_service_item->other_charge_type,
+                                'created_at'           => now(),
+
+                            ];
+                            $start_date->addMonths(6);
+                        }
+                    } elseif ($unit->rent_mode == 6) {
+                        while ($start_date <= $end_date) {
+                            $rent_intervals[] = [
+                                'rent_amount'          => $total_service_item->amount,
+                                'rent_mode'            => $unit->rent_mode,
+                                'total_service_amount' => $total_service_amount ?? 0,
+                                'unit_id'              => $unit->unit_id,
+                                'agreement_id'         => $agreement->id,
+                                'vat_amount'           => $total_service_item->vat ?? 0,
+                                'tenant_id'            => $agreement->tenant_id,
+                                'currency'             => $company->currency_code ?? 'BHD',
+                                'billing_month_year'   => $start_date->format('Y-m'),
+                                'service'              => 'yes',
+                                'category'             => 'service',
+                                'service_id'           => $total_service_item->other_charge_type,
+                                'created_at'           => now(),
+
+                            ];
+                            $start_date->addMonths(12);
                         }
                     }
-                }
-                $start_date = $original_start_date->copy();
 
-                if ($unit->rent_mode == 2) {
-                    while ($start_date <= $end_date) {
-                        $rent_intervals[] = [
-                            'rent_amount'          => $unit->rent_amount,
+                    if ($start_date->diffInDays($end_date) > 0) {
+                        $remaining_days      = $start_date->diffInDays($end_date);
+                        $daily_rent          = $unit->rent_amount / 30;
+                        $partial_rent_amount = $remaining_days * $daily_rent;
+                        $rent_intervals[]    = [
+                            'rent_amount'          => $partial_rent_amount,
                             'rent_mode'            => $unit->rent_mode,
                             'total_service_amount' => $total_service_amount ?? 0,
                             'unit_id'              => $unit->unit_id,
                             'agreement_id'         => $agreement->id,
-                            'vat_amount'           => $unit->vat_amount ?? 0,
+                            'vat_amount'           => $total_service_item->vat ?? 0,
                             'tenant_id'            => $agreement->tenant_id,
                             'currency'             => $company->currency_code ?? 'BHD',
                             'billing_month_year'   => $start_date->format('Y-m'),
-                            'service'              => 'no',
-                            'category'             => 'rent',
-                            'service_id'           => null,
+                            'service'              => 'yes',
+                            'category'             => 'service',
+                            'service_id'           => $total_service_item->other_charge_type,
                             'created_at'           => now(),
 
                         ];
-                        $start_date->addMonth();
-                    }
-                } elseif ($unit->rent_mode == 3) {
-                    while ($start_date <= $end_date) {
-                        $rent_intervals[] = [
-                            'rent_amount'          => $unit->rent_amount,
-                            'rent_mode'            => $unit->rent_mode,
-                            'total_service_amount' => $total_service_amount ?? 0,
-                            'unit_id'              => $unit->unit_id,
-                            'agreement_id'         => $agreement->id,
-                            'vat_amount'           => $unit->vat_amount ?? 0,
-                            'tenant_id'            => $agreement->tenant_id,
-                            'currency'             => $company->currency_code ?? 'BHD',
-                            'billing_month_year'   => $start_date->format('Y-m'),
-                            'service'              => 'no',
-                            'category'             => 'rent',
-                            'service_id'           => null,
-                            'created_at'           => now(),
-
-                        ];
-                        $start_date->addMonths(2);
-                    }
-                } elseif ($unit->rent_mode == 4) {
-                    while ($start_date <= $end_date) {
-                        $rent_intervals[] = [
-                            'rent_amount'          => $unit->rent_amount,
-                            'rent_mode'            => $unit->rent_mode,
-                            'total_service_amount' => $total_service_amount ?? 0,
-                            'unit_id'              => $unit->unit_id,
-                            'agreement_id'         => $agreement->id,
-                            'vat_amount'           => $unit->vat_amount ?? 0,
-                            'tenant_id'            => $agreement->tenant_id,
-                            'currency'             => $company->currency_code ?? 'BHD',
-                            'billing_month_year'   => $start_date->format('Y-m'),
-                            'service'              => 'no',
-                            'category'             => 'rent',
-                            'service_id'           => null,
-                            'created_at'           => now(),
-
-                        ];
-                        $start_date->addMonths(3);
-                    }
-                } elseif ($unit->rent_mode == 5) {
-                    while ($start_date <= $end_date) {
-                        $rent_intervals[] = [
-                            'rent_amount'          => $unit->rent_amount,
-                            'rent_mode'            => $unit->rent_mode,
-                            'total_service_amount' => $total_service_amount ?? 0,
-                            'unit_id'              => $unit->unit_id,
-                            'agreement_id'         => $agreement->id,
-                            'vat_amount'           => $unit->vat_amount ?? 0,
-                            'tenant_id'            => $agreement->tenant_id,
-                            'currency'             => $company->currency_code ?? 'BHD',
-                            'billing_month_year'   => $start_date->format('Y-m'),
-                            'service'              => 'no',
-                            'category'             => 'rent',
-                            'service_id'           => null,
-                            'created_at'           => now(),
-
-                        ];
-
-                        $start_date->addMonths(6);
-                    }
-                } elseif ($unit->rent_mode == 6) {
-                    while ($start_date <= $end_date) {
-                        $rent_intervals[] = [
-                            'rent_amount'          => $unit->rent_amount,
-                            'rent_mode'            => $unit->rent_mode,
-                            'total_service_amount' => $total_service_amount ?? 0,
-                            'unit_id'              => $unit->unit_id,
-                            'agreement_id'         => $agreement->id,
-                            'vat_amount'           => $unit->vat_amount ?? 0,
-                            'tenant_id'            => $agreement->tenant_id,
-                            'currency'             => $company->currency_code ?? 'BHD',
-                            'billing_month_year'   => $start_date->format('Y-m'),
-                            'service'              => 'no',
-                            'category'             => 'rent',
-                            'service_id'           => null,
-                            'created_at'           => now(),
-
-                        ];
-
-                        $start_date->addMonths(12);
                     }
                 }
+            }
+            $start_date = $original_start_date->copy();
 
-                if ($start_date->diffInDays($end_date) > 0) {
-                    $remaining_days      = $start_date->diffInDays($end_date);
-                    $daily_rent          = $unit->rent_amount / 30;
-                    $partial_rent_amount = $remaining_days * $daily_rent;
-                    $rent_intervals[]    = [
-                        'rent_amount'          => $partial_rent_amount,
+            if ($unit->rent_mode == 2) {
+                while ($start_date <= $end_date) {
+                    $rent_intervals[] = [
+                        'rent_amount'          => $unit->rent_amount,
                         'rent_mode'            => $unit->rent_mode,
                         'total_service_amount' => $total_service_amount ?? 0,
                         'unit_id'              => $unit->unit_id,
@@ -788,17 +683,121 @@ if (! function_exists('receiptNo')) {
                         'created_at'           => now(),
 
                     ];
+                    $start_date->addMonth();
                 }
-            } 
-            DB::connection('tenant')->table('schedules')->insert($rent_intervals);
-            $agreement->update([
-                'booking_status' => 'signed',
-                'status'         => 'completed',
-            ]);
+            } elseif ($unit->rent_mode == 3) {
+                while ($start_date <= $end_date) {
+                    $rent_intervals[] = [
+                        'rent_amount'          => $unit->rent_amount,
+                        'rent_mode'            => $unit->rent_mode,
+                        'total_service_amount' => $total_service_amount ?? 0,
+                        'unit_id'              => $unit->unit_id,
+                        'agreement_id'         => $agreement->id,
+                        'vat_amount'           => $unit->vat_amount ?? 0,
+                        'tenant_id'            => $agreement->tenant_id,
+                        'currency'             => $company->currency_code ?? 'BHD',
+                        'billing_month_year'   => $start_date->format('Y-m'),
+                        'service'              => 'no',
+                        'category'             => 'rent',
+                        'service_id'           => null,
+                        'created_at'           => now(),
 
+                    ];
+                    $start_date->addMonths(2);
+                }
+            } elseif ($unit->rent_mode == 4) {
+                while ($start_date <= $end_date) {
+                    $rent_intervals[] = [
+                        'rent_amount'          => $unit->rent_amount,
+                        'rent_mode'            => $unit->rent_mode,
+                        'total_service_amount' => $total_service_amount ?? 0,
+                        'unit_id'              => $unit->unit_id,
+                        'agreement_id'         => $agreement->id,
+                        'vat_amount'           => $unit->vat_amount ?? 0,
+                        'tenant_id'            => $agreement->tenant_id,
+                        'currency'             => $company->currency_code ?? 'BHD',
+                        'billing_month_year'   => $start_date->format('Y-m'),
+                        'service'              => 'no',
+                        'category'             => 'rent',
+                        'service_id'           => null,
+                        'created_at'           => now(),
+
+                    ];
+                    $start_date->addMonths(3);
+                }
+            } elseif ($unit->rent_mode == 5) {
+                while ($start_date <= $end_date) {
+                    $rent_intervals[] = [
+                        'rent_amount'          => $unit->rent_amount,
+                        'rent_mode'            => $unit->rent_mode,
+                        'total_service_amount' => $total_service_amount ?? 0,
+                        'unit_id'              => $unit->unit_id,
+                        'agreement_id'         => $agreement->id,
+                        'vat_amount'           => $unit->vat_amount ?? 0,
+                        'tenant_id'            => $agreement->tenant_id,
+                        'currency'             => $company->currency_code ?? 'BHD',
+                        'billing_month_year'   => $start_date->format('Y-m'),
+                        'service'              => 'no',
+                        'category'             => 'rent',
+                        'service_id'           => null,
+                        'created_at'           => now(),
+
+                    ];
+
+                    $start_date->addMonths(6);
+                }
+            } elseif ($unit->rent_mode == 6) {
+                while ($start_date <= $end_date) {
+                    $rent_intervals[] = [
+                        'rent_amount'          => $unit->rent_amount,
+                        'rent_mode'            => $unit->rent_mode,
+                        'total_service_amount' => $total_service_amount ?? 0,
+                        'unit_id'              => $unit->unit_id,
+                        'agreement_id'         => $agreement->id,
+                        'vat_amount'           => $unit->vat_amount ?? 0,
+                        'tenant_id'            => $agreement->tenant_id,
+                        'currency'             => $company->currency_code ?? 'BHD',
+                        'billing_month_year'   => $start_date->format('Y-m'),
+                        'service'              => 'no',
+                        'category'             => 'rent',
+                        'service_id'           => null,
+                        'created_at'           => now(),
+
+                    ];
+
+                    $start_date->addMonths(12);
+                }
+            }
+
+            if ($start_date->diffInDays($end_date) > 0) {
+                $remaining_days      = $start_date->diffInDays($end_date);
+                $daily_rent          = $unit->rent_amount / 30;
+                $partial_rent_amount = $remaining_days * $daily_rent;
+                $rent_intervals[]    = [
+                    'rent_amount'          => $partial_rent_amount,
+                    'rent_mode'            => $unit->rent_mode,
+                    'total_service_amount' => $total_service_amount ?? 0,
+                    'unit_id'              => $unit->unit_id,
+                    'agreement_id'         => $agreement->id,
+                    'vat_amount'           => $unit->vat_amount ?? 0,
+                    'tenant_id'            => $agreement->tenant_id,
+                    'currency'             => $company->currency_code ?? 'BHD',
+                    'billing_month_year'   => $start_date->format('Y-m'),
+                    'service'              => 'no',
+                    'category'             => 'rent',
+                    'service_id'           => null,
+                    'created_at'           => now(),
+
+                ];
+            }
         }
-
+        DB::connection('tenant')->table('schedules')->insert($rent_intervals);
+        $agreement->update([
+            'booking_status' => 'signed',
+            'status'         => 'completed',
+        ]);
     }
+}
 // function invoiceNo($type)
 // {
 //     $invoice_settings = InvoiceSettings::where('invoice_type' , $type)->first();
@@ -818,67 +817,66 @@ if (! function_exists('receiptNo')) {
 //     }
 // }
 
-    if (! function_exists('selected')) {
-        function selected($selected, $current = true, $echo = true)
-        {
-            return __checked_selected_helper($selected, $current, $echo, 'selected');
-        }
+if (! function_exists('selected')) {
+    function selected($selected, $current = true, $echo = true)
+    {
+        return __checked_selected_helper($selected, $current, $echo, 'selected');
     }
+}
 
-    if (! function_exists('__checked_selected_helper')) {
-        function __checked_selected_helper($helper, $current, $echo, $type)
-        {
-            if ((string) $helper === (string) $current) {
-                $result = " $type='$type'";
+if (! function_exists('__checked_selected_helper')) {
+    function __checked_selected_helper($helper, $current, $echo, $type)
+    {
+        if ((string) $helper === (string) $current) {
+            $result = " $type='$type'";
+        } else {
+            $result = '';
+        }
+
+        if ($echo) {
+            echo $result;
+        }
+
+        return $result;
+    }
+}
+
+if (! function_exists('uploadFile')) {
+    function uploadFile(Request $request, $path)
+    {
+        if ($request->hasFile('attachment')) {
+            $file      = $request->file('attachment');
+            $extension = $file->getClientOriginalExtension();
+            if (in_array($extension, ['jpg', 'jpeg', 'png', 'webp'])) {
+                $folder = 'image';
+            } elseif ($extension === 'pdf') {
+                $folder = 'pdf';
             } else {
-                $result = '';
+                return null;
             }
-
-            if ($echo) {
-                echo $result;
+            $fileName        = time() . '_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $extension;
+            $destinationPath = public_path($folder . '/' . $path);
+            if (! file_exists($destinationPath)) {
+                mkdir($destinationPath, 0777, true);
             }
+            $file->move($destinationPath, $fileName);
 
-            return $result;
+            return [
+                'path' => $folder . '/' . $path . '/' . $fileName,
+                'type' => $folder,
+            ];
         }
+        return null;
     }
+}
 
-    if (! function_exists('uploadFile')) {
-        function uploadFile(Request $request, $path)
-        {
-            if ($request->hasFile('attachment')) {
-                $file      = $request->file('attachment');
-                $extension = $file->getClientOriginalExtension();
-                if (in_array($extension, ['jpg', 'jpeg', 'png', 'webp'])) {
-                    $folder = 'image';
-                } elseif ($extension === 'pdf') {
-                    $folder = 'pdf';
-                } else {
-                    return null;
-                }
-                $fileName        = time() . '_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $extension;
-                $destinationPath = public_path($folder . '/' . $path);
-                if (! file_exists($destinationPath)) {
-                    mkdir($destinationPath, 0777, true);
-                }
-                $file->move($destinationPath, $fileName);
-
-                return [
-                    'path' => $folder . '/' . $path . '/' . $fileName,
-                    'type' => $folder,
-                ];
-            }
-            return null;
-        }
+if (! function_exists('get_employees_by_department_id')) {
+    function get_employees_by_department_id($id)
+    {
+        $employees = Employee::where('department_id', $id)->get();
+        return $employees;
     }
-
-    if (! function_exists('get_employees_by_department_id')) {
-        function get_employees_by_department_id($id)
-        {
-            $employees = Employee::where('department_id', $id)->get();
-            return $employees;
-        }
-
-    }
+}
 
 if (! function_exists('calc_rent_amount')) {
     function calc_rent_amount($rentMode, $paymentMode, $baseAmount,  $rentAmount)
@@ -886,10 +884,10 @@ if (! function_exists('calc_rent_amount')) {
         switch ($rentMode) {
             case 1:
                 $dailyAmount = $baseAmount;
-                break;  
+                break;
             case 2:
                 $dailyAmount = $baseAmount / 30;
-                break;  
+                break;
             case 3:
                 $dailyAmount = $baseAmount / 60;
                 break; // bi_monthly
@@ -905,7 +903,7 @@ if (! function_exists('calc_rent_amount')) {
             default:
                 $dailyAmount = $baseAmount;
         }
- 
+
         switch ($paymentMode) {
             case 1:
                 $rentAmount = $dailyAmount;
@@ -930,5 +928,48 @@ if (! function_exists('calc_rent_amount')) {
         }
         return $rentAmount;
     }
+}
 
+if (!function_exists('sendWhatsApp')) {
+
+    function sendWhatsApp(array $options = [])
+    {
+        $service = app(WhatsAppService::class);
+
+        $to      = $options['to']      ?? null;
+        $message = $options['message'] ?? null;
+        $file    = $options['file']    ?? null;
+        $sandbox = $options['sandbox'] ?? true;
+
+        if (!$to || !$message) {
+            return [
+                'success' => false,
+                'error'   => 'to and message required'
+            ];
+        }
+                
+        if (is_array($to)) {
+
+            $results = [];
+
+            foreach ($to as $number) {
+                $results[] = $service->send(
+                    $number,
+                    $message,
+                    $file,
+                    $sandbox
+                );
+            }
+
+            return $results;
+        } 
+
+        Log::info($file);
+        return $service->send(
+            $to,
+            $message,
+            $file,
+            $sandbox
+        );
+    }
 }

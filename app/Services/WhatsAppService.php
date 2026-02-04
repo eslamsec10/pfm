@@ -2,48 +2,55 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Models\NotificationSettings;
+use Illuminate\Support\Facades\Http;
 
 class WhatsAppService
 {
-    protected $appkey;
-    protected $authkey;
-    protected $url;
+    protected $url = 'https://whatsappapisender.com/api/create-message';
 
-    public function __construct()
-    {
-        $this->appkey  = config('services.whatsapp.appkey');
-        $this->authkey = config('services.whatsapp.authkey');
-        $this->url     = config('services.whatsapp.url');
-    }
+   protected $appkey  =  'ca65d618-8880-4c33-b64e-9772fab004f5';//NotificationSettings::where('key' ,'appkey')->first()->value ;
+    protected $authkey =  'BQlJU7aX7bNy7nMJRTywmHiNfDeouwyepgBvNc1RFrXmQcc2QG'; //NotificationSettings::where('key' ,'authkey')->first()->value ;
 
-    public function sendMessage($to, $message, $sandbox = false)
+
+    // public function __construct()
+    // {
+    //     $this->appkey = NotificationSettings::where('key','appkey')->value('value');
+
+    //     $this->authkey = NotificationSettings::where('key','authkey')->value('value');
+    // }
+
+    public function send($to, $message, $file = null, $sandbox = true)
     {
         try {
 
-            $response = Http::withHeaders([
-                'Content-Type' => 'application/json'
-            ])
-            ->withoutVerifying()  
-            ->post($this->url, [
+            $data = [
                 'appkey'  => $this->appkey,
                 'authkey' => $this->authkey,
                 'to'      => $to,
                 'message' => $message,
-                'sandbox' => $sandbox
-            ]);
+                'sandbox' => $sandbox ,
+            ];
+ 
+            if ($file) {
+                $data['file'] = $file;
+            }
+
+            $response = Http::asMultipart()
+                ->withoutVerifying() 
+                ->post($this->url, $data);
 
             return [
                 'success' => $response->successful(),
-                'data'    => $response->json(),
-                'status'  => $response->status()
+                'status'  => $response->status(),
+                'data'    => $response->json()
             ];
 
         } catch (\Throwable $e) {
 
-            Log::error('WhatsApp API Error', [
-                'message' => $e->getMessage()
+            Log::error('WhatsApp Send Error', [
+                'error' => $e->getMessage()
             ]);
 
             return [

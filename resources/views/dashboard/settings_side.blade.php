@@ -23,18 +23,20 @@
              display: flex;
              justify-content: space-between;
              align-items: center;
-             padding: 12px 20px;
+             padding: 5px 5px;
              border: none;
              border-bottom: 1px dashed #ddd;
              font-size: 16px;
-             color: #007bff;
+             color: black;
              text-decoration: none;
          }
 
          .list-group-item:hover {
              background-color: #f1f1f1;
          }
-
+         .accordion-button{
+            color: black;
+         }
          .arrow {
              font-size: 14px;
              color: #bbb;
@@ -48,72 +50,79 @@
              <div class="col-md-6">
                  <div class="accordion" id="accordionExample">
                      <div class="accordion-item ">
-                         <h2 class="accordion-header list-group-item">
+                         <p class="accordion-header list-group-item">
                              <a class="accordion-button"
                                  href="{{ route('company_settings') }}">{{ ui_change('settings') }}</a>
-                         </h2>
+                         </p>
                      </div>
                      <div class="accordion-item ">
-                         <h2 class="accordion-header list-group-item">
+                         <p class="accordion-header list-group-item">
                              <a class="accordion-button"
                                  href="{{ route('enquiry_settings') }}">{{ ui_change('enquiry_settings') }}</a>
-                         </h2>
+                         </p>
                      </div>
                      <div class="accordion-item ">
-                         <h2 class="accordion-header list-group-item">
+                         <p class="accordion-header list-group-item">
                              <a class="accordion-button"
                                  href="{{ route('proposal_settings') }}">{{ ui_change('proposal_settings') }}
                              </a>
-                         </h2>
+                         </p>
                      </div>
                      <div class="accordion-item ">
-                         <h2 class="accordion-header list-group-item">
+                         <p class="accordion-header list-group-item">
                              <a class="accordion-button"
                                  href="{{ route('booking_settings') }}">{{ ui_change('booking_settings') }}
                              </a>
-                         </h2>
+                         </p>
                      </div>
                      <div class="accordion-item ">
-                         <h2 class="accordion-header list-group-item">
+                         <p class="accordion-header list-group-item">
                              <a class="accordion-button"
                                  href="{{ route('agreement_settings') }}">{{ ui_change('agreement_settings') }}
                              </a>
-                         </h2>
+                         </p>
                      </div>
                      <div class="accordion-item ">
-                         <h2 class="accordion-header list-group-item">
+                         <p class="accordion-header list-group-item">
                              <a class="accordion-button"
                                  href="{{ route('investment_settings') }}">{{ ui_change('investment_settings' , 'investment') }}
                              </a>
-                         </h2>
+                         </p>
                      </div>
                      <div class="accordion-item ">
-                         <h2 class="accordion-header list-group-item">
+                         <p class="accordion-header list-group-item">
                              <a class="accordion-button"
                                  href="{{ route('complaint_settings') }}">{{ ui_change('complaint_settings') }}
                              </a>
-                         </h2>
+                         </p>
                      </div>
                      <div class="accordion-item ">
-                         <h2 class="accordion-header list-group-item">
+                         <p class="accordion-header list-group-item">
                              <a class="accordion-button"
                                  href="{{ route('admin.business-settings.language.index') }}">{{ ui_change('language') }}
                              </a>
-                         </h2>
+                         </p>
                      </div>
                      <div class="accordion-item ">
-                         <h2 class="accordion-header list-group-item">
+                         <p class="accordion-header list-group-item">
                              <a class="accordion-button"
                                  href="{{ route('admin.settings.ui_settings.index') }}">{{ ui_change('ui_settings') }}
                              </a>
-                         </h2>
+                         </p>
                      </div>
                      <div class="accordion-item ">
-                         <h2 class="accordion-header list-group-item">
+                         <p class="accordion-header list-group-item">
                              <a class="accordion-button"
                                  href="{{ route('admin.currency.view') }}">{{ ui_change('currency') }}
                              </a>
-                         </h2>
+                         </p>
+                     </div>
+                     <div class="accordion-item ">
+                         <p class="accordion-header list-group-item">
+                             <a class="accordion-button"
+                                 href="{{ route('notifications_settings') }}">{{ ui_change('notifications') }}
+                             </a>
+                         </p>
                      </div>
                  </div>
              </div>

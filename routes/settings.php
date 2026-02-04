@@ -6,6 +6,7 @@ use App\Http\Controllers\settings\CurrencyController;
 use App\Http\Controllers\settings\UserSettingsController;
 use App\Http\Controllers\settings\CompanySettingsController;
 use App\Http\Controllers\settings\ComplaintSettingsController;
+use App\Http\Controllers\settings\NotificationSettingsController;
 use App\Http\Controllers\Room_Reservation\ReservationSettingsController;
 use App\Http\Controllers\property_transactions\PropertyTransactionSettingsController;
 
@@ -39,6 +40,10 @@ Route::group(["prefix" => "settings", 'middleware' => 'auth:web'], function () {
         Route::patch('settings-update/{id}', [UserSettingsController::class, 'update'])->name('user_settings.update');
         Route::patch('settings-update-buildings', [UserSettingsController::class, 'update_buildings'])->name('user_settings.update_buildings');
     });
+
+
+    Route::get('/notifications', [NotificationSettingsController::class, 'index'])->name('notifications_settings');
+    Route::patch('/notifications/update', [NotificationSettingsController::class, 'update'])->name('notifications_settings.store');
 });
 
 Route::group(['prefix' => 'currency', 'as' => 'admin.currency.', 'middleware' => 'auth:web'], function () {
@@ -53,6 +58,6 @@ Route::group(['prefix' => 'currency', 'as' => 'admin.currency.', 'middleware' =>
 });
 Route::group(['prefix' => 'room-reservation/settings', 'as' => 'room_reservation.settings.', 'middleware' => 'auth:web'], function () {
     // Reservation Settings Routes can be added here in the future
-        Route::get('/', [ReservationSettingsController::class, 'room_reservation'])->name('room_reservation_settings');
+    Route::get('/', [ReservationSettingsController::class, 'room_reservation'])->name('room_reservation_settings');
     Route::patch('/update', [ReservationSettingsController::class, 'room_reservation_update'])->name('room_reservation_settings.store');
 });

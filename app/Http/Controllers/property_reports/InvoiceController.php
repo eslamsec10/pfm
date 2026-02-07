@@ -244,8 +244,7 @@ class InvoiceController extends Controller
 
                 // create invoice items if there is tenant
                 $grand_total = 0;
-                if (isset($invoice)) {
-                    Log::info("invoice created");
+                if (isset($invoice)) { 
                     $options['to'] = "+201150099801";
                     // $options['to'] = $tenant->whatsapp_no ?? $tenant->contact_no;
                     $options['message'] = "Hello Dear " . ($tenant->name ?? $tenant->company_name) . " this your invoice";

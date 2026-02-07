@@ -1,9 +1,9 @@
-@extends('layouts.back-end.app') 
+@extends('layouts.back-end.app')
 @section('title', ui_change('settings'))
 
 @push('css_or_js')
-    <link href="{{ asset('public/assets/select2/css/select2.min.css')}}" rel="stylesheet">
-    <link href="{{ asset('public/assets/back-end/css/custom.css')}}" rel="stylesheet">
+    <link href="{{ asset('public/assets/select2/css/select2.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('public/assets/back-end/css/custom.css') }}" rel="stylesheet">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 @endpush
 
@@ -12,8 +12,8 @@
         <!-- Page Title -->
         <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
-                <img src="{{asset('/public/assets/back-end/img/business-setup.png')}}" alt="">
-                 {{ ui_change('agreement_settings') }}
+                <img src="{{ asset('/public/assets/back-end/img/business-setup.png') }}" alt="">
+                {{ ui_change('agreement_settings') }}
             </h2>
 
         </div>
@@ -24,66 +24,108 @@
 
 
 
-            <!-- Form -->
-            <form class="product-form text-start" action="{{   route('agreement_settings.store')   }}" method="POST" enctype="multipart/form-data" id="product_form">
-                @csrf
-                @method('patch')
+        <!-- Form -->
+        <form class="product-form text-start" action="{{ route('agreement_settings.store') }}" method="POST"
+            enctype="multipart/form-data" id="product_form">
+            @csrf
+            @method('patch')
 
-                <!-- general setup -->
-                <div class="card mt-3 rest-part">
-                    <div class="card-header">
-                        <div class="d-flex gap-2">
-                            <img src="{{asset('/public/assets/back-end/img/seller-information.png')}}" class="mb-1" alt="">
-                            <h4 class="mb-0">{{ ui_change('agreement_settings')  }}</h4>
-                        </div>
+            <!-- general setup -->
+            <div class="card mt-3 rest-part">
+                <div class="card-header">
+                    <div class="d-flex gap-2">
+                        <img src="{{ asset('/public/assets/back-end/img/seller-information.png') }}" class="mb-1"
+                            alt="">
+                        <h4 class="mb-0">{{ ui_change('agreement_settings') }}</h4>
                     </div>
-                    <div class="card-body">
-                        <div class="row">
+                </div>
+                <div class="card-body">
+                    <div class="row">
 
-                            <div class="col-md-6 col-lg-4 col-xl-3">
-                                <div class="form-group">
-                                    <label for="token" class="title-color">{{ ui_change('prefix') }}</label>
-                                    <input type="text" class="form-control" name="agreement_prefix"   value="{{  $agreement_prefix }}">
-                                </div>
+                        <div class="col-md-6 col-lg-4 col-xl-3">
+                            <div class="form-group">
+                                <label for="token" class="title-color">{{ ui_change('prefix') }}</label>
+                                <input type="text" class="form-control" name="agreement_prefix"
+                                    value="{{ $agreement_prefix }}">
                             </div>
-
-                            <div class="col-md-6 col-lg-4 col-xl-3">
-                                <div class="form-group">
-                                    <label for="token" class="title-color">{{ ui_change('agreement_digits') }}</label>
-                                    <input type="text" class="form-control" name="agreement_digits" value="{{ $agreement_digits }}">
-                                </div>
-                            </div>
-                            <div class="col-md-12 col-lg-4 col-xl-3">
-                                <div class="form-group">
-                                    <label for="">{{ ui_change('start_date') }}</label>
-                                    <input type="text" class="form-control" id="agreement_start_date" name="agreement_date" value="{{  (isset($agreement_date)) ? \Carbon\Carbon::parse($agreement_date)->format('d-m-Y') : \Carbon\Carbon::now()->format('d-m-Y') }}" class="form-control">
-                                </div>
-                            </div>
-                            <div class="col-md-12 col-lg-4 col-xl-3">
-                                <div class="form-group">
-                                    <label for="">{{   ui_change('agreement_expire_date')    }}</label>
-                                    <input type="number" class="form-control"   name="agreement_expire_date"  class="form-control" value="{{ ( isset($agreement_expire_date)) ? $agreement_expire_date : ''   }}">
-                                </div>
-                            </div>
-                            <div class="col-md-12 col-lg-4 col-xl-3">
-                                <div class="form-group">
-                                    <label for="">{{   ui_change('color')    }}</label>
-                                    <input type="color" class="form-control"   name="agreement_color"  class="form-control" value="{{ ( isset($agreement_color)) ? $agreement_color : ''   }}">
-                                </div>
-                            </div>
-
                         </div>
+
+                        <div class="col-md-6 col-lg-4 col-xl-3">
+                            <div class="form-group">
+                                <label for="token" class="title-color">{{ ui_change('agreement_digits') }}</label>
+                                <input type="text" class="form-control" name="agreement_digits"
+                                    value="{{ $agreement_digits }}">
+                            </div>
+                        </div>
+                        <div class="col-md-12 col-lg-4 col-xl-3">
+                            <div class="form-group">
+                                <label for="">{{ ui_change('start_date') }}</label>
+                                <input type="text" class="form-control" id="agreement_start_date" name="agreement_date"
+                                    value="{{ isset($agreement_date) ? \Carbon\Carbon::parse($agreement_date)->format('d-m-Y') : \Carbon\Carbon::now()->format('d-m-Y') }}"
+                                    class="form-control">
+                            </div>
+                        </div>
+                        <div class="col-md-12 col-lg-4 col-xl-3">
+                            <div class="form-group">
+                                <label for="">{{ ui_change('agreement_expire_date') }}</label>
+                                <input type="number" class="form-control" name="agreement_expire_date" class="form-control"
+                                    value="{{ isset($agreement_expire_date) ? $agreement_expire_date : '' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-12 col-lg-4 col-xl-3">
+                            <div class="form-group">
+                                <label for="">{{ ui_change('color') }}</label>
+                                <input type="color" class="form-control" name="agreement_color" class="form-control"
+                                    value="{{ isset($agreement_color) ? $agreement_color : '' }}">
+                            </div>
+                        </div>
+
+                        <div class="col-md-12 col-lg-6 col-xl-6">
+                            <div class="form-group">
+                                <label class="title-color">{{ ui_change('Notification_Types') }}</label>
+
+                                <div class="d-flex flex-wrap gap-3 mt-2">
+
+                                    <label class="d-flex align-items-center gap-2">
+                                        <input type="checkbox" name="notifications[]" value="system"
+                                            {{ in_array('system', $notifications ?? []) ? 'checked' : '' }}>
+                                        {{ ui_change('system') }}
+                                    </label>
+
+                                    <label class="d-flex align-items-center gap-2">
+                                        <input type="checkbox" name="notifications[]" value="email"
+                                            {{ in_array('email', $notifications ?? []) ? 'checked' : '' }}>
+                                        {{ ui_change('email') }}
+                                    </label>
+
+                                    <label class="d-flex align-items-center gap-2">
+                                        <input type="checkbox" name="notifications[]" value="whatsapp"
+                                            {{ in_array('whatsapp', $notifications ?? []) ? 'checked' : '' }}>
+                                        {{ ui_change('whatsapp') }}
+                                    </label>
+
+                                    <label class="d-flex align-items-center gap-2">
+                                        <input type="checkbox" id="select_all_notifications">
+                                        {{ ui_change('select_all') }}
+                                    </label>
+
+                                </div>
+                            </div>
+                        </div>
+
+
                     </div>
-
-
                 </div>
 
 
-                <div class="row justify-content-end gap-3 mt-3 mx-1">
-                    <button type="reset" class="btn btn-secondary px-5">{{ ui_change('reset') }}</button>
-                    <button type="submit" class="btn btn--primary px-5">{{ ui_change('submit') }}</button>
-                </div>
-            </form>
+            </div>
+
+
+            <div class="row justify-content-end gap-3 mt-3 mx-1">
+                <button type="submit" class="btn btn--primary px-5">{{ ui_change('submit') }}</button>
+            </div>
+        </form>
+    </div>
 @endsection
 @push('script')
     <script>
@@ -91,7 +133,16 @@
             dateFormat: "d/m/Y",
 
         });
+    </script>
+    <script>
+        document.getElementById('select_all_notifications').addEventListener('change', function() {
 
+            let checkboxes = document.querySelectorAll('input[name="notifications[]"]');
 
+            checkboxes.forEach(function(checkbox) {
+                checkbox.checked = event.target.checked;
+            });
+
+        });
     </script>
 @endpush

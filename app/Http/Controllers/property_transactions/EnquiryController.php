@@ -510,7 +510,7 @@ class EnquiryController extends Controller
                 if ($request->view_id) {
                     foreach ($request->view_id as $key => $value_unit) {
 
-                        $unit_description_id = $request->unit_description_id[$key];
+                        $unit_description_id = (isset($request->unit_description_id[$key]) ? $request->unit_description_id[$key] : null);
                         $rent_amount         = $request->input('rent_amount-' . $unit_description_id);
                         if ($request->period_from_unit_desc[$key]) {
                             $enquiry_from_unit_date = Carbon::createFromFormat('d/m/Y', $request->period_from_unit_desc[$key])->format('Y-m-d');
@@ -518,7 +518,7 @@ class EnquiryController extends Controller
                         if ($request->period_to_unit_desc[$key]) {
                             $enquiry_to_unit_date = Carbon::createFromFormat('d/m/Y', $request->period_to_unit_desc[$key])->format('Y-m-d');
                         }
-                        DB::connection('tenant')->table('enquiry_unit_search_details')->insert([
+                        EnquiryUnitSearchDetails::create([
                             'enquiry_id'             => $enquiry,
                             'property_management_id' => $request->property_id[$key],
                             'unit_management_id'     => (isset($request->unit_management_id[$key])) ? $request->unit_management_id[$key] : null,

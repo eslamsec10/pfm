@@ -18,7 +18,7 @@
         <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img src="{{asset('/public/assets/back-end/img/business-setup.png')}}" alt="">
-                {{  ui_change('proposal_settings')  }}
+                {{  ui_change('enquiry_settings')  }}
             </h2>
 
         </div>
@@ -30,7 +30,7 @@
 
 
             <!-- Form -->
-            <form class="product-form text-start" action="{{  route('proposal_settings.store')  }}" method="POST" enctype="multipart/form-data" id="product_form">
+            <form class="product-form text-start" action="{{  route('enquiry_settings.store')  }}" method="POST" enctype="multipart/form-data" id="product_form">
                 @csrf
                 @method('patch')
 
@@ -39,7 +39,7 @@
                     <div class="card-header">
                         <div class="d-flex gap-2">
                             <img src="{{asset('/public/assets/back-end/img/seller-information.png')}}" class="mb-1" alt="">
-                            <h4 class="mb-0">{{ ui_change('proposal_settings')  }}</h4>
+                            <h4 class="mb-0">{{ ui_change('enquiry_settings')  }}</h4>
                         </div>
                     </div>
                     <div class="card-body">
@@ -48,35 +48,35 @@
                             <div class="col-md-6 col-lg-4 col-xl-3">
                                 <div class="form-group">
                                     <label for="token" class="title-color">{{ ui_change('prefix') }}</label>
-                                    <input type="text" class="form-control" name="proposal_prefix"   value="{{   $proposal_prefix }}">
+                                    <input type="text" class="form-control" name="enquiry_prefix"   value="{{   $enquiry_prefix }}">
                                 </div>
                             </div>
 
                             <div class="col-md-6 col-lg-4 col-xl-3">
                                 <div class="form-group">
-                                    <label for="token" class="title-color">{{ ui_change('proposal_digits') }}</label>
-                                    <input type="text" class="form-control" name="proposal_digits" value="{{ $proposal_digits  }}">
+                                    <label for="token" class="title-color">{{ ui_change('enquiry_digits') }}</label>
+                                    <input type="text" class="form-control" name="enquiry_digits" value="{{ $enquiry_digits  }}">
                                 </div>
                             </div>
                             <div class="col-md-12 col-lg-4 col-xl-3">
                                 <div class="form-group">
                                     <label for="">{{ ui_change('start_date') }}</label>
-                                    <input type="text" class="form-control" id="proposal_start_date" name="proposal_date" value="{{  (isset($proposal_date)) ? \Carbon\Carbon::parse($proposal_date)->format('d-m-Y') : '' }}" class="form-control">
+                                    <input type="text" class="form-control" id="enquiry_start_date" name="enquiry_date" value="{{  (isset($enquiry_date)) ? \Carbon\Carbon::parse($enquiry_date)->format('d-m-Y') : '' }}" class="form-control">
                                 </div>
                             </div>
                             <div class="col-md-12 col-lg-4 col-xl-3">
                                 <div class="form-group">
-                                    <label for="">{{  ui_change('proposal_expire_date')   }}</label>
-                                    <input type="number" class="form-control"   name="proposal_expire_date"  class="form-control" value="{{ $proposal_expire_date ?? ''  }}">
+                                    <label for="">{{  ui_change('enquiry_expire_date')   }}</label>
+                                    <input type="number" class="form-control"   name="enquiry_expire_date"  class="form-control" value="{{ $enquiry_expire_date ?? ''  }}">
                                 </div>
                             </div>
                             <div class="col-md-12 col-lg-4 col-xl-3">
                                 <div class="form-group">
-                                    <label for="">{{ ui_change('proposal_color') }}</label>
-                                    <input type="color" class="form-control"   name="proposal_color"  class="form-control" value="{{ ( isset($proposal_color)) ? $proposal_color  : ''  }}">
+                                    <label for="">{{ ui_change('enquiry_color') }}</label>
+                                    <input type="color" class="form-control"   name="enquiry_color"  class="form-control" value="{{ ( isset($enquiry_color)) ? $enquiry_color  : ''  }}">
                                 </div>
                             </div>
-                                                    <div class="col-md-12 col-lg-6 col-xl-6">
+                                                        <div class="col-md-12 col-lg-6 col-xl-6">
                             <div class="form-group">
                                 <label class="title-color">{{ ui_change('Notification_Types') }}</label>
 
@@ -122,7 +122,7 @@
 @endsection
 @push('script')
     <script>
-        flatpickr("#proposal_start_date", {
+        flatpickr("#enquiry_start_date", {
             dateFormat: "d/m/Y",
 
         });

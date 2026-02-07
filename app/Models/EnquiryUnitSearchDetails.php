@@ -9,7 +9,7 @@ class EnquiryUnitSearchDetails extends Model
 {
     use HasFactory;
     protected $connection = 'tenant';
-
+    protected $guarded = [];
     public function unit_management(){
         return $this->belongsTo(UnitManagement::class , 'unit_management_id');
     }

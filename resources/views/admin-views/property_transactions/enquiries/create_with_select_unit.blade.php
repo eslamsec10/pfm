@@ -224,7 +224,7 @@
 
                                     @foreach ($all_units as $all_units_item)
                                         @php
-                                            $unitId = $all_units_item->unit_description->id;
+                                            $unitId = $all_units_item?->unit_description?->id;
                                             if (!isset($unitCounts[$unitId])) {
                                                 $unitCounts[$unitId] = 1;
                                             } else {
@@ -249,7 +249,7 @@
                                             }
                                         @endphp
                                         <tr>
-                                            <td class="unit-label">{{ $unit->unit_description->name }}</td>
+                                            <td class="unit-label">{{ $unit->unit_description?->name }}</td>
                                             <td>
                                                 <input type="text" id="no_of_unit-{{ $unitId }}"
                                                     class="form-control no-of-units" placeholder="No. of unit(s)"

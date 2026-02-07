@@ -41,36 +41,24 @@
                 <div class="card-body">
                     <div class="row">
 
-                        {{-- @php($signature_mode = \App\Models\CompanySettings::where('type', 'signature_mode')->first())
+                        
+
                         <div class="col-md-6 col-lg-4 col-xl-3">
                             <div class="form-group">
-                                <label for="name" class="title-color">{{ __('companies.signature_mode') }}</label>
-                                <select class="js-select2-custom form-control" name="signature_mode" required>
-                                    <option selected disabled>{{ __('general.select') }}</option>
-                                    <option value="digital" @if (isset($signature_mode) && $signature_mode->value == 'digital') selected @endif>
-                                        {{ __('companies.digital') }}</option>
-                                    <option value="normal" @if (isset($signature_mode) && $signature_mode->value == 'normal') selected @endif>
-                                        {{ __('companies.normal') }}</option>
-                                </select>
-                            </div>
-                        </div> --}}
-
-                        <div class="col-md-6 col-lg-4 col-xl-4">
-                            <div class="form-group">
                                 <label for="email" class="title-color">{{ ui_change('email') }}</label>
-                                <input class="form-control" type="email" name="email" value=" ">
+                                <input class="form-control" type="email" name="email" value="{{ $notification_settings->where('key' , 'email')->first()?->value ?? '' }}">
                             </div>
                         </div>
                         <div class="col-md-6 col-lg-4 col-xl-4">
                             <div class="form-group">
                                 <label for="appkey" class="title-color">{{ ui_change('app_key') }}</label>
-                                <input class="form-control" type="text" name="appkey" value=" ">
+                                <input class="form-control" type="text" name="appkey" value="{{ $notification_settings->where('key' , 'appkey')->first()?->value ?? '' }}">
                             </div>
                         </div>
-                        <div class="col-md-6 col-lg-4 col-xl-4">
+                        <div class="col-md-6 col-lg-4 col-xl-5">
                             <div class="form-group">
                                 <label for="authkey" class="title-color">{{ ui_change('auth_key') }}</label>
-                                <input class="form-control" type="text" name="authkey" value=" ">
+                                <input class="form-control" type="text" name="authkey" value="{{ $notification_settings->where('key' , 'authkey')->first()?->value ?? '' }}">
                             </div>
                         </div>
                         {{-- @php($height = \App\Models\CompanySettings::where('type', 'height')->first())

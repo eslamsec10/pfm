@@ -243,7 +243,7 @@
                                         <td class="count-units count-column text-center ">
                                             {{ $floor_item->unit_management_child->count() }}</td>
                                         <td class="total-units">
-                                            @foreach ($floor_item->unit_management_child as $unit)
+                                            @foreach ($floor_item->unit_management_child->sortBy('position') as $unit)
                                                 @if ($unit->booking_status == 'enquiry')
                                                     @php
                                                         $periodFrom = optional($unit->enquiry)->period_from;

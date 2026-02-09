@@ -12,7 +12,7 @@ class UnitManagement extends Model
 {
     use HasFactory;
     protected $guarded = [];
-    // protected $connection = 'tenant';
+    protected $connection = 'tenant';
     public function unit_ledger()
     {
         return $this->belongsTo(MainLedger::class, "ledger_id", "id");

@@ -552,6 +552,8 @@ Route::group(['prefix' => 'floor_management' ,'middleware' => 'auth:web'], funct
 
 // Units Management
 Route::group(['prefix' => 'unit_management' ,'middleware' => 'auth:web'], function () {
+    Route::post('/units/reorder', [UnitManagementController::class, 'reorder'])->name('units.reorder');
+
     Route::get('/', [UnitManagementController::class, 'index'])->name('unit_management.index');
     Route::get('/create-new', [UnitManagementController::class, 'create_new'])->name('unit_management.create_new');
     Route::get('/create', [UnitManagementController::class, 'create'])->name('unit_management.create');

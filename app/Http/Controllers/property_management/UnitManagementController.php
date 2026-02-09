@@ -701,4 +701,19 @@ class UnitManagementController extends Controller
 
         return json_encode($units);
     }
+
+     public function reorder(Request $request)
+    { 
+        $order = $request->input('order');
+        if(!$order) {
+            return response()->json(['status' => 'error', 'message' => 'No order data received'], 400);
+        }
+
+        foreach ($order as $item) {
+            UnitManagement::where('id', $item['id'])
+                ->update(['position' => $item['position']]);
+        }
+
+        return response()->json(['status' => 'success']);
+    }
 }

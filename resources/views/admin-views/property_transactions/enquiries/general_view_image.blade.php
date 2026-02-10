@@ -15,6 +15,11 @@
             margin-bottom: 20px;
         }
 
+        .unit {
+            position: relative;
+            overflow: visible;
+        }
+
         .legend div {
             display: flex;
             align-items: center;
@@ -39,10 +44,11 @@
 
         .grid {
             display: grid;
-            grid-template-columns: 100px auto; 
+            grid-template-columns: 100px auto;
             gap: 5px;
             margin-bottom: 10px;
-        } 
+        }
+
         .grid .floor {
             background-color: teal;
             color: #fff;
@@ -51,16 +57,16 @@
             border: 1px solid #000;
             line-height: 40px;
         }
- 
+
         .grid .unit-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, 100px); 
+            grid-template-columns: repeat(auto-fill, 100px);
             gap: 5px;
         }
 
         .grid .unit {
-            width: 100px; 
-            height: 40px; 
+            width: 100px;
+            height: 40px;
             background-color: #fff;
             text-align: center;
             line-height: 40px;
@@ -108,24 +114,6 @@
             }
         }
 
-        .hover-info .info-box {
-            display: none;
-            position: absolute;
-            bottom: 120%;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(0, 0, 0, 0.8);
-            color: #fff;
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 13px;
-            white-space: nowrap;
-            z-index: 999;
-        }
-
-        .hover-info:hover .info-box {
-            display: block;
-        }
 
         .unit-checkbox {
             display: none;
@@ -139,6 +127,98 @@
         .unit.dragging {
             opacity: 0.5;
             border: 2px dashed #007bff;
+        }
+
+        .unit-hover-box.dark {
+            position: absolute;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%) translateY(6px);
+
+            width: 230px;
+            background: #0b0f14;
+            color: #fff;
+            border-radius: 6px;
+            padding: 12px;
+            font-size: 13px;
+
+            box-shadow: 0 10px 25px rgba(0, 0, 0, .4);
+
+            opacity: 0;
+            visibility: hidden;
+            transition: .25s ease;
+            z-index: 9999;
+        }
+
+        .unit-hover-box.dark::after {
+            content: "";
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 8px 8px 0;
+            border-style: solid;
+            border-color: #0b0f14 transparent transparent;
+        }
+
+        .unit:hover .unit-hover-box {
+            opacity: 1;
+            visibility: visible;
+            text-align: left;
+            transform: translateX(-50%) translateY(0);
+        }
+
+
+        .unit-hover-box .title {
+            font-weight: 700;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #2a2f35;
+        }
+
+        .unit-hover-box .info div {
+            margin: 4px 0;
+        }
+
+        .unit-hover-box .info span {
+            color: #4fc3f7;
+        }
+
+        .options-title {
+            margin-top: 10px;
+            font-weight: 600;
+            border-bottom: 1px solid #2a2f35;
+            padding-bottom: 4px;
+        }
+
+        .options {
+            list-style: none;
+            padding: 0;
+            margin: 6px 0 0;
+        }
+
+        .options li {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 5px;
+        }
+
+        .options li.yes::before {
+            content: "✔";
+            color: #00e676;
+            font-weight: bold;
+        }
+
+        .options li.no::before {
+            content: "✖";
+            color: #ff5252;
+            font-weight: bold;
+        }
+
+        .unit-status-empty {
+            background: #e8f7ee;
+            border: 1px solid #4caf50;
         }
     </style>
 @endpush
@@ -209,9 +289,57 @@
                                             <div class="floor">{{ $floor_item->floor_management_main?->name }}</div>
                                             <div class="unit-container">
                                                 @foreach ($floor_item->unit_management_child->sortBy('position') as $unit_item)
-                                                    <div class="unit hover-info {{ $unit_item->booking_status }}" data-id="{{ $unit_item->id }}">
-                                                        {{ $unit_item->unit_management_main?->name.'-'. $unit_item->unit_management_main?->unit_description?->name }}
-                                                        <div class="info-box">
+                                                    <div class="unit hover-info {{ $unit_item->booking_status }}"
+                                                        data-id="{{ $unit_item->id }}">
+                                                        {{ $unit_item->unit_management_main?->name . '-' . $unit_item->unit_management_main?->unit_description?->name }}
+
+                                                        <div class="unit-hover-box dark">
+                                                            <div class="title">
+                                                                {{ ui_change('unit_Info') }}</div>
+
+                                                            <div class="info">
+                                                                <div>{{ ui_change('Tenant') }} :
+                                                                    <span>
+
+                                                                        @if ($unit_item->booking_status == 'enquiry')
+                                                                            {{ optional(optional(optional($unit_item->enquiry)->main_enquiry)->tenant)->name ?? optional(optional(optional($unit_item->enquiry)->main_enquiry)->tenant)->company_name }}
+                                                                        @elseif($unit_item->booking_status == 'proposal')
+                                                                            {{ optional(optional(optional($unit_item->proposal_main)->proposal)->tenant)->name ?? optional(optional(optional($unit_item->proposal_main)->proposal)->tenant)->company_name }}
+                                                                        @elseif($unit_item->booking_status == 'booking')
+                                                                            {{ optional(optional(optional($unit_item->booking_main)->booking)->tenant)->name ?? optional(optional(optional($unit_item->booking_main)->booking)->tenant)->company_name }}
+                                                                        @elseif($unit_item->booking_status == 'agreement')
+                                                                            {{ optional(optional(optional($unit_item->agreement_main)->agreement)->tenant)->name ?? optional(optional(optional($unit_item->agreement_main)->agreement)->tenant)->company_name }}
+                                                                        @endif
+                                                                    </span>
+                                                                </div>
+                                                                <div>{{ ui_change('unit_description') }} :
+                                                                    <span>{{ $unit_item->unit_description?->name }}</span>
+                                                                </div>
+                                                                <div>{{ ui_change('unit_type') }} :
+                                                                    <span>{{ $unit_item->unit_type?->name }}</span>
+                                                                </div>
+                                                                <div>{{ ui_change('unit_condition') }} :
+                                                                    <span>{{ $unit_item->unit_condition?->name }}</span>
+                                                                </div>
+
+                                                            </div>
+
+                                                            {{-- <div class="options-title">
+                                                                {{ ui_change('room_facilities') }}</div>
+
+                                                            <ul class="options">
+                                                                @forelse ($unit_item->facilities as $facility_item)
+                                                                    <li class="yes">
+                                                                        {{ $facility_item->name }}</li>
+                                                                @empty
+                                                                    <li class="no">
+                                                                        {{ ui_change('no_facilities') }}
+                                                                    </li>
+                                                                @endforelse
+
+                                                            </ul> --}}
+                                                        </div>
+                                                        {{-- <div class="info-box">
                                                             @if ($unit_item->booking_status == 'enquiry')
                                                                 {{ optional(optional(optional($unit_item->enquiry)->main_enquiry)->tenant)->name ?? optional(optional(optional($unit_item->enquiry)->main_enquiry)->tenant)->company_name }}
                                                             @elseif($unit_item->booking_status == 'proposal')
@@ -221,7 +349,7 @@
                                                             @elseif($unit_item->booking_status == 'agreement')
                                                                 {{ optional(optional(optional($unit_item->agreement_main)->agreement)->tenant)->name ?? optional(optional(optional($unit_item->agreement_main)->agreement)->tenant)->company_name }}
                                                             @endif
-                                                        </div>
+                                                        </div> --}}
                                                     </div>
                                                 @endforeach
                                             </div>
@@ -262,47 +390,49 @@
     </div>
 @endsection
 
-@push('script') 
-{{-- <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>  --}}
+@push('script')
+    {{-- <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>  --}}
 
-<script src="{{ asset(main_path()."js/Sortable.min.js") }}"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
+    <script src="{{ asset(main_path() . 'js/Sortable.min.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
 
-    document.querySelectorAll('.unit-container').forEach(container => {
-        new Sortable(container, {
-            animation: 150,
-            ghostClass: 'dragging',
-            onEnd: function(evt) {
-                let order = [];
-                container.querySelectorAll('.unit').forEach((el, index) => {
-                    order.push({
-                        id: el.getAttribute('data-id'), 
-                        position: index + 1
-                    });
-                });
- 
-                fetch("{{ route('units.reorder') }}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({ order })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if(data.status === 'success'){
-                        console.log('Order saved successfully');
+            document.querySelectorAll('.unit-container').forEach(container => {
+                new Sortable(container, {
+                    animation: 150,
+                    ghostClass: 'dragging',
+                    onEnd: function(evt) {
+                        let order = [];
+                        container.querySelectorAll('.unit').forEach((el, index) => {
+                            order.push({
+                                id: el.getAttribute('data-id'),
+                                position: index + 1
+                            });
+                        });
+
+                        fetch("{{ route('units.reorder') }}", {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                },
+                                body: JSON.stringify({
+                                    order
+                                })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.status === 'success') {
+                                    console.log('Order saved successfully');
+                                }
+                            })
+                            .catch(err => console.error(err));
                     }
-                })
-                .catch(err => console.error(err));
-            }
-        });
-    });
+                });
+            });
 
-});
-</script>
+        });
+    </script>
 
 
 

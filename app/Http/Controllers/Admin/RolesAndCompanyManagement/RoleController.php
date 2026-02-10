@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\RolesAndCompanyManagement;
+namespace App\Http\Controllers\Admin\RolesAndCompanyManagement;
 
 use App\Models\Role;
 use App\Models\Section;

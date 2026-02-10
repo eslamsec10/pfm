@@ -5,5 +5,6 @@
         <li class="{{ Request::is('*room-facilities*') ?'active':'' }}"><a href="{{ route('room_facility.list') }}">{{ui_change('room_facility','investment') }}</a></li>
         <li class="{{ Request::is('*room-options*') ?'active':'' }}"><a href="{{ route('room_option.list') }}">{{ui_change('room_option','investment') }}</a></li>
         <li class="{{ Request::is('*room-status*') ?'active':'' }}"><a href="{{ route('room_status.list') }}">{{ui_change('room_status','investment')  }}</a></li> 
+        <li class="{{ Request::is('*meeting-room*') ?'active':'' }}"><a href="{{ route('meeting_room.list') }}">{{ui_change('meeting_room','investment')  }}</a></li> 
     </ul>
 </div>

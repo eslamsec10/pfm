@@ -9,7 +9,7 @@ pipelines:
               - pipe: atlassian/ssh-run:0.3.1
                 variables:
                   SSH_USER: 'automation'
-                  SERVER: '15.184.88.196'
+                  SERVER: '84.8.122.101'
                   MODE: 'command'
                   COMMAND: '/home/automation/scripts/dev-pfm.finexerp.com.sh'
     staging:
@@ -20,20 +20,9 @@ pipelines:
               - pipe: atlassian/ssh-run:0.3.1
                 variables:
                   SSH_USER: 'automation'
-                  SERVER: '15.184.88.196'
+                  SERVER: '84.8.122.101'
                   MODE: 'command'
                   COMMAND: '/home/automation/scripts/stage-pfm.finexerp.com.sh'
-    master:
-    - parallel:
-        - step:
-            name: " Deploy To pfm.finexerp.com "
-            script:
-              - pipe: atlassian/ssh-run:0.3.1
-                variables:
-                  SSH_USER: 'automation'
-                  SERVER: '157.175.9.223'
-                  MODE: 'command'
-                  COMMAND: '/home/automation/scripts/pfm.finexerp.com.sh'
     admin:
     - step:
         name: " Deploy To admin-pfm.finexerp.com "
@@ -42,7 +31,7 @@ pipelines:
           - pipe: atlassian/ssh-run:0.3.1
             variables:
               SSH_USER: 'automation'
-              SERVER: '15.184.88.196'
+              SERVER: '145.241.156.163'
               MODE: 'command'
               COMMAND: '/home/automation/scripts/pfm.finexerp.com.sh'
     - step:
@@ -55,9 +44,9 @@ pipelines:
           - pipe: atlassian/ssh-run:0.3.1
             variables:
               SSH_USER: 'automation'
-              SERVER: '15.184.88.196'
+              SERVER: '145.241.156.163'
               MODE: 'command'
-              COMMAND: 'cd /home/automation/dev/pfm.finexerp.com && /usr/bin/php8.1 /usr/bin/composer update'
+              COMMAND: 'cd /home/automation/prod/pfm.finexerp.com && /usr/bin/php8.1 /usr/bin/composer update'
     - step:
         name: " Run Migrations (if needed) - admin-pfm "
         condition:
@@ -68,9 +57,9 @@ pipelines:
           - pipe: atlassian/ssh-run:0.3.1
             variables:
               SSH_USER: 'automation'
-              SERVER: '15.184.88.196'
+              SERVER: '145.241.156.163'
               MODE: 'command'
-              COMMAND: 'cd /home/automation/dev/pfm.finexerp.com && /usr/bin/php8.1 artisan migrate --force'
+              COMMAND: 'cd /home/automation/prod/pfm.finexerp.com && /usr/bin/php8.1 artisan migrate --force'
     - step:
         name: " Run Migrations (if needed) - admin-pfm "
         condition:
@@ -81,6 +70,6 @@ pipelines:
           - pipe: atlassian/ssh-run:0.3.1
             variables:
               SSH_USER: 'automation'
-              SERVER: '15.184.88.196'
+              SERVER: '145.241.156.163'
               MODE: 'command'
-              COMMAND: 'cd /home/automation/dev/pfm.finexerp.com && /usr/bin/php8.1 artisan migrate:all'
+              COMMAND: 'cd /home/automation/prod/pfm.finexerp.com && /usr/bin/php8.1 artisan migrate:all'

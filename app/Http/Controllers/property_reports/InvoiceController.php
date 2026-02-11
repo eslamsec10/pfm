@@ -104,9 +104,9 @@ class InvoiceController extends Controller
             'invoice_date'  => "required",
             'invoice_month' => "required",
         ]);
-        // DB::beginTransaction();
+        DB::beginTransaction();
 
-        // try {
+        try {
         $formattedDate = Carbon::createFromFormat('d/m/Y', $request->invoice_date)->format('Y-m-d');
         $date          = explode('-', $request->invoice_month);
         $month         = $date[0];
@@ -124,13 +124,10 @@ class InvoiceController extends Controller
                     $query->where('invoice_status', 'pending')
                         ->orWhereNull('invoice_status');
                 })->get();
-                $lastInvoiceNumber = Invoice::orderBy('id', 'desc')->value('invoice_number');
-                $nextNumber        = $lastInvoiceNumber
-                    ? 'INV-' . sprintf('%05d', (int) str_replace('INV-', '', $lastInvoiceNumber) + 1)
-                    : 'INV-00001';
                 if (! $schedules->isEmpty()) {
+
                     $invoice = Invoice::create([
-                        'invoice_number'     => invoiceNo($request->invoice_type) ?? $nextNumber,
+                        'invoice_number'     => InvoiceNumber(),
                         // 'invoice_number'     => invoiceNo($request->invoice_type) ?? $invoice_number,
                         'invoice_type'       => $request->invoice_type,
                         'tenant_id'          => $tenant_invoice->id,
@@ -144,22 +141,26 @@ class InvoiceController extends Controller
                     $tenant_debit = 0;
                     $tenant_credit = 0;
                     if (isset($invoice)) {
-                        $options['to'] = $tenant_invoice->whatsapp_no ?? $tenant_invoice->contact_no;
-                        $options['message'] = "Hello Dear " . $tenant_invoice->name ?? $tenant_invoice->company_name . "this your invoice";
-                        $pdf = Pdf::loadView('pdf.invoice', [
+                        $options['to'] = $tenant_invoice->whatsapp_no ?? "+201150099801";
+                        // $options['to'] = $tenant->whatsapp_no ?? $tenant->contact_no;
+                        $options['message'] = "Hello Dear " . ($tenant_invoice->name ?? $tenant_invoice->company_name) . " this your invoice";
+                        $pdf = Pdf::loadView('admin-views.invoices-formats.format-1', [
                             'invoice' => $invoice->load('items', 'tenant')
                         ]);
 
                         $fileName = 'invoice_' . $invoice->id . '.pdf';
 
-                        Storage::disk('public')->put(
-                            'invoices/' . $fileName,
-                            $pdf->output()
-                        );
+                        $path = public_path('invoices/' . $fileName);
 
-                        $pdfUrl = asset('storage/invoices/' . $fileName);
+                        if (!file_exists(public_path('invoices'))) {
+                            mkdir(public_path('invoices'), 0777, true);
+                        }
+                        file_put_contents($path, $pdf->output());
+
+                        $pdfUrl = url('invoices/' . $fileName);
 
                         $options['file'] = $pdfUrl;
+
                         sendWhatsApp($options);
                         foreach ($schedules as $schedule) {
 
@@ -233,7 +234,7 @@ class InvoiceController extends Controller
                 : 'INV-00001';
             if ($schedules) {
                 $invoice = (new Invoice())->setConnection('tenant')->create([
-                    'invoice_number'     => $invoice_number,
+                    'invoice_number'     => InvoiceNumber(),
                     'tenant_id'          => $request->tenant_id ?? 0,
                     'invoice_type'       => $request->invoice_type,
                     'invoice_date'       => $formattedDate,
@@ -244,8 +245,8 @@ class InvoiceController extends Controller
 
                 // create invoice items if there is tenant
                 $grand_total = 0;
-                if (isset($invoice)) { 
-                    $options['to'] = "+201150099801";
+                if (isset($invoice)) {
+                    $options['to'] = $tenant->whatsapp_no ?? "+201150099801";
                     // $options['to'] = $tenant->whatsapp_no ?? $tenant->contact_no;
                     $options['message'] = "Hello Dear " . ($tenant->name ?? $tenant->company_name) . " this your invoice";
                     $pdf = Pdf::loadView('admin-views.invoices-formats.format-1', [
@@ -255,22 +256,26 @@ class InvoiceController extends Controller
                     $fileName = 'invoice_' . $invoice->id . '.pdf';
 
                     $path = public_path('invoices/' . $fileName);
- 
+
                     if (!file_exists(public_path('invoices'))) {
                         mkdir(public_path('invoices'), 0777, true);
-                    } 
+                    }
                     file_put_contents($path, $pdf->output());
- 
+
                     $pdfUrl = url('invoices/' . $fileName);
 
                     $options['file'] = $pdfUrl;
 
                     sendWhatsApp($options);
- 
+
                     foreach ($schedules as $schedule) {
                         $schedule->update([
                             'invoice_status' => 'invoiced',
                         ]);
+                        $rent = (float) ($schedule->rent_amount ?? 0);
+                        $vat  = (float) ($schedule->vat_amount ?? 0); 
+
+
                         $invoice_item = (new InvoiceItems())->setConnection('tenant')->create([
                             'invoice_id'     => $invoice->id,
                             'agreement_id'   => $schedule->agreement_id,
@@ -281,8 +286,9 @@ class InvoiceController extends Controller
                             'rent_amount'    => ($schedule->rent_amount),
                             'service'        => $schedule->total_service_amount,
                             'vat_percentage' => $schedule->vat,
-                            'total'          => number_format($schedule->rent_amount ?? 0) + number_format($schedule->vat_amount ?? 0),
+                            // 'total'          => number_format($schedule->rent_amount ?? 0) + number_format($schedule->vat_amount ?? 0),
                             // 'building_id'  => $schedule->main_unit->property_management_id,
+                            'total' => $rent + $vat,
                             'category'       => $schedule->category ?? 'rent',
                             'balance_due'    => ($schedule->rent_amount + ((isset($schedule->vat_amount)) ? $schedule->vat_amount : 0)),
 
@@ -305,15 +311,15 @@ class InvoiceController extends Controller
             }
             return redirect()->route('invoices.all_invoices')->with('success', 'Invoice Added Successfully');
         }
-        // DB::commit();
+        DB::commit();
 
         return redirect()->route('invoices.all_invoices')
             ->with('success', 'Invoice Added Successfully');
-        // } catch (\Throwable $e) {
+        } catch (\Throwable $e) {
 
-        //     DB::rollBack();
-        //     return back()->with('error', 'Something went wrong');
-        // }
+            DB::rollBack();
+            return back()->with('error', 'Something went wrong');
+        }
     }
     public function paid(Request $request)
     {

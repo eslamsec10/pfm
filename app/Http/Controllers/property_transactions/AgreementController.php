@@ -1123,6 +1123,7 @@ class AgreementController extends Controller
     }
     public function create_with_select_unit(Request $request)
     {
+        // dd($request->all());
         $ids = $request->bulk_ids;
         if ($ids == null) {
             return redirect()->back()->with('error', 'Please Select Unit');

@@ -251,7 +251,7 @@
                 class="btn btn--primary createButton">
                 <i class="tio-add"></i> {{ ui_change('create_agreement', 'property_transaction') }}
             </button>
-        </form>
+        </div>
 
         @foreach ($property_items as $property_item)
             <div class="row mt-5 @if ($lang == 'ar') rtl text-start @else ltr @endif">
@@ -289,10 +289,61 @@
                                             <div class="floor">{{ $floor_item->floor_management_main?->name }}</div>
                                             <div class="unit-container">
                                                 @foreach ($floor_item->unit_management_child->sortBy('position') as $unit_item)
-                                                    <div class="unit hover-info {{ $unit_item->booking_status }}"
+                                                   
+                                                    <div class="unit hover-info {{ $unit_item->booking_status ?? 'empty' }}"
                                                         data-id="{{ $unit_item->id }}">
                                                         {{ $unit_item->unit_management_main?->name . '-' . $unit_item->unit_management_main?->unit_description?->name }}
+                                                             @if ($unit_item->booking_status == 'enquiry')
+                                                        @php
+                                                            $periodFrom = optional($unit_item->enquiry)->period_from;
+                                                        @endphp
+                                                        @if ($periodFrom && Carbon\Carbon::parse($periodFrom)->gt(Carbon\Carbon::today()))
+                                                            <input type="checkbox" name="bulk_ids[]"
+                                                                value="{{ $unit_item->id }}"
+                                                                class="unit-checkbox check_bulk_item check_bulk_item"
+                                                                style="position:absolute; top:5px; left:5px; z-index:10;">
+                                                        @endif
+                                                    @elseif($unit_item->booking_status == 'proposal')
+                                                        @php
+                                                            $periodFrom = optional($unit_item->proposal_main)
+                                                                ->commencement_date;
+                                                        @endphp
+                                                        @if ($periodFrom && Carbon\Carbon::parse($periodFrom)->gt(Carbon\Carbon::today()))
+                                                            <input type="checkbox" name="bulk_ids[]"
+                                                                value="{{ $unit_item->id }}"
+                                                                class="unit-checkbox check_bulk_item check_bulk_item"
+                                                                style="position:absolute; top:5px; left:5px; z-index:10;">
+                                                        @endif
 
+                                                        {{-- BOOKING --}}
+                                                    @elseif($unit_item->booking_status == 'booking')
+                                                        @php
+                                                            $periodFrom = optional($unit_item->booking_main)
+                                                                ->commencement_date;
+                                                        @endphp
+                                                        @if ($periodFrom && Carbon\Carbon::parse($periodFrom)->gt(Carbon\Carbon::today()))
+                                                            <input type="checkbox" name="bulk_ids[]"
+                                                                value="{{ $unit_item->id }}"
+                                                                class="unit-checkbox check_bulk_item check_bulk_item"
+                                                                style="position:absolute; top:5px; left:5px; z-index:10;">
+                                                        @endif
+                                                    @elseif($unit_item->booking_status == 'agreement')
+                                                        @php
+                                                            $periodFrom = optional($unit_item->agreement_main)
+                                                                ->commencement_date;
+                                                        @endphp
+                                                        @if ($periodFrom && Carbon\Carbon::parse($periodFrom)->gt(Carbon\Carbon::today()))
+                                                            <input type="checkbox" name="bulk_ids[]"
+                                                                value="{{ $unit_item->id }}"
+                                                                class="unit-checkbox check_bulk_item check_bulk_item"
+                                                                style="position:absolute; top:5px; left:5px; z-index:10;">
+                                                        @endif
+                                                    @else 
+                                                        <input type="checkbox" name="bulk_ids[]"
+                                                            value="{{ $unit_item->id }}"
+                                                            class="unit-checkbox check_bulk_item check_bulk_item"
+                                                            style="position:absolute; top:5px; left:5px; z-index:10;">
+                                                    @endif
                                                         <div class="unit-hover-box dark">
                                                             <div class="title">
                                                                 {{ ui_change('unit_Info') }}</div>
@@ -387,12 +438,11 @@
                 </div>
             </div>
         @endforeach
+        
     </div>
 @endsection
 
 @push('script')
-    {{-- <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>  --}}
-
     <script src="{{ asset(main_path() . 'js/Sortable.min.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {

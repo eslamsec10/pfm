@@ -9,7 +9,7 @@ class Invoice extends Model
 {
     use HasFactory;
     protected $guarded = ['id'];
-    // protected $connection = 'tenant';
+    protected $connection = 'tenant';
 
     public function items()
     {

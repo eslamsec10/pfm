@@ -947,7 +947,7 @@ if (!function_exists('sendWhatsApp')) {
                 'error'   => 'to and message required'
             ];
         }
-                
+
         if (is_array($to)) {
 
             $results = [];
@@ -962,7 +962,7 @@ if (!function_exists('sendWhatsApp')) {
             }
 
             return $results;
-        } 
+        }
 
         Log::info($file);
         return $service->send(
@@ -971,5 +971,31 @@ if (!function_exists('sendWhatsApp')) {
             $file,
             $sandbox
         );
+    }
+}
+
+if (!function_exists('InvoiceNumber')) {
+
+    function InvoiceNumber()
+    {
+        return DB::transaction(function () {
+
+            $prefix = optional(BusinessSetting::whereType('invoice_prefix')->first())->value ?? 'INV-';
+            $width  = optional(BusinessSetting::whereType('invoice_width')->first())->value ?? 5;
+            $suffix = optional(BusinessSetting::whereType('invoice_suffix')->first())->value ?? '';
+
+            $lastInvoice = Invoice::lockForUpdate()->orderBy('id', 'desc')->first();
+
+            if ($lastInvoice) {
+                $number = (int) preg_replace('/\D/', '', $lastInvoice->invoice_number);
+                $number++;
+            } else {
+                $number = 1;
+            }
+
+            $formatted = str_pad($number, $width, '0', STR_PAD_LEFT);
+
+            return $prefix . $formatted . $suffix;
+        });
     }
 }

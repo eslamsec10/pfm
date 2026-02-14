@@ -1,13 +1,10 @@
  @extends('layouts.back-end.app')
 
  @php
-     if (auth()->check()) {
-         $company = (new App\Models\Company())->setConnection('tenant')->where('id', auth()->user()->company_id)->first() ?? App\Models\User::first();
-     } else {
-         $company = (new App\Models\User())->setConnection('tenant')->first();
-     }     $lang = session()->get('locale');
+   
+     $lang = session()->get('locale');
  @endphp
-  @section('title',    ui_change('property_Config' , 'property_config')  ) 
+ @section('title', ui_change('property_Config', 'property_config'))
 
  @push('css_or_js')
      <style>
@@ -24,16 +21,20 @@
              display: flex;
              justify-content: space-between;
              align-items: center;
-             padding: 12px 20px;
+             padding: 5px 5px;
              border: none;
              border-bottom: 1px dashed #ddd;
              font-size: 16px;
-             color: #007bff;
+             color: black;
              text-decoration: none;
          }
 
          .list-group-item:hover {
              background-color: #f1f1f1;
+         }
+
+         .accordion-button {
+             color: black;
          }
 
          .arrow {
@@ -47,32 +48,49 @@
      <div class="container list-container  ">
          <div class="row">
              <div class="col-md-6">
-                 <div class="accordion" id="accordionExample"> 
+                 <div class="accordion" id="accordionExample">
                      <div class="accordion-item ">
-                         <h2 class="accordion-header list-group-item" >
-                             <a class="accordion-button"  href="{{ route('property_management.index') }}"   >{{  ui_change('building_master' , 'property_config')  }}</a> {{-- <span class="arrow">&rsaquo;</span> --}}
-                         </h2>  
+                         <p class="accordion-header list-group-item">
+                             <a class="accordion-button"
+                                 href="{{ route('property_management.index') }}">{{ ui_change('building_master', 'property_config') }}</a>
+                             {{-- <span class="arrow">&rsaquo;</span> --}}
+                         </p>
                      </div>
                      <div class="accordion-item ">
-                         <h2 class="accordion-header list-group-item" >
-                             <a class="accordion-button"   href="{{ route('block_management.index') }}"  >{{ ui_change('block_master' , 'property_config')  }}</a> {{-- <span class="arrow">&rsaquo;</span> --}}
-                         </h2>  
+                         <p class="accordion-header list-group-item">
+                             <a class="accordion-button"
+                                 href="{{ route('block_management.index') }}">{{ ui_change('block_master', 'property_config') }}</a>
+                             {{-- <span class="arrow">&rsaquo;</span> --}}
+                         </p>
                      </div>
                      <div class="accordion-item ">
-                         <h2 class="accordion-header list-group-item" >
-                             <a class="accordion-button"   href="{{ route('floor_management.index') }}"  >{{ ui_change('floor_master' , 'property_config')  }}</a> {{-- <span class="arrow">&rsaquo;</span> --}}
-                         </h2>  
+                         <p class="accordion-header list-group-item">
+                             <a class="accordion-button"
+                                 href="{{ route('floor_management.index') }}">{{ ui_change('floor_master', 'property_config') }}</a>
+                             {{-- <span class="arrow">&rsaquo;</span> --}}
+                         </p>
                      </div>
                      <div class="accordion-item ">
-                         <h2 class="accordion-header list-group-item" >
-                             <a class="accordion-button"    href="{{ route('unit_management.index') }}"    >{{ ui_change('unit_master' , 'property_config')  }}</a> {{-- <span class="arrow">&rsaquo;</span> --}}
-                         </h2>  
-                     </div> 
+                         <p class="accordion-header list-group-item">
+                             <a class="accordion-button"
+                                 href="{{ route('unit_management.index') }}">{{ ui_change('unit_master', 'property_config') }}</a>
+                             {{-- <span class="arrow">&rsaquo;</span> --}}
+                         </p>
+                     </div>
                      <div class="accordion-item ">
-                         <h2 class="accordion-header list-group-item" >
-                             <a class="accordion-button"    href="{{ route('rent_price.index') }}"    >{{ ui_change('rent_price_list' , 'property_config')  }}</a> {{-- <span class="arrow">&rsaquo;</span> --}}
-                         </h2>  
-                     </div> 
+                         <p class="accordion-header list-group-item">
+                             <a class="accordion-button"
+                                 href="{{ route('rent_price.index') }}">{{ ui_change('rent_price_list', 'property_config') }}</a>
+                              
+                         </p>
+                     </div>
+                     <div class="accordion-item ">
+                         <p class="accordion-header list-group-item">
+                             <a class="accordion-button"
+                                 href="{{ route('sales_price.index') }}">{{ ui_change('sales_price_list', 'property_config') }}</a>
+                              
+                         </p>
+                     </div>
 
 
                  </div>
@@ -93,4 +111,3 @@
      <!-- Bootstrap JavaScript -->
      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
  @endpush
- 

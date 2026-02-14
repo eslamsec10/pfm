@@ -45,6 +45,8 @@ class RouteServiceProvider extends ServiceProvider
                 ->group(base_path('routes/setup.php'));
             Route::middleware(['web' ])
                 ->group(base_path('routes/import_excel.php'));
+            Route::middleware(['web' ])
+                ->group(base_path('routes/sales.php'));
         });
     }
     protected function mapWebRoutes()

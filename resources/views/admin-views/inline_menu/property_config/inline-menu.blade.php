@@ -8,5 +8,13 @@
         <li class="{{ (Request::is('rent_price_list') || 
         Request::is('rent_price_list/create') || Request::is('rent_price_list/edit*')
         ) ?'active':'' }}"><a href="{{ route('rent_price.index') }}">{{ui_change('rent_price_list' , 'property_config')}}</a></li> 
+    
+        <li class="{{ (Request::is('sales_price_list') || 
+        Request::is('sales_price_list/create') || Request::is('sales_price_list/edit*')
+        ) ?'active':'' }}"><a href="{{ route('sales_price.index') }}">{{ui_change('sales_price_list' , 'property_config')}}</a></li> 
+    
+        <li class="{{ (Request::is('daily_price_list') || 
+        Request::is('daily_price_list/create') || Request::is('daily_price_list/edit*')
+        ) ?'active':'' }}"><a href="{{ route('daily_price.index') }}">{{ui_change('daily_price_list' , 'property_config')}}</a></li> 
     </ul>
-</div>
+ 

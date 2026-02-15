@@ -82,3 +82,5 @@ Route::group(['prefix' => 'sales/enquiry', 'as' => 'sales.','middleware' => 'aut
     // Route::get('get_units_by_floor_id/{floor_id}/{block_id}/{property_id}', [EnquiryController::class, 'get_units_by_floor_id'])->name('enquiry.get_units_by_floor_id');
 
 });
+
+Route::get('sales/book-now', [SalesEnquiryController::class, 'book_now'])->name('sales.book_now');

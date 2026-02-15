@@ -125,12 +125,12 @@
                 {{ ui_change('create_enquiry', 'property_transaction') }}
             </h2>
         </div>
-                @include('admin-views.inline_menu.property_transaction.inline-menu')
+        @include('admin-views.inline_menu.sales.inline-menu')
 
         <!-- End Page Title -->
         <input type="hidden" id="decimals" name="decimals" value="{{ $company->decimals }}">
         <!-- Form -->
-        <form class="product-form text-start" action="{{ route('enquiry.store') }}" method="POST"
+        <form class="product-form text-start" action="{{ route('sales.enquiry.store') }}" method="POST"
             enctype="multipart/form-data">
             @csrf
 
@@ -147,7 +147,7 @@
                             <div class="form-group">
                                 <label for="">{{ ui_change('enquiry_no', 'property_transaction') }}</label>
                                 <input readonly type="text" name="enquiry_no" class="form-control"
-                                    value="{{ enquiryNo() }}">
+                                    value="{{ SalesEnquiryNo() }}">
                             </div>
                         </div>
                         <div class="col-md-12 col-lg-4 col-xl-6">
@@ -161,22 +161,23 @@
 
                         <div class="col-md-12 col-lg-4 col-xl-6">
                             <div class="form-group">
-                                <label for="name" class="title-color">{{ ui_change('tenant', 'property_transaction') }}
+                                <label for="name"
+                                    class="title-color">{{ ui_change('customer', 'property_transaction') }}
                                     <span class="starColor " style="font-size: 30px; "> *</span>
-                                    <button type="button" data-target="#add_tenant" data-add_tenant="" data-toggle="modal"
-                                        class="btn btn--primary btn-sm">
+                                    <button type="button" data-target="#add_customer" data-add_customer=""
+                                        data-toggle="modal" class="btn btn--primary btn-sm">
                                         <i class="fa fa-plus-square"></i>
                                     </button>
                                 </label>
-                                <select class="js-select2-custom form-control" id="tenant_id" name="tenant_id" required>
+                                <select class="js-select2-custom form-control" id="customer_id" name="customer_id" required>
                                     <option selected>{{ ui_change('select', 'property_transaction') }}</option>
-                                    @foreach ($tenants as $tenant)
-                                        <option value="{{ $tenant->id }}">
-                                            {{ $tenant->name ?? $tenant->company_name }}
+                                    @foreach ($customers as $customer)
+                                        <option value="{{ $customer->id }}">
+                                            {{ $customer->name ?? $customer->company_name }}
                                         </option>
                                     @endforeach
                                 </select>
-                                @error('tenant_id')
+                                @error('customer_id')
                                     <div class="invalid-feedback">
                                         {{ $message }}
                                     </div>
@@ -187,10 +188,11 @@
 
                         <div class="col-md-12 col-lg-4 col-xl-6 mt-2">
                             <div class="form-group">
-                                <label for="">{{ ui_change('tenant_type', 'property_transaction') }}</label>
-                                <input type="text" class="form-control" name="tenant_type" readonly class="form-control">
+                                <label for="">{{ ui_change('customer_type', 'property_transaction') }}</label>
+                                <input type="text" class="form-control" name="customer_type" readonly
+                                    class="form-control">
                             </div>
-                            @error('tenant_type')
+                            @error('customer_type')
                                 <div class="invalid-feedback">
                                     {{ $message }}
                                 </div>
@@ -204,9 +206,7 @@
                             <thead>
                                 <tr>
                                     <th>{{ ui_change('Type', 'property_transaction') }}</th>
-                                    <th>{{ ui_change('No._of_unit(s)', 'property_transaction') }}</th>
-                                    <th>{{ ui_change('Period_from', 'property_transaction') }}</th>
-                                    <th>{{ ui_change('Period_to', 'property_transaction') }}</th>
+                                    <th>{{ ui_change('No._of_unit(s)', 'property_transaction') }}</th> 
                                 </tr>
                             </thead>
                             <tbody>
@@ -235,16 +235,26 @@
 
                                     @foreach ($unitCounts as $unitId => $count)
                                         @php
-                                            $unit = $all_units->firstWhere('unit_description.id', $unitId); 
-                                            if($unit->booking_status == 'enquiry' &&  optional($unit->enquiry)->period_from){ 
+                                            $unit = $all_units->firstWhere('unit_description.id', $unitId);
+                                            if (
+                                                $unit->booking_status == 'enquiry' &&
+                                                optional($unit->enquiry)->period_from
+                                            ) {
                                                 $periodFrom = optional($unit->enquiry)->period_from;
-                                            }elseif($unit->booking_status == 'proposal' &&  optional($unit->proposal_main)->commencement_date){
+                                            } elseif (
+                                                $unit->booking_status == 'proposal' &&
+                                                optional($unit->proposal_main)->commencement_date
+                                            ) {
                                                 $periodFrom = optional($unit->proposal_main)->commencement_date;
-                                            }
-                                            elseif($unit->booking_status == 'booking' &&  optional($unit->booking_main)->commencement_date){
+                                            } elseif (
+                                                $unit->booking_status == 'booking' &&
+                                                optional($unit->booking_main)->commencement_date
+                                            ) {
                                                 $periodFrom = optional($unit->booking_main)->commencement_date;
-                                            }
-                                            elseif($unit->booking_status == 'agreement' &&  optional($unit->agreement_main)->commencement_date){
+                                            } elseif (
+                                                $unit->booking_status == 'agreement' &&
+                                                optional($unit->agreement_main)->commencement_date
+                                            ) {
                                                 $periodFrom = optional($unit->agreement_main)->commencement_date;
                                             }
                                         @endphp
@@ -256,21 +266,7 @@
                                                     data-id="{{ $unitId }}"
                                                     onkeyup="unit_desc_func({{ $unitId }})"
                                                     name="no_of_unit-{{ $unitId }}" value="{{ $count }}">
-                                            </td>
-                                            <td>
-                                                <input type="text" id="date-from-{{ $unitId }}"
-                                                    class="form-control enquiry_unit_date date-input"
-                                                    name="date-from-{{ $unitId }}" placeholder="DD/MM/YYYY"
-                                                    onchange="enquiry_unit_date_clc({{ $unitId }});updateMainPeriodFrom();"
-                                                    value="{{ \Carbon\Carbon::now()->format('d/m/Y') }}">
-                                            </td>
-                                            <td>
-                                                <input type="text" id="date-to-{{ $unitId }}"
-                                                    class="form-control enquiry_unit_date  date-to-input"
-                                                    name="date-to-{{ $unitId }}" placeholder="DD/MM/YYYY"
-                                                    onchange="updateMainPeriodTo()"
-                                                    value="{{ isset($periodFrom) ? \Carbon\Carbon::parse($periodFrom)->format('d/m/Y') : \Carbon\Carbon::now()->subDay()->addYear()->format('d/m/Y') }}">
-                                            </td>
+                                            </td> 
 
                                         </tr>
                                     @endforeach
@@ -287,17 +283,17 @@
             <div class="card mt-3 rest-part">
                 <div class="card-header">
                     <div class="d-flex gap-2">
-                        <h4 class="mb-0">{{ ui_change('tenant_details', 'property_transaction') }}</h4>
+                        <h4 class="mb-0">{{ ui_change('customer_details', 'property_transaction') }}</h4>
                     </div>
                 </div>
 
                 <div class="card-body">
                     <div class="row">
 
-                        <div class="col-md-12 tenant_form d-none company-form" id="company-form">
+                        <div class="col-md-12 customer_form d-none company-form" id="company-form">
                             @include('admin-views.property_transactions.enquiries.company_form')
                         </div>
-                        <div class="col-md-12 tenant_form d-none personal-form" id="personal-form">
+                        <div class="col-md-12 customer_form d-none personal-form" id="personal-form">
                             @include('admin-views.property_transactions.enquiries.personal_form')
                         </div>
                     </div>
@@ -306,178 +302,7 @@
 
             </div>
 
-            <div class="card mt-3 rest-part">
-                <div class="card-header">
-                    <div class="d-flex gap-2">
-                        <h4 class="mb-0">{{ ui_change('enquiry_details', 'property_transaction') }}</h4>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6 col-lg-4 col-xl-3">
-                            <div class="form-group">
-                                <label for="name"
-                                    class="title-color">{{ ui_change('leasing_executive', 'property_transaction') }}
-                                </label>
-                                <select class="js-select2-custom form-control" name="employee_id">
-                                    <option value="" selected>
-                                        {{ ui_change('not_applicable', 'property_transaction') }}
-                                    </option>
-                                    @foreach ($employees as $employee_item)
-                                        <option value="{{ $employee_item->id }}">
-                                            {{ $employee_item->name ?? $employee_item->company_name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('employee_id')
-                                    <div class="invalid-feedback">
-                                        {{ $message }}
-                                    </div>
-                                @enderror
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-lg-4 col-xl-3">
-                            <div class="form-group">
-                                <label for="name"
-                                    class="title-color">{{ ui_change('agent', 'property_transaction') }}
-                                </label>
-                                <select class="js-select2-custom form-control" name="agent_id">
-                                    <option value="" selected>
-                                        {{ ui_change('not_applicable', 'property_transaction') }}
-                                    </option>
-                                    @foreach ($agents as $agent_item)
-                                        <option value="{{ $agent_item->id }}">
-                                            {{ $agent_item->name ?? $agent_item->company_name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('agent_id')
-                                    <div class="invalid-feedback">
-                                        {{ $message }}
-                                    </div>
-                                @enderror
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-lg-4 col-xl-3">
-                            <div class="form-group">
-                                <label for="price"
-                                    class="title-color">{{ ui_change('decision_maker', 'property_transaction') }}</label>
-                                <input type="text" class="form-control" name="decision_maker">
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-lg-4 col-xl-3">
-                            <div class="form-group">
-                                <label for="price"
-                                    class="title-color">{{ ui_change('decision_maker_designation', 'property_transaction') }}</label>
-                                <input type="text" class="form-control" name="decision_maker_designation">
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-lg-4 col-xl-3">
-                            <div class="form-group">
-                                <label for="price"
-                                    class="title-color">{{ ui_change('current_office_location', 'property_transaction') }}</label>
-                                <input type="text" class="form-control" name="current_office_location">
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-lg-4 col-xl-3">
-                            <div class="form-group">
-                                <label for="price"
-                                    class="title-color">{{ ui_change('reason_of_relocation', 'property_transaction') }}</label>
-                                <input type="text" class="form-control" name="reason_of_relocation">
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-lg-4 col-xl-3">
-                            <div class="form-group">
-                                <label for="price"
-                                    class="title-color">{{ ui_change('budget_for_relocation', 'property_transaction') }}</label>
-                                <input type="text" class="form-control" name="budget_for_relocation_start">
-                            </div>
-                        </div>
 
-                        <div class="col-md-6 col-lg-4 col-xl-3">
-                            <div class="form-group">
-                                <label for="price" class="title-color"> </label>
-
-                                <input type="text" class="form-control mt-2" name="budget_for_relocation_end">
-                            </div>
-                        </div>
-
-                        <div class="col-md-6 col-lg-4 col-xl-3">
-                            <div class="form-group">
-                                <label for="price"
-                                    class="title-color">{{ ui_change('no_of_emp_staff_strength', 'property_transaction') }}</label>
-                                <input type="text" class="form-control" name="no_of_emp_staff_strength">
-                            </div>
-                        </div>
-
-                        <div class="col-md-6 col-lg-4 col-xl-3">
-                            <div class="form-group">
-                                <label for="price"
-                                    class="title-color">{{ ui_change('time_frame_for_relocation', 'property_transaction') }}</label>
-                                <input type="text" name="relocation_date" class="relocation_date form-control"
-                                    placeholder="DD/MM/YYYY">
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-lg-4 col-xl-3">
-                            <div class="form-group">
-                                <label for="name"
-                                    class="title-color">{{ ui_change('enquiry_status', 'property_transaction') }}
-                                </label>
-                                <select class="js-select2-custom form-control" name="enquiry_status_id" required>
-
-                                    @foreach ($enquiry_statuses as $enquiry_status_item)
-                                        <option value="{{ $enquiry_status_item->id }}">
-                                            {{ $enquiry_status_item->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('enquiry_status_id')
-                                    <div class="invalid-feedback">
-                                        {{ $message }}
-                                    </div>
-                                @enderror
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-lg-4 col-xl-3">
-                            <div class="form-group">
-                                <label for="name"
-                                    class="title-color">{{ ui_change('enquiry_status', 'property_transaction') }}
-                                </label>
-                                <select class="js-select2-custom form-control" name="enquiry_request_status_id" required>
-
-                                    @foreach ($enquiry_request_statuses as $enquiry_request_status_item)
-                                        <option value="{{ $enquiry_request_status_item->id }}">
-                                            {{ $enquiry_request_status_item->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('enquiry_request_status_id')
-                                    <div class="invalid-feedback">
-                                        {{ $message }}
-                                    </div>
-                                @enderror
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-lg-4 col-xl-4">
-                            <div class="form-group">
-                                <label for="price"
-                                    class="title-color">{{ ui_change('period_from_to', 'property_transaction') }}</label>
-                                <input type="text" id="main_period_from" name="period_from"
-                                    class="period_from form-control date-input" placeholder="DD/MM/YYYY"
-                                    onchange="period_date()" value="{{ \Carbon\Carbon::now()->format('d/m/Y') }}">
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-lg-4 col-xl-4 mt-2">
-                            <div class="form-group">
-                                <label for="price" class="title-color"> </label>
-                                <input type="text" name="period_to" id="main_period_to"
-                                    class="period_to form-control mt-2 date-to-input" placeholder="DD/MM/YYYY"
-                                    value="{{  isset($periodFrom) ? \Carbon\Carbon::parse($periodFrom)->format('d/m/Y') : \Carbon\Carbon::now()->subDay()->addYear()->format('d/m/Y') }}">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
             <div class="card mt-3 rest-part d-none" id="main_content">
                 <div class="card-header">
                     <div class="d-flex gap-2">
@@ -519,14 +344,14 @@
                                                     $all_unit_details_item->unit_management_main->name }}
                                             </option>
                                         </select>
-                                    </div>
+                                    </div> 
                                     <div class="form-group">
                                         <label
-                                            for="building">{{ ui_change('Rent_Amount', 'property_transaction') }}</label>
+                                            for="building">{{ ui_change('Sales_Price', 'property_transaction') }}</label>
                                         <input type="number"
-                                            value="{{ number_format(optional($all_unit_details_item->rent_schedules->first())->rent_amount ?? 0, $company->decimals, '.', '') }}"
-                                            class="from-control rent_amount-{{ $all_unit_details_item->unit_description_id }}"
-                                            name="rent_amount[]">
+                                            value="{{ number_format(optional($all_unit_details_item)->sales_price ?? 0, $company->decimals, '.', '') }}"
+                                            class="from-control sales_price-{{ $all_unit_details_item->unit_description_id }}"
+                                            name="sales_price[]">
                                     </div>
                                     @if (isset($all_unit_details_item->unit_description))
                                         <div class="form-group">
@@ -595,18 +420,16 @@
                                         <label
                                             for="period-from">{{ ui_change('Period_From_-To', 'property_transaction') }}
                                             <span style="color: red;">*</span></label>
-                                        <div style="display: flex; gap: 10px" >
+                                        <div style="display: flex; gap: 10px">
                                             <input type="text" value="{{ \Carbon\Carbon::now()->format('d/m/Y') }}"
-                                                name="period_from_unit_desc[]"
-                                                style="background-color:white;"
+                                                name="period_from_unit_desc[]" style="background-color:white;"
                                                 id="period-from-{{ $all_unit_details_item->id }}"
                                                 onchange="(search_unit_edit_date({{ $all_unit_details_item->id }}))"
                                                 class="enquiry_unit_main_date form-control  period-from-{{ $all_unit_details_item->unit_description_id }}">
 
                                             <input type="text"
                                                 value="{{ isset($periodFrom) ? \Carbon\Carbon::parse($periodFrom)->format('d/m/Y') : \Carbon\Carbon::now()->subDay()->addYear()->format('d/m/Y') }}"
-                                                name="period_to_unit_desc[]"
-                                                style="background-color:white;"
+                                                name="period_to_unit_desc[]" style="background-color:white;"
                                                 id="period-to-{{ $all_unit_details_item->id }}"
                                                 class="enquiry_unit_main_date form-control period-to-{{ $all_unit_details_item->unit_description_id }}">
                                         </div>
@@ -637,17 +460,19 @@
                                         <label
                                             for="total-area">{{ ui_change('Total_Area_Required', 'property_transaction') }}</label>
                                         <input type="number" class=" form-control" id="total-area" step="0.001"
-                                            value="{{ number_format(0 ) }}"
-                                            name="total_area_required[]">
+                                            value="{{ number_format(0) }}" name="total_area_required[]">
                                     </div>
                                     <div class="form-group">
                                         <label
                                             for="area-measurement">{{ ui_change('Area_Measurement', 'property_transaction') }}</label>
                                         <select id="area-measurement" name="area_measurement[]"
                                             class="js-select2-custom form-control">
-                                            <option value="">{{ ui_change('Select_Unit_Type', 'property_transaction') }}</option>
-                                            <option value="1">{{ ui_change('Sq. Mtr.', 'property_transaction') }}</option>
-                                            <option value="2">{{ ui_change('Sq. Ft.', 'property_transaction') }}</option> 
+                                            <option value="">
+                                                {{ ui_change('Select_Unit_Type', 'property_transaction') }}</option>
+                                            <option value="1">{{ ui_change('Sq. Mtr.', 'property_transaction') }}
+                                            </option>
+                                            <option value="2">{{ ui_change('Sq. Ft.', 'property_transaction') }}
+                                            </option>
                                         </select>
                                     </div>
                                     <div class="form-group">
@@ -673,13 +498,13 @@
 
         </form>
 
-        <div class="modal fade" id="add_tenant" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        <div class="modal fade" id="add_customer" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
             aria-hidden="true">
             <div class="modal-dialog modal-xl" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="exampleModalLabel">
-                            {{ ui_change('create_tenant', 'property_transaction') }}</h5>
+                            {{ ui_change('create_customer', 'property_transaction') }}</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -696,33 +521,35 @@
                                         id="company-link_create">{{ ui_change('company', 'property_transaction') }}</a>
                                 </li>
                             </ul>
-                            <div class="col-md-12 tenant_form_create personal-form_create" id="personal-form_create">
-                                <form id="tenantForm_personal" action="{{ route('tenant.store_for_anything') }}"
-                                    method="post" class="tenantForm">
+                            <div class="col-md-12 customer_form_create personal-form_create" id="personal-form_create">
+                                <form id="customerForm_personal"
+                                    action="{{ route('sales.customer.store_for_anything') }}" method="post"
+                                    class="customerForm">
                                     @csrf
                                     @method('post')
-                                    @include('admin-views.property_transactions.tenants.personal_form')
+                                    @include('admin-views.sales.customer.personal_form')
                                     <div class="row justify-content-end gap-3 mt-3 mx-1">
                                         <button type="reset"
                                             class="btn btn-secondary px-5">{{ ui_change('reset', 'property_transaction') }}</button>
-                                        <button type="submit" id="saveTenantPersonal"
-                                            class="btn btn--primary px-5 saveTenant">{{ ui_change('submit', 'property_transaction') }}</button>
+                                        <button type="submit" id="savecustomerPersonal"
+                                            class="btn btn--primary px-5 savecustomer">{{ ui_change('submit', 'property_transaction') }}</button>
                                     </div>
 
                                 </form>
                             </div>
-                            <div class="col-md-12 tenant_form_create d-none company-form_create" id="company-form_create">
-                                <form id="tenantForm_company" action="{{ route('tenant.store_for_anything') }}"
-                                    method="post" class="tenantForm">
+                            <div class="col-md-12 customer_form_create d-none company-form_create"
+                                id="company-form_create">
+                                <form id="customerForm_company" action="{{ route('sales.customer.store_for_anything') }}"
+                                    method="post" class="customerForm">
                                     @csrf
                                     @method('post')
 
-                                    @include('admin-views.property_transactions.tenants.company_form')
+                                    @include('admin-views.sales.customer.company_form')
                                     <div class="row justify-content-end gap-3 mt-3 mx-1">
                                         <button type="reset"
                                             class="btn btn-secondary px-5">{{ ui_change('reset', 'property_transaction') }}</button>
-                                        <button type="submit" id="saveTenantCompany"
-                                            class="btn btn--primary px-5 saveTenant">{{ ui_change('submit', 'property_transaction') }}</button>
+                                        <button type="submit" id="savecustomerCompany"
+                                            class="btn btn--primary px-5 savecustomer">{{ ui_change('submit', 'property_transaction') }}</button>
                                     </div>
 
                                 </form>
@@ -819,9 +646,9 @@
         }
     </script>
     <script>
-        function enquiry_unit_rent_amount_clc(i) {
-            var rent_amount = $(`input[name=rent_amount-${i}]`).val();
-            var special_rent_amount = $(`.rent_amount-${i}`).val(rent_amount);
+        function enquiry_unit_sales_price_clc(i) {
+            var sales_price = $(`input[name=sales_price-${i}]`).val();
+            var special_sales_price = $(`.sales_price-${i}`).val(sales_price);
 
         }
     </script>
@@ -854,7 +681,7 @@
         $(".type_link_create").click(function(e) {
             e.preventDefault();
             $(".type_link_create").removeClass('active');
-            $(".tenant_form_create").addClass('d-none');
+            $(".customer_form_create").addClass('d-none');
             $(this).addClass('active');
 
             let form_id = this.id;
@@ -872,7 +699,7 @@
     <script>
         function unit_desc_func(idd) {
             var input_val = $(`input[name="no_of_unit-${idd}"]`).val();
-            var rent_amount = $(`input[name="rent_amount-${idd}"]`).val();
+            var sales_price = $(`input[name="sales_price-${idd}"]`).val();
             var decimals = parseFloat($('#decimals').val()) || 0;
             document.getElementById('main_content').classList.remove('d-none');
             const container = document.getElementById('units-container');
@@ -1095,17 +922,17 @@
         });
     </script>
     <script>
-        $('select[name=tenant_id]').on('change', function() {
-            var tenant_id = $(this).val();
-            if (tenant_id) {
+        $('select[name=customer_id]').on('change', function() {
+            var customer_id = $(this).val();
+            if (customer_id) {
                 $.ajax({
-                    url: "{{ URL::to('enquiry/get_tenant') }}/" + tenant_id,
+                    url: "{{ URL::to('sales/enquiry/get_customer') }}/" + customer_id,
                     type: "GET",
                     dataType: "json",
                     success: function(data) {
                         if (data) {
-                            $('input[name="tenant_type"]').empty();
-                            $('input[name="tenant_type"]').val(data.type);
+                            $('input[name="customer_type"]').empty();
+                            $('input[name="customer_type"]').val(data.type);
                             if (data.type == 'company') {
                                 $("#company-form").removeClass('d-none').addClass('active');
                                 $("#personal-form").removeClass('active').addClass('d-none');
@@ -1116,8 +943,8 @@
                                 $("#docs_personal_id").addClass('d-none');
                             }
                             $('input[name="name"]').empty();
-                            // $('input[name="tenant_type"]').empty();
-                            // $('input[name="tenant_type"]').val(data.tenant_type);
+                            // $('input[name="customer_type"]').empty();
+                            // $('input[name="customer_type"]').val(data.customer_type);
                             $('input[name="name"]').empty();
                             $('input[name="name"]').val(data.name);
                             $('input[name="id_number"]').empty();

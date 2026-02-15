@@ -12,9 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('unit_management', function (Blueprint $table) {
-            $table->decimal('sales_price', 10, 2)->nullable()->after('status');
-            $table->decimal('daily_rent_price', 10, 2)->nullable()->after('sales_price');
-
+            $table->string('sales_status')->nullable()->after('daily_rent_price');
         });
     }
 
@@ -24,8 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('unit_management', function (Blueprint $table) {
-            $table->dropColumn('sales_price');
-            $table->dropColumn('daily_rent_price');
+            $table->dropColumn('sales_status');
         });
     }
 };

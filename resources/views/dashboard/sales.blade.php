@@ -52,6 +52,12 @@
                  <div class="accordion-item ">
                      <p class="accordion-header list-group-item">
                          <a class="accordion-button"
+                             href="{{ route('sales.book_now') }}">{{ ui_change('quick_search', 'sales') }}</a>
+                     </p>
+                 </div> 
+                 <div class="accordion-item ">
+                     <p class="accordion-header list-group-item">
+                         <a class="accordion-button"
                              href="{{ route('sales.customer.index') }}">{{ ui_change('customer', 'sales') }}</a>
                      </p>
                  </div> 

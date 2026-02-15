@@ -6,26 +6,22 @@
 @endpush
 
 @section('content')
-    <div class="content container-fluid">
-        <!-- Page Title -->
+    <div class="content container-fluid"> 
         <div class="mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex gap-2">
                 <img src="{{ asset(main_path() . 'back-end/img/inhouse-subscription-list.png') }}" alt="">
                 {{ ui_change('all_enquiries' , 'property_transaction') }}
                 <span class="badge badge-soft-dark radius-50 fz-14 ml-1">{{ $enquiries->total() }}</span>
             </h2>
-        </div>
-        <!-- End Page Title -->
-
-        @include('admin-views.inline_menu.property_transaction.inline-menu')
+        </div> 
+        @include('admin-views.inline_menu.sales.inline-menu')
 
         <div class="row mt-20">
             <div class="col-md-12">
                 <div class="card">
                     <div class="px-3 py-4">
                         <div class="row align-items-center">
-                            <div class="col-lg-4">
-                                <!-- Search -->
+                            <div class="col-lg-4"> 
                                 <form action="{{ url()->current() }}" method="GET">
                                     <div class="input-group input-group-custom input-group-merge">
                                         <div class="input-group-prepend">
@@ -39,21 +35,17 @@
                                         <input type="hidden" value="{{ request('status') }}" name="status">
                                         <button type="submit" class="btn btn--primary">{{ ui_change('search' , 'property_transaction') }}</button>
                                     </div>
-                                </form>
-                                <!-- End Search -->
+                                </form> 
                             </div>
-                            <div class="col-lg-8 mt-3 mt-lg-0 d-flex flex-wrap gap-3 justify-content-lg-end">
-
-                                {{-- @can('create_enquiry') --}}
-                                <a href="{{ route('enquiry.create') }}" class="btn btn--primary">
+                            <div class="col-lg-8 mt-3 mt-lg-0 d-flex flex-wrap gap-3 justify-content-lg-end"> 
+                                <a href="{{ route('sales.enquiry.create') }}" class="btn btn--primary">
                                     <i class="tio-add"></i>
                                     <span class="text">{{ ui_change('create_enquiry' , 'property_transaction') }}</span>
                                 </a>
                                 <button type="button" data-target="#filter" data-filter="" data-toggle="modal"
                                     class="btn btn--primary btn-sm">
                                     <i class="fas fa-filter"></i>
-                                </button>
-                                {{-- @endcan --}}
+                                </button> 
                             </div>
                         </div>
                     </div>
@@ -71,10 +63,9 @@
                                             {{ ui_change('sl' , 'property_transaction') }}</th>
                                         <th class="text-center">{{ ui_change('enquiry_no' , 'property_transaction') }}</th>
                                         <th class="text-center">{{ ui_change('enquiry_date' , 'property_transaction') }}</th>
-                                        <th class="text-center">{{ ui_change('tenant' , 'property_transaction') }}</th>
-                                        <th class="text-center">{{ ui_change('tenant_type' , 'property_transaction') }}</th>
-                                        <th class="text-center">{{ ui_change('booking_status' , 'property_transaction') }}</th>
-                                        <th class="text-center">{{ ui_change('status' , 'property_transaction') }}</th>
+                                        <th class="text-center">{{ ui_change('customer' , 'property_transaction') }}</th>
+                                        <th class="text-center">{{ ui_change('customer_type' , 'property_transaction') }}</th>
+                                        <th class="text-center">{{ ui_change('booking_status' , 'property_transaction') }}</th> 
                                         <th class="text-center">{{ ui_change('Actions' , 'property_transaction') }}</th>
                                     </tr>
                                 </thead>
@@ -85,12 +76,10 @@
                                                 <input class="check_bulk_item" name="bulk_ids[]"
                                                     type="checkbox" value="{{ $enquiry_item->id }}" />
                                                 {{ $enquiries->firstItem() + $k }}
-                                            </th>
-
+                                            </th> 
                                             <td class="text-center">
                                                 {{ $enquiry_item->enquiry_no ?? ui_change('not_available' , 'property_transaction') }}
-                                            </td>
-
+                                            </td> 
                                             <td class="text-center">
                                                 @php
                                                     $formatted_date = date(
@@ -102,79 +91,37 @@
                                             </td>
 
                                             <td class="text-center">
-                                                {{ $enquiry_item->tenant->type == 'individual' ? $enquiry_item->name ?? ui_change('not_available' , 'property_transaction') : $enquiry_item->company_name ?? ui_change('not_available' , 'property_transaction') }}
+                                                {{ $enquiry_item->customer->type == 'individual' ? $enquiry_item->name ?? ui_change('not_available' , 'property_transaction') : $enquiry_item->company_name ?? ui_change('not_available' , 'property_transaction') }}
                                             </td>
                                             <td class="text-center">
-                                                {{ ucfirst($enquiry_item->tenant->type) ?? ui_change('not_available' , 'property_transaction') }}
-                                            </td>
-
-
+                                                {{ ucfirst($enquiry_item->customer->type) ?? ui_change('not_available' , 'property_transaction') }}
+                                            </td> 
                                             <td class="text-center">
                                                 <span>
                                                     {{ ucfirst($enquiry_item->booking_status) ?? ui_change('not_available' , 'property_transaction') }}
                                                 </span>
-                                            </td>
-                                            <td class="text-center">
-                                                @php
-                                                    $details = optional($enquiry_item->enquiry_details);
-                                                    $status = optional($details->enquiry_request_status);
-                                                    $statusName = strtolower($status->name ?? '');
-                                                    $statusId = $details->enquiry_request_status_id ?? null;
-
-                                                    $class = match (true) {
-                                                        $statusName === 'pending' => 'text-warning',
-                                                        $statusId == 2 => 'text-success',
-                                                        $statusId == 3 => 'text-danger',
-                                                        default => '',
-                                                    };
-                                                @endphp
-
-                                                <span class="{{ $class }}">
-                                                    {{ ucfirst($status->name ?? ui_change('not_available' , 'property_transaction')) }}
-                                                </span>
-                                                {{-- 
-                                            <span class="{{
-                                                strtolower(optional($enquiry_item->enquiry_details->enquiry_request_status)->name) == 'pending'
-                                                    ? ' text-warning '
-                                                    : (strtolower($enquiry_item->enquiry_details->enquiry_request_status_id) == 2
-                                                        ? 'text-success '
-                                                        : (strtolower($enquiry_item->enquiry_details->enquiry_request_status_id) == 3
-                                                            ? 'text-danger'
-                                                            : '')) }}">
-                                                {{ ucfirst(optional($enquiry_item->enquiry_details->enquiry_request_status)->name) ?? ui_change('not_available' , 'property_transaction') }}
-                                            </span> --}}
-                                            </td>
-
-
-
+                                            </td> 
                                             <td>
                                                 <div class="d-flex justify-content-center gap-2">
                                                     @if ($enquiry_item->booking_status == 'enquiry')
                                                         <a class="btn btn-outline--primary "
-                                                            href="{{ route('enquiry.add_to_proposal', [$enquiry_item->id]) }}">
+                                                            href="{{ route('sales.enquiry.add_to_proposal', [$enquiry_item->id]) }}">
                                                             {{ ui_change('Proposal' , 'property_transaction') }}
                                                         </a>
                                                     @endif
-                                                    <a class="btn btn-outline--primary "
-                                                        href="{{ route('enquiry.check_propoerty', [$enquiry_item->id]) }}">
-                                                        {{ ui_change('Check_Propoerty' , 'property_transaction') }}
-                                                    </a>
-                                                    {{-- @can('edit_enquiry') --}}
+                                                   
                                                     <a class="btn btn-outline--primary btn-sm square-btn"
                                                         title="{{ ui_change('edit'  , 'property_transaction')}}"
-                                                        href="{{ route('enquiry.edit', [$enquiry_item->id]) }}">
+                                                        href="{{ route('sales.enquiry.edit', [$enquiry_item->id]) }}">
                                                         <i class="tio-edit"></i>
-                                                    </a>
-                                                    {{-- @endcan
-                                                @can('delete_enquiry') --}}
+                                                    </a> 
                                                     @if ($enquiry_item->booking_status == 'enquiry')
                                                         <a class="btn btn-outline-danger btn-sm delete square-btn"
                                                             title="{{ ui_change('delete' , 'property_transaction') }}"
                                                             id="{{ $enquiry_item->id }}">
                                                             <i class="tio-delete"></i>
                                                         </a>
-                                                    @endif
-                                                    {{-- @endcan --}}
+                                                    @endif 
 
                                                 </div>
 
@@ -187,15 +134,14 @@
                         </div>
                     </form>
                     <div class="table-responsive mt-4">
-                        <div class="px-4 d-flex justify-content-lg-end">
-                            <!-- Pagination -->
+                        <div class="px-4 d-flex justify-content-lg-end"> 
                             {{ $enquiries->links() }}
                         </div>
                     </div>
 
                     @if (count($enquiries) == 0)
                         <div class="text-center p-4">
-                            <img class="mb-3 w-160" src="{{ asset(main_path() . 'back-end') }}/svg/illustrations/sorry.svg"
+                            <img class="mb-3 w-160" src="{{ asset(main_path() . 'assets/back-end') }}/svg/illustrations/sorry.svg"
                                 alt="Image Description">
                             <p class="mb-0">{{ ui_change('no_data_to_show' , 'property_transaction') }}</p>
                         </div>
@@ -231,33 +177,7 @@
                                             <option value="booking">{{ ui_change('booking' , 'property_transaction') }}</option>
                                             <option value="agreement">{{ ui_change('agreement' , 'property_transaction') }}</option>
                                         </select>
-                                    </div>
-                                    <div class="col-md-12 col-lg-4 col-xl-3">
-                                        <label for="">
-                                            {{ ui_change('enquiry_request_status' , 'property_transaction') }}
-                                        </label>
-                                        <select name="enquiry_request_status" class="form-control select2">
-                                            <option value="-1">{{ ui_change('all_enquiry_request_status' , 'property_transaction') }}
-                                            </option>
-                                            @foreach ($enquiry_request_status as $enquiry_request_status_item)
-                                                <option value="{{ $enquiry_request_status_item->id }}"
-                                                    {{ $enquiry_request_status_item->id == 1 ? 'selected' : '' }}>
-                                                    {{ $enquiry_request_status_item->name }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="col-md-12 col-lg-4 col-xl-3">
-                                        <label for="">
-                                            {{ ui_change('enquiry_status' , 'property_transaction') }}
-                                        </label>
-                                        <select name="enquiry_status" class="form-control select2">
-                                            <option value="-1">{{ ui_change('all_enquiry_status' , 'property_transaction') }}</option>
-                                            @foreach ($enquiry_status as $enquiry_status_item)
-                                                <option value="{{ $enquiry_status_item->id }}">
-                                                    {{ $enquiry_status_item->name }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
+                                    </div>  
 
                                     <div class="col-md-12 col-lg-4 col-xl-3">
                                         <label for="">
@@ -315,7 +235,7 @@
                 }
             });
             $.ajax({
-                url: "{{ route('enquiry.status-update') }}",
+                url: "{{ route('sales.enquiry.status-update') }}",
                 method: 'POST',
                 data: $(this).serialize(),
                 success: function(data) {
@@ -353,7 +273,7 @@
                         }
                     });
                     $.ajax({
-                        url: "{{ route('enquiry.delete') }}",
+                        url: "{{ route('sales.enquiry.delete') }}",
                         method: 'get',
                         data: {
                             id: id

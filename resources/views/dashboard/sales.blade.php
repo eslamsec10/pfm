@@ -55,6 +55,12 @@
                              href="{{ route('sales.customer.index') }}">{{ ui_change('customer', 'sales') }}</a>
                      </p>
                  </div> 
+                 <div class="accordion-item ">
+                     <p class="accordion-header list-group-item">
+                         <a class="accordion-button"
+                             href="{{ route('sales.enquiry.index') }}">{{ ui_change('enquiries', 'sales') }}</a>
+                     </p>
+                 </div> 
              </div>
         
           

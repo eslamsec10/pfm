@@ -11,8 +11,7 @@ use App\Models\hierarchy\MainLedger;
 use App\Models\LiveWith;
 use App\Models\PropertyCustomer;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB; 
 use Illuminate\Validation\Rule;
 
 class PropertyCustomerController extends Controller

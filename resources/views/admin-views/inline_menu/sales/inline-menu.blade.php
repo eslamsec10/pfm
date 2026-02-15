@@ -1,5 +1,6 @@
 <div class="inline-page-menu my-4">
     <ul class="list-unstyled">
-        <li class="{{ Request::is('customer') ?'active':'' }}"><a href="{{ route('sales.customer.index') }}">{{ui_change('customers' , 'property_master')}}</a></li> 
+        <li class="{{ Request::is('sales/property_customer*') ?'active':'' }}"><a href="{{ route('sales.customer.index') }}">{{ui_change('customers' , 'property_master')}}</a></li> 
+        <li class="{{ Request::is('sales/enquiry*') ? 'active':'' }}"><a href="{{ route('sales.enquiry.index') }}">{{ui_change('enquiries' , 'property_master')}}</a></li> 
     </ul>
 </div>

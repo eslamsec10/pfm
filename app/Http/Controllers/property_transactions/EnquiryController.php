@@ -145,6 +145,8 @@ class EnquiryController extends Controller
                 'view',
                 'unit_condition'
             )->lazy();
+        $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
+
         $live_withs          = (new LiveWith())->setConnection('tenant')->select('id', 'name')->lazy();
         $business_activities = (new BusinessActivity())->setConnection('tenant')->select('id', 'name')->lazy();
         $buildings           = (new PropertyManagement())->setConnection('tenant')->forUser()->select('id', 'name')->lazy();
@@ -169,6 +171,7 @@ class EnquiryController extends Controller
             'live_withs'               => $live_withs,
             'business_activities'      => $business_activities,
             'tenants'                  => $allTenants,
+            'dail_code_main'            => $dail_code_main,
         ];
         return view('admin-views.property_transactions.enquiries.create_with_select_unit', $data);
     }
@@ -188,6 +191,8 @@ class EnquiryController extends Controller
         $unit_types               = DB::connection('tenant')->table('unit_types')->get();
         $views                    = DB::connection('tenant')->table('views')->get();
         $property_types           = DB::connection('tenant')->table('property_types')->get();
+        $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
+
         $data                     = [
             'unit_types'               => $unit_types,
             'property_types'           => $property_types,
@@ -203,6 +208,7 @@ class EnquiryController extends Controller
             'live_withs'               => $live_withs,
             'business_activities'      => $business_activities,
             'tenants'                  => $tenants,
+            'dail_code_main'            => $dail_code_main,
         ];
         return view('admin-views.property_transactions.enquiries.create', $data);
     }
@@ -239,6 +245,7 @@ class EnquiryController extends Controller
         $unit_types               = DB::connection('tenant')->table('unit_types')->get();
         $views                    = DB::connection('tenant')->table('views')->get();
         $property_types           = DB::connection('tenant')->table('property_types')->get();
+        $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
         $data                     = [
             'enquiry_details'          => $enquiry_details,
             'enquiry'                  => $enquiry,
@@ -258,6 +265,7 @@ class EnquiryController extends Controller
             'property_types'           => $property_types,
             'enquiry_unit_details'     => $enquiry_unit_details,
             'unit_management_all'      => $unit_management_all,
+            'dail_code_main'            => $dail_code_main,
         ];
         return view('admin-views.property_transactions.enquiries.edit', $data);
     }
@@ -419,6 +427,7 @@ class EnquiryController extends Controller
         //     }
         // }
         $data       = $request->all();
+        // dd($data);
         $unitFields = collect($data)->filter(function ($value, $key) {
             return Str::startsWith($key, 'no_of_unit-');
         });
@@ -730,13 +739,13 @@ class EnquiryController extends Controller
                 $ewa_limit_mode           = $request->input("ewa_limit_mode-$enquiry_unit_search_item->id");
                 $ewa_limit                = $request->input("ewa_limit_monthly-$enquiry_unit_search_item->id");
                 $notice_period            = $request->input("notice_period-$enquiry_unit_search_item->id");
-                
+
                 if ($rentMode === $paymentMode) {
 
                     $rentAmount = $baseAmount;
                 } else {
                     $rentAmount = calc_rent_amount($rentMode, $paymentMode, $baseAmount, $rentAmount);
-                    $total_net_rent_amount = ($rentAmount * ($vat_percentage / 100 )) + $rentAmount;
+                    $total_net_rent_amount = ($rentAmount * ($vat_percentage / 100)) + $rentAmount;
                     $security_deposit_amount = $rentAmount * $security_deposit;
                 }
                 $proposal_units           = (new ProposalUnits())->setConnection('tenant')->create([
@@ -1187,11 +1196,11 @@ class EnquiryController extends Controller
             'blocks_management_child.floors_management_child.unit_management_child',
             'blocks_management_child.floors_management_child.unit_management_child.unit_management_main'
         )->forUser()->get();
-       $settings = BusinessSetting::whereIn('type', ['enquiry_color','booking_color','proposal_color','agreement_color'])->select('type','value')->get()->keyBy('type');
- 
+        $settings = BusinessSetting::whereIn('type', ['enquiry_color', 'booking_color', 'proposal_color', 'agreement_color'])->select('type', 'value')->get()->keyBy('type');
+
         $data = [
             'property_items' => $property,
-            'settings'=>$settings,
+            'settings' => $settings,
         ];
         return view('admin-views.property_transactions.enquiries.general_view_image', $data);
     }
@@ -1206,15 +1215,14 @@ class EnquiryController extends Controller
             'blocks_management_child.floors_management_child.unit_management_child.unit_management_main'
         )->forUser()->get();
 
-       $settings = BusinessSetting::whereIn('type', ['enquiry_color','booking_color','proposal_color','agreement_color'])->select('type','value')->get()->keyBy('type');
- 
+        $settings = BusinessSetting::whereIn('type', ['enquiry_color', 'booking_color', 'proposal_color', 'agreement_color'])->select('type', 'value')->get()->keyBy('type');
+
         $data = [
             'property_items' => $property,
-            'settings'=>$settings,
+            'settings' => $settings,
         ];
         return view('admin-views.property_transactions.enquiries.general_list_view', $data);
     }
-   
 }
 // App\Models\Admin::create([
 //     'name'                  => 'Eslam',

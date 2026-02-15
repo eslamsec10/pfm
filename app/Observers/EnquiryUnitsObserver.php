@@ -20,7 +20,7 @@ class EnquiryUnitsObserver
     public function created(EnquiryUnitSearchDetails $enquiryUnitSearchDetails): void
     {
         $tenant = $enquiryUnitSearchDetails->main_enquiry->tenant ?? null;
-        if (!$tenant) {
+        if (!$tenant ) {
             return;
         }
 

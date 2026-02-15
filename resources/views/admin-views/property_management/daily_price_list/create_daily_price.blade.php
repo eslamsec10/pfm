@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', ui_change('create_sale'))
+@section('title', ui_change('add_new'))
 
 @push('css_or_js')
 @endpush
@@ -10,14 +10,14 @@
         <!-- Page Title -->
         <div class="mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex gap-2">
-                {{ ui_change('create_sale') }}
+                {{ ui_change('add_new') }}
             </h2>
         </div>
         @include('admin-views.inline_menu.property_config.inline-menu')
       
 
 
-        <form class="product-form text-start" action="{{ route('sales_price.store') }}" method="POST"
+        <form class="product-form text-start" action="{{ route('daily_price.store') }}" method="POST"
             enctype="multipart/form-data">
             @csrf
             <!-- general setup -->
@@ -26,7 +26,7 @@
                     <div class="d-flex gap-2">
                         {{-- <img src="{{ asset(main_path() . 'back-end/img/shop-information.png') }}" class="mb-1"
                         alt=""> --}}
-                        <h4 class="mb-0">{{ ui_change('create_sale') }}</h4>
+                        <h4 class="mb-0">{{ ui_change('create_daily_price') }}</h4>
                     </div>
                 </div>
                 <div class="card-body">
@@ -75,9 +75,9 @@
                         </div>
                         <div class="col-md-6 col-lg-4 col-xl-3  ">
                             <div class="form-group">
-                                <label class="floor-title">{{ ui_change('sale_price') }}<span class="text-danger">
+                                <label class="floor-title">{{ ui_change('daily_price') }}<span class="text-danger">
                                         *</span></label>
-                                <input type="number" class="form-control" id="mainRentAmount" name="sale_price" required>
+                                <input type="number" class="form-control" id="mainRentAmount" name="daily_price" required>
                             </div>
                         </div>
                         <div class="col-md-6 col-lg-4 col-xl-3   ">
@@ -94,7 +94,7 @@
                                 <thead>
                                     <tr>
                                         <th>{{ ui_change('unit') }}</th>
-                                        <th>{{ ui_change('sale_price') }}</th>
+                                        <th>{{ ui_change('daily_price') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -108,8 +108,7 @@
 
             </div>
 
-            <div class="row justify-content-end gap-3 mt-3 mx-1">
-                <button type="reset" class="btn btn-secondary px-5">{{ ui_change('reset') }}</button>
+            <div class="row justify-content-end gap-3 mt-3 mx-1"> 
                 <button type="submit" class="btn btn--primary px-5">{{ ui_change('submit') }}</button>
             </div>
         </form>
@@ -124,12 +123,12 @@
         $(document).ready(function() {
             $('#mainRentAmount').on('input', function() {
                 var value = $(this).val();
-                $('#unitsTable tbody input[name^="sale_price"]').val(value);
+                $('#unitsTable tbody input[name^="daily_price"]').val(value);
             });
 
             function loadUnits(propertyId, blockId = null, floorId = null) {
                 $.ajax({
-                    url: '{{ route('sales_price.get_units_filtered') }}',
+                    url: '{{ route('daily_price.get_units_filtered') }}',
                     type: 'GET',
                     data: {
                         property_id: propertyId,
@@ -160,9 +159,9 @@
                 <td>${unitName}</td>
                 <td>
                     <input type="number"
-                           name="sale_price[${unit.id}]"
+                           name="daily_price[${unit.id}]"
                            class="form-control"
-                           placeholder="Enter sale amount"
+                           placeholder="Enter daily price"
                            value="${$('#mainRentAmount').val()}">
                 </td>
             </tr>
@@ -179,7 +178,7 @@
                 var propertyId = $(this).val();
 
                 $.ajax({
-                    url: '/sale_price_list/get-blocks/' + propertyId,
+                    url: '/daily_price_list/get-blocks/' + propertyId,
                     type: 'GET',
                     dataType: 'json',
                     success: function(data) {
@@ -195,7 +194,7 @@
                 });
 
                 $.ajax({
-                    url: '/sale_price_list/get-floors/' + propertyId,
+                    url: '/daily_price_list/get-floors/' + propertyId,
                     type: 'GET',
                     dataType: 'json',
                     success: function(data) {
@@ -233,7 +232,7 @@
                 var property = $(this).val();
                 if (property) {
                     $.ajax({
-                        url: "{{ route('sales_price.get_blocks_by_property_id_for_sales', ':id') }}"
+                        url: "{{ route('daily_price.get_blocks_by_property_id_for_daily', ':id') }}"
                             .replace(':id', property),
                       
                         type: "GET",
@@ -276,7 +275,7 @@
                 var block = $(this).val();
                 if (block) {
                     $.ajax({
-                        url: "{{ route('sales_price.get_floors_by_block_id_for_sales', ':id') }}"
+                        url: "{{ route('daily_price.get_floors_by_block_id_for_daily', ':id') }}"
                             .replace(':id', block), 
                         type: "GET",
                         dataType: "json",
@@ -312,7 +311,7 @@
                 var floor = $(this).val();
                 if (floor) {
                     $.ajax({
-                        url: "{{ route('sales_price.get_units_by_floor_id_for_sales', ':id') }}"
+                        url: "{{ route('daily_price.get_units_by_floor_id_for_daily', ':id') }}"
                             .replace(':id', floor),
                         type: "GET",
                         dataType: "json",

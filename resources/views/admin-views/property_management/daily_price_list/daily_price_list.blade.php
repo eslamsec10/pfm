@@ -90,7 +90,7 @@
                                                     ui_change('not_available') }}
                                             </td>
                                             <td class="text-center">
-                                                {{ number_format($daily_price_list_item->price, 3) ?? ui_change('not_available') }}
+                                                {{ number_format($daily_price_list_item->rent_amount, 3) ?? ui_change('not_available') }}
                                             </td>
                                             <td class="text-center">
                                                 {{ optional($daily_price_list_item)->applicable_date ?? ui_change('not_available') }}

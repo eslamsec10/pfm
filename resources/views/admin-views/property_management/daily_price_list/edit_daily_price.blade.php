@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', ui_change('edit_sale'))
+@section('title', ui_change('edit_daily'))
 
 @push('css_or_js')
 @endpush
@@ -10,20 +10,20 @@
         <!-- Page Title -->
         <div class="mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex gap-2">
-                {{ ui_change('edit_sale') }} 
+                {{ ui_change('edit_daily') }} 
             </h2>
         </div>
         @include('admin-views.inline_menu.property_config.inline-menu')
 
 
-        <form class="product-form text-start" action="{{ route('sales_price.update' , $unit_sale->id) }}" method="POST"
+        <form class="product-form text-start" action="{{ route('daily_price.update' , $unit_daily->id) }}" method="POST"
         enctype="multipart/form-data">
         @csrf
         @method('patch')
         <div class="card mt-3 rest-part">
             <div class="card-header">
                 <div class="d-flex gap-2"> 
-                    <h4 class="mb-0">{{ ui_change('edit_sale') }}</h4>
+                    <h4 class="mb-0">{{ ui_change('edit_daily') }}</h4>
                 </div>
             </div>
             <div class="card-body">
@@ -37,7 +37,7 @@
                                 <option selected  value="">{{ ui_change('select') }}
                                 </option>
                                 @foreach ($property_managements as $property_item)
-                                    <option value="{{ $property_item->id }}" {{ ($property_item->id == $unit_sale->property_id) ? 'selected' : '' }}>
+                                    <option value="{{ $property_item->id }}" {{ ($property_item->id == $unit_daily->property_id) ? 'selected' : '' }}>
                                         {{ $property_item->name . ' - '.$property_item->code }}
                                     </option>
                                 @endforeach
@@ -49,7 +49,7 @@
                             <label for="name" class="title-color">{{ ui_change('blocks') }}<span class="text-danger"> *</span>
                             </label>
                             <select class="js-select2-custom form-control" name="block" required  >
-                            <option  value="{{ $unit_sale->block_management_id }}">{{ $unit_sale->block_management?->block?->name }} </option>  
+                            <option  value="{{ $unit_daily->block_management_id }}">{{ $unit_daily->block_management?->block?->name }} </option>  
                             </select>
                         </div>
                     </div>
@@ -59,22 +59,22 @@
                         <div class="form-group">
                         <label class="floor-title">{{ ui_change('floors') }}<span class="text-danger"> *</span></label>
                             <select class="js-select2-custom form-control" name="floor" required  >
-                                <option  value="{{ $unit_sale->floor_management_id }}">{{ $unit_sale->floor_management?->floor_management_main?->name }} </option>  
+                                <option  value="{{ $unit_daily->floor_management_id }}">{{ $unit_daily->floor_management?->floor_management_main?->name }} </option>  
 
                             </select>
                         </div>
                     </div>
                     <div class="col-md-6 col-lg-4 col-xl-3  ">
                         <div class="form-group">
-                        <label class="floor-title">{{ ui_change('sale_price') }}<span class="text-danger"> *</span></label>
-                        <input type="number" class="form-control" name="sale_price" value="{{ $unit_sale->price }}" required>
+                        <label class="floor-title">{{ ui_change('daily_price') }}<span class="text-danger"> *</span></label>
+                        <input type="number" class="form-control" name="daily_price" value="{{ $unit_daily->rent_amount }}" required>
                         </div>
                     </div>
                     <div class="col-md-6 col-lg-4 col-xl-3  ">
                         <div class="form-group">
                         <label class="floor-title">{{ ui_change('units') }}<span class="text-danger"> *</span></label>
                             <select class="js-select2-custom form-control  " name="units" required  >
-                                <option  value="{{ $unit_sale->unit_management_id }}">{{ $unit_sale->unit_management?->unit_management_main?->name }} </option>  
+                                <option  value="{{ $unit_daily->unit_management_id }}">{{ $unit_daily->unit_management?->unit_management_main?->name }} </option>  
 
                             </select>
                         </div>
@@ -83,7 +83,7 @@
                     <div class="col-md-6 col-lg-4 col-xl-3   ">
                         <div class="form-group">
                         <label class="floor-title">{{ ui_change('applicable_from') }}<span class="text-danger"> *</span></label>
-                        <input type="text" class="form-control applicable_date" value="{{ \Carbon\Carbon::parse($unit_sale->applicable_date)->format('d/m/Y') }}" name="applicable_date" required>
+                        <input type="text" class="form-control applicable_date" value="{{ \Carbon\Carbon::parse($unit_daily->applicable_date)->format('d/m/Y') }}" name="applicable_date" required>
                         </div>
                     </div>
 
@@ -113,7 +113,7 @@
                 var property = $(this).val();
                 if (property) {
                     $.ajax({
-                        url: "{{ route('sales_price.get_blocks_by_property_id_for_sales' , ':id') }}".replace(':id', property) , 
+                        url: "{{ route('daily_price.get_blocks_by_property_id_for_daily' , ':id') }}".replace(':id', property) , 
                         // url: "{{ URL::to('floor_management/get_blocks_by_property_id') }}/" + property, 
                         type: "GET",
                         dataType: "json",
@@ -154,7 +154,7 @@
                 var block = $(this).val();
                 if (block) {
                     $.ajax({
-                        url: "{{ route('sales_price.get_floors_by_block_id_for_sales' , ':id') }}".replace(':id', block) , 
+                        url: "{{ route('daily_price.get_floors_by_block_id_for_daily' , ':id') }}".replace(':id', block) , 
                         // url: "{{ URL::to('floor_management/get_blocks_by_block_id') }}/" + block, 
                         type: "GET",
                         dataType: "json",
@@ -190,7 +190,7 @@
                 var floor = $(this).val();
                 if (floor) {
                     $.ajax({
-                        url: "{{ route('sales_price.get_units_by_floor_id_for_sales' , ':id') }}".replace(':id', floor) ,   
+                        url: "{{ route('daily_price.get_units_by_floor_id_for_daily' , ':id') }}".replace(':id', floor) ,   
                         type: "GET",
                         dataType: "json",
                         success: function(data) {

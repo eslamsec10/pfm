@@ -97,10 +97,10 @@ class DailyRentListController extends Controller
                     'floor_management_id' => $unit_management->floor_management_id,
                     'applicable_date'     => $applicable_date,
                     'unit_management_id'  => $unit_id,
-                    'price'         => $request->daily_price[$unit_id],
+                    'rent_amount'         => $request->daily_price[$unit_id],
                 ]);
             }
-            return to_route('dailys_price.index')->with('success', ui_change('added_successfully'));
+            return to_route('daily_price.index')->with('success', ui_change('added_successfully'));
         } catch (\Exception $e) {
             return redirect()->back()->with("error", $e->getMessage());
         }
@@ -129,28 +129,28 @@ class DailyRentListController extends Controller
                 'floor_management_id' => $request->floor,
                 'applicable_date'     => $applicable_date,
                 'unit_management_id'  => $request->units,
-                'price'         => $request->daily_price,
+                'rent_amount'         => $request->daily_price,
             ]);
 
-            return to_route('dailys_price.index')->with('success', ui_change('updated_successfully'));
+            return to_route('daily_price.index')->with('success', ui_change('updated_successfully'));
         } catch (\Exception $e) {
             return redirect()->back()->with("error", $e->getMessage());
         }
     }
-    public function get_blocks_by_property_id_for_dailys($id)
+    public function get_blocks_by_property_id_for_daily($id)
     {
         $property = PropertyManagement::findOrFail($id);
         $blocks   = BlockManagement::where('property_management_id', $property->id)->with('block')->get();
         return json_encode($blocks);
     }
-    public function get_floors_by_block_id_for_dailys($id)
+    public function get_floors_by_block_id_for_daily($id)
     {
         $blocks = BlockManagement::findOrFail($id);
         $floors = FloorManagement::where('block_management_id', $blocks->id)->select('id', 'floor_id')->with('floor_management_main:id,name,code')->get();
         return json_encode($floors);
     }
 
-    public function get_units_by_floor_id_for_dailys($id)
+    public function get_units_by_floor_id_for_daily($id)
     {
         $floor = FloorManagement::findOrFail($id);
         $units = UnitManagement::where('floor_management_id', $floor->id)->select('id', 'unit_id')->with('unit_management_main:id,name,code')->get();
@@ -160,7 +160,7 @@ class DailyRentListController extends Controller
     {
         $rent = DailyPriceList::findOrFail($request->id);
         $rent->delete();
-        return redirect()->route('dailys_price.index')->with('success', ui_change('deleted_successfully'));
+        return redirect()->route('daily_price.index')->with('success', ui_change('deleted_successfully'));
     }
 
     public function getUnits($propertyId)

@@ -91,6 +91,13 @@
                               
                          </p>
                      </div>
+                     <div class="accordion-item ">
+                         <p class="accordion-header list-group-item">
+                             <a class="accordion-button"
+                                 href="{{ route('daily_price.index') }}">{{ ui_change('daily_price_list', 'property_config') }}</a>
+                              
+                         </p>
+                     </div>
 
 
                  </div>

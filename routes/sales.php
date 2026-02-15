@@ -11,9 +11,9 @@ Route::group(['prefix' => 'daily_price_list', 'middleware' => 'auth:web'], funct
     Route::get('/edit/{id}', [DailyRentListController::class, 'edit'])->name('daily_price.edit');
     Route::patch('/update/{id}', [DailyRentListController::class, 'update'])->name('daily_price.update');
     Route::post('/store', [DailyRentListController::class, 'store'])->name('daily_price.store');
-    Route::get('/get_blocks_by_property_id_for_sales/{id}', [DailyRentListController::class, 'get_blocks_by_property_id_for_sales'])->name('daily_price.get_blocks_by_property_id_for_sales');
-    Route::get('/get_floors_by_block_id_for_sales/{id}', [DailyRentListController::class, 'get_floors_by_block_id_for_sales'])->name('daily_price.get_floors_by_block_id_for_sales');
-    Route::get('/get_units_by_floor_id_for_sales/{id}', [DailyRentListController::class, 'get_units_by_floor_id_for_sales'])->name('daily_price.get_units_by_floor_id_for_sales');
+    Route::get('/get_blocks_by_property_id_for_daily/{id}', [DailyRentListController::class, 'get_blocks_by_property_id_for_daily'])->name('daily_price.get_blocks_by_property_id_for_daily');
+    Route::get('/get_floors_by_block_id_for_daily/{id}', [DailyRentListController::class, 'get_floors_by_block_id_for_daily'])->name('daily_price.get_floors_by_block_id_for_daily');
+    Route::get('/get_units_by_floor_id_for_daily/{id}', [DailyRentListController::class, 'get_units_by_floor_id_for_daily'])->name('daily_price.get_units_by_floor_id_for_daily');
     Route::get('delete', [DailyRentListController::class, 'delete'])->name('daily_price.delete');
     Route::get('/get-units/{property_id}', [DailyRentListController::class, 'getUnits'])->name('daily_price.get_units'); 
     Route::get('/get-blocks/{property}', [DailyRentListController::class, 'getBlocks'])->name('daily_price.get_blocks');

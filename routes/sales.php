@@ -1,7 +1,8 @@
 <?php
 
 use App\Http\Controllers\property_management\DailyRentListController;
-use App\Http\Controllers\property_management\SalesPriceListController;
+use App\Http\Controllers\property_management\SalesPriceListController; 
+use App\Http\Controllers\sales\PropertyCustomerController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -36,4 +37,19 @@ Route::group(['prefix' => 'sales_price_list', 'middleware' => 'auth:web'], funct
     Route::get('/get-blocks/{property}', [SalesPriceListController::class, 'getBlocks'])->name('sales_price.get_blocks');
     Route::get('/get-floors/{property}/{block}', [SalesPriceListController::class, 'getFloors'])->name('sales_price.get_floors');
     Route::get('/get-units', [SalesPriceListController::class, 'getUnitsFiltered'])->name('sales_price.get_units_filtered');
+});
+
+
+// Customers Management
+Route::group(['prefix' => 'sales/property_customer','as'=>'sales.', 'middleware' => 'auth:web'], function () {
+    Route::get('/', [PropertyCustomerController::class, 'index'])->name('customer.index');
+    Route::get('/create', [PropertyCustomerController::class, 'create'])->name('customer.create');
+    Route::post('store', [PropertyCustomerController::class, 'store'])->name('customer.store');
+    Route::post('store_for_anything', [PropertyCustomerController::class, 'store_for_anything'])->name('customer.store_for_anything');
+    Route::get('/edit/{id}', [PropertyCustomerController::class, 'edit'])->name('customer.edit');
+    Route::get('/show/{id}', [PropertyCustomerController::class, 'show'])->name('customer.show');
+    Route::patch('/update/{id}', [PropertyCustomerController::class, 'update'])->name('customer.update');
+    Route::get('delete', [PropertyCustomerController::class, 'delete'])->name('customer.delete');
+    Route::post('status-update', [PropertyCustomerController::class, 'statusUpdate'])->name('customer.status-update');
+    Route::get('exportCustomers', [PropertyCustomerController::class, 'exportCustomers'])->name('customer.exportCustomers');
 });

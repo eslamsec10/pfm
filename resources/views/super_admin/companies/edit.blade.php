@@ -487,8 +487,7 @@
                             class="title-color">{{ __('companies.dail_code') }}</label>
                         <select class="js-select2-custom form-control" name="phone_dail_code">
                             <option selected value="">{{ __('general.select') }}</option>
-                            @foreach ($dail_code_main as $item_dail_code)
-                                {{-- **تم تعديل الشرط للاحتفاظ بالمدخلات السابقة** --}}
+                            @foreach ($dail_code_main as $item_dail_code) 
                                 <option value="{{ $item_dail_code->dial_code }}" 
                                     {{ (old('phone_dail_code') == $item_dail_code->dial_code) ? 'selected' : (($item_dail_code->dial_code == $company->phone_dail_code) ? 'selected' : '') }}>
                                     {{ '+' . $item_dail_code->dial_code }}

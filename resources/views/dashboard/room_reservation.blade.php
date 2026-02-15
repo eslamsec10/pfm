@@ -97,26 +97,7 @@
                          <a class="accordion-button"
                              href="{{ route('meeting_room.list') }}">{{ ui_change('meeting_rooms', 'room_reservation') }}</a>
                      </h2>
-                 </div>
-               {{--   <div class="accordion-item ">
-                     <h2 class="accordion-header list-group-item">
-                         <a class="accordion-button"
-                             href="{{ route('room_block.list') }}">{{ ui_change('blocks', 'room_reservation') }}</a>
-                     </h2>
-                 </div>
-                 <div class="accordion-item ">
-                     <h2 class="accordion-header list-group-item">
-                         <a class="accordion-button"
-                             href="{{ route('room_floor.list') }}">{{ ui_change('floors', 'room_reservation') }}</a>
-                     </h2>
-                 </div>
-                 <div class="accordion-item ">
-                     <h2 class="accordion-header list-group-item">
-                         <a class="accordion-button"
-                             href="{{ route('room_unit.list') }}">{{ ui_change('rooms', 'room_reservation') }}</a>
-                     </h2>
-                 </div>
---}}
+                 </div> 
              </div> 
              <div class="col-md-4">
                  <h4 class="mb-3">{{ ui_change('Transactions', 'room_reservation') }}</h4>

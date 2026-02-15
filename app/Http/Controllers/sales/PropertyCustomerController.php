@@ -1,8 +1,7 @@
 <?php
 
-namespace App\Http\Controllers\property_transactions;
+namespace App\Http\Controllers\sales;
 
-use App\Exports\TenantTemplate;
 use App\Http\Controllers\Controller;
 use App\Models\BusinessActivity;
 use App\Models\Company;
@@ -10,27 +9,25 @@ use App\Models\CountryMaster;
 use App\Models\general\Groups;
 use App\Models\hierarchy\MainLedger;
 use App\Models\LiveWith;
-use App\Models\Tenant;
-use App\Models\User;
+use App\Models\PropertyCustomer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
-use Maatwebsite\Excel\Facades\Excel;
 
-class TenantController extends Controller
+class PropertyCustomerController extends Controller
 {
     public function index(Request $request)
     {
         $ids = $request->bulk_ids;
         if ($request->bulk_action_btn === 'update_status' && is_array($ids) && count($ids)) {
             $data = ['status' => 1];
-            (new Tenant())->setConnection('tenant')->whereIn('id', $ids)->update($data);
+            PropertyCustomer::whereIn('id', $ids)->update($data);
             return back()->with('success', __('general.updated_successfully'));
         }
         $search      = $request['search'];
         $query_param = $search ? ['search' => $request['search']] : '';
-        $tenants     = (new Tenant())->setConnection('tenant')->when($request['search'], function ($q) use ($request) {
+        $customers     = PropertyCustomer::when($request['search'], function ($q) use ($request) {
             $key = explode(' ', $request['search']);
             foreach ($key as $value) {
                 $q->Where('name', 'like', "%{$value}%")
@@ -40,53 +37,51 @@ class TenantController extends Controller
             ->latest()->paginate()->appends($query_param);
 
         $data = [
-            'tenants' => $tenants,
+            'customers' => $customers,
             'search'  => $search,
 
         ];
-        return view("admin-views.property_transactions.tenants.tenant_list", $data);
+        return view("admin-views.sales.customer.customer_list", $data);
     }
 
     public function create()
     {
 
-        $country_master      = (new CountryMaster())->setConnection('tenant')->get();
-        $live_withs          = (new LiveWith())->setConnection('tenant')->get();
-        $business_activities = (new BusinessActivity())->setConnection('tenant')->get();
+        $country_master      = CountryMaster::get();
+        $live_withs          = LiveWith::get();
+        $business_activities = BusinessActivity::get();
         $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
-
         $data = [
             'country_master'      => $country_master,
             'live_withs'          => $live_withs,
             'business_activities' => $business_activities,
-            'dail_code_main'      => $dail_code_main,
+            'dail_code_main'       => $dail_code_main,
         ];
-        return view("admin-views.property_transactions.tenants.create", $data);
+        return view("admin-views.sales.customer.create", $data);
     }
 
     public function edit($id)
     {
-        $tenant              = (new Tenant())->setConnection('tenant')->findOrFail($id);
-        $country_master      = (new CountryMaster())->setConnection('tenant')->get();
-        $live_withs          = (new LiveWith())->setConnection('tenant')->get();
-        $business_activities = (new BusinessActivity())->setConnection('tenant')->get();
+        $customer              = PropertyCustomer::findOrFail($id);
+        $country_master      = CountryMaster::get();
+        $live_withs          = LiveWith::get();
+        $business_activities = BusinessActivity::get();
         $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
-
         $data = [
             'country_master'      => $country_master,
             'live_withs'          => $live_withs,
             'business_activities' => $business_activities,
-            'tenant'              => $tenant,
-            'dail_code_main'      => $dail_code_main,
+            'customer'              => $customer,
+            'dail_code_main'       => $dail_code_main,
         ];
-        return view("admin-views.property_transactions.tenants.edit", $data);
+        return view("admin-views.sales.customer.edit", $data);
     }
 
     public function store(Request $request)
     {
         if ($request->type == 'individual') {
             $request->validate([
-                'name'           => 'required|string|max:255|unique:tenants,name',
+                'name'           => 'required|string|max:255|unique:property_customers,name',
                 'gender'         => 'required|string|max:10',
                 'live_with_id'   => 'required|integer',
                 'country_id'     => 'required|integer',
@@ -94,7 +89,7 @@ class TenantController extends Controller
             ]);
         } elseif ($request->type == 'company') {
             $request->validate([
-                'company_name'         => 'required|string|max:255|unique:tenants,company_name',
+                'company_name'         => 'required|string|max:255|unique:property_customers,company_name',
                 'business_activity_id' => 'required|integer',
                 'country_id'           => 'required|integer',
                 'contact_person'       => 'required|string|max:255',
@@ -136,13 +131,29 @@ class TenantController extends Controller
         ]);
         DB::beginTransaction();
         try {
-
-            $tenant = (new Tenant())->setConnection('tenant')->storeTenant($validatedData);
-            // $company = auth()->user() ?? (new User())->setConnection()->first();
-
-
+            $customer = PropertyCustomer::storeCustomer($validatedData);
+            $main_group = Groups::where('name', 'LIKE', '%Accounts Receivable%')->first();
+            $company = (new Company())->setConnection('tenant')->first(); 
+            if ($main_group) {
+                $group = Groups::firstOrCreate(['name' => 'Property Customer', 'group_id' => $main_group->id  ]);
+                $ledger = MainLedger::create([
+                    'code'                => ($customer->type == 'individual') ? $customer->name : $customer->company_name,
+                    'name'                => ($customer->type == 'individual') ? $customer->name : $customer->company_name,
+                    'group_id'            => $group->id,
+                    'main_id'             => $customer->id,
+                    'main_type'           => 'property_customer',
+                    'currency'            => $company->currency_code,
+                    'country_id'          => $company->countryid,
+                    'is_taxable'          => $group->is_taxable ?: 0,
+                    'vat_applicable_from' => $group->vat_applicable_from ?? null,
+                    'tax_rate'            => $group->tax_rate ?: 0,
+                    'tax_applicable'      => $group->tax_applicable ?: 0,
+                    'status'              => 'active',
+                ]);
+                $customer->update(['ledger_id' => $ledger->id]);    
+            }
             DB::commit();
-            return redirect()->route('tenant.index')->with('success', __('property_master.added_successfully'));
+            return redirect()->route('sales.customer.index')->with('success', ui_change('added_successfully'));
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with("error", $e->getMessage());
@@ -170,7 +181,7 @@ class TenantController extends Controller
             'name'                 => [
                 'string',
                 'max:255',
-                Rule::unique('tenants')->where(function ($query) use ($request) {
+                Rule::unique('property_customers')->where(function ($query) use ($request) {
                     return $query->where('company_name', $request->input('company_name'));
                 }),
             ],
@@ -182,7 +193,7 @@ class TenantController extends Controller
                 'nullable',
                 'string',
                 'max:255',
-                Rule::unique('tenants')->where(function ($query) use ($request) {
+                Rule::unique('property_customers')->where(function ($query) use ($request) {
                     return $query->where('name', $request->input('name'));
                 }),
             ],
@@ -190,10 +201,11 @@ class TenantController extends Controller
                 'nullable',
                 'string',
                 'max:255',
-                Rule::unique('tenants')->where(function ($query) use ($request) {
-                    return $query->where('name', $request->input('name'));
+                Rule::unique('property_customers')->where(function ($query) use ($request) {
+                    return $query->where('company_name', $request->input('company_name'));
                 }),
             ],
+
             'contact_person'       => 'nullable|string|max:255',
             'designation'          => 'nullable|string|max:255',
             'contact_no'           => 'nullable|string|max:20',
@@ -220,23 +232,27 @@ class TenantController extends Controller
         DB::beginTransaction();
         try {
 
-            $tenant = (new Tenant())->setConnection('tenant')->storeTenant($validatedData);
-            // $company = auth()->user() ?? (new User())->setConnection('tenant')->first();
-            // $company = (new Company())->setConnection('tenant')->where('id', auth()->user()?->company_id)->first() ?? (new Company())->setConnection('tenant')->first();
-            // $group   = (new Groups())->setConnection('tenant')->where('id', 49)->first();
-            // $ledger  = (new MainLedger())->setConnection('tenant')->create([
-            //     'code'                => ($tenant->type == 'individual') ? $tenant->nick_name : $tenant->group_company_name,
-            //     'name'                => ($tenant->type == 'individual') ? $tenant->name : $tenant->company_name,
-            //     'currency'            => $company->currency_code,
-            //     'country_id'          => $company->countryid,
-            //     'group_id'            => $group->id,
-            //     'is_taxable'          => $group->is_taxable ?: 0,
-            //     'vat_applicable_from' => $group->vat_applicable_from ?? null,
-            //     'tax_rate'            => $group->tax_rate ?: 0,
-            //     'tax_applicable'      => $group->tax_applicable ?: 0,
-            //     'status'              => 'active',
-            // ]);
+            $customer = PropertyCustomer::storeCustomer($validatedData);
 
+            $main_group = Groups::where('name', 'LIKE', '%Accounts Receivable%')->first();
+            $company = (new Company())->setConnection('tenant')->first();
+            if ($main_group) {
+                $group = Groups::firstOrCreate(['name' => 'Property Customer', 'group_id' => $main_group->id]);
+                $ledger = MainLedger::create([
+                    'code'                => ($customer->type == 'individual') ? $customer->name : $customer->company_name,
+                    'name'                => ($customer->type == 'individual') ? $customer->name : $customer->company_name,
+                    'group_id'              => $group->id,
+                    'main_id'             => $customer->id,
+                    'main_type'           => 'property_customer',
+                    'currency'            => $company->currency_code,
+                    'country_id'          => $company->countryid,
+                    'is_taxable'          => $group->is_taxable ?: 0,
+                    'vat_applicable_from' => $group->vat_applicable_from ?? null,
+                    'tax_rate'            => $group->tax_rate ?: 0,
+                    'tax_applicable'      => $group->tax_applicable ?: 0,
+                    'status'              => 'active',
+                ]);
+            }
             DB::commit();
             return redirect()->back()->with('success', __('general.added_successfully'));
         } catch (\Exception $e) {
@@ -244,6 +260,7 @@ class TenantController extends Controller
             return redirect()->back()->with("error", $e->getMessage());
         }
     }
+
     public function update(Request $request, $id)
     {
         if ($request->type == 'individual') {
@@ -268,7 +285,7 @@ class TenantController extends Controller
                 'nullable',
                 'string',
                 'max:255',
-                Rule::unique('tenants')->where(function ($query) use ($request) {
+                Rule::unique('property_customers')->where(function ($query) use ($request) {
                     return $query->where('company_name', $request->input('company_name'));
                 })->ignore($id),
             ],
@@ -280,7 +297,7 @@ class TenantController extends Controller
                 'nullable',
                 'string',
                 'max:255',
-                Rule::unique('tenants')->where(function ($query) use ($request) {
+                Rule::unique('property_customers')->where(function ($query) use ($request) {
                     return $query->where('company_name', $request->input('company_name'));
                 })->ignore($id),
             ],
@@ -294,7 +311,7 @@ class TenantController extends Controller
                 'nullable',
                 'string',
                 'max:255',
-                Rule::unique('tenants')->where(function ($query) use ($request) {
+                Rule::unique('property_customers')->where(function ($query) use ($request) {
                     return $query->where('name', $request->input('name'));
                 })->ignore($id),
             ],
@@ -318,32 +335,27 @@ class TenantController extends Controller
         ]);
         try {
 
-            $tenant = (new Tenant())->setConnection('tenant')->findOrFail($id);
+            $customer = PropertyCustomer::findOrFail($id);
 
-            $tenant->update($validatedData);
+            $customer->update($validatedData);
 
-            return redirect()->route('tenant.index')->with('success', __('property_master.added_successfully'));
+            return redirect()->route('sales.customer.index')->with('success', ui_change('updated_successfully'));
         } catch (\Exception $e) {
             return redirect()->back()->with("error", $e->getMessage());
         }
     }
     public function delete(Request $request)
     {
-        $tenant = (new Tenant())->setConnection('tenant')->findOrFail($request->id);
-        $tenant->delete();
-        return to_route('tenant.index')->with('success', __('general.deleted_successfully'));
+        $customer = PropertyCustomer::findOrFail($request->id);
+        $customer->delete();
+        return to_route('customer.index')->with('success', ui_change('deleted_successfully'));
     }
     public function statusUpdate(Request $request)
     {
-        $main = (new Tenant())->setConnection('tenant')->findOrFail($request->id);
+        $main = PropertyCustomer::findOrFail($request->id);
         $main->update([
             'status' => ($request->status == 1) ? 'active' : 'inactive',
         ]);
-        return redirect()->back()->with('success', __('property_master.updated_successfully'));
-    }
-
-    public function exportTenants()
-    {
-        return Excel::download(new TenantTemplate, 'tenants.xlsx');
+        return redirect()->back()->with('success', ui_change('updated_successfully'));
     }
 }

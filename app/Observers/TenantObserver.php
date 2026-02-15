@@ -14,7 +14,7 @@ class TenantObserver
      */
     public function created(Tenant $tenant): void
     {
-      
+
 
         $company = Company::on('tenant')
             ->where('id', optional(auth()->user())->company_id)
@@ -32,8 +32,8 @@ class TenantObserver
         if (!$group) {
             return;
         }
-          if (MainLedger::on('tenant')
-            ->where('main_id', $tenant->id)->where('group_id' , $group->id)
+        if (MainLedger::on('tenant')
+            ->where('main_id', $tenant->id)->where('group_id', $group->id)
             ->exists()
         ) {
             return;

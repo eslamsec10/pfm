@@ -183,6 +183,9 @@ Route::get('/investments-side', function () {
 Route::get('/room_reservation-side', function () {
     return view('dashboard.room_reservation');
 })->name('room_reservation_side');
+Route::get('/sales-side', function () {
+    return view('dashboard.sales');
+})->name('sales_side');
 
 Route::get('/facility_reports-side', function () {
     return view('dashboard.facility_reports_side');

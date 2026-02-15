@@ -332,6 +332,20 @@
                                 </a>
                             </li>
                         @endif
+                        @if (\App\Helpers\Helpers::module_permission_check('sales'))
+                            <li class="navbar-vertical-aside-has-menu {{ Request::is('sales-side*') || Request::is('sales*') ? 'active' : '' }}"
+                                style="font-size: 1rem">
+                                <a class="js-navbar-vertical-aside-menu-link nav-link "
+                                    href="{{ route('sales_side') }}" title="{{ ui_change('sales', 'sales') }}">
+                                    <i class="fas fa-hotel"></i>
+
+                                    <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate"
+                                        style="{{ $lang == 'ar' ? 'margin-right: 8px;' : 'margin-left: 8px;' }}">
+                                        {{ ui_change('sales', 'sales') }}
+                                    </span>
+                                </a>
+                            </li>
+                        @endif
                         @if (\App\Helpers\Helpers::module_permission_check('facility_reports'))
                             <li class="navbar-vertical-aside-has-menu {{ Request::is('facility_reports-side*') || Request::is('facility_reports*') ? 'active' : '' }}"
                                 style="font-size: 1rem">

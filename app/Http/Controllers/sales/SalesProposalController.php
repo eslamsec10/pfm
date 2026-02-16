@@ -3,9 +3,14 @@
 namespace App\Http\Controllers\sales;
 
 use App\Http\Controllers\Controller;
+use App\Models\Company;
+use App\Models\CountryMaster;
+use App\Models\PropertyCustomer;
+use App\Models\PropertyManagement;
 use App\Models\SalesProposal;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SalesProposalController extends Controller
 {
@@ -46,5 +51,36 @@ class SalesProposalController extends Controller
 
         ];
         return view("admin-views.sales.proposals.proposal_list", $data);
+    }
+
+    public function create(Request $request){
+        $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
+        $customers                  = PropertyCustomer::get(); 
+        $country_master           = CountryMaster::get();
+        $live_withs               = DB::connection('tenant')->table('live_withs')->get();
+        $business_activities      = DB::connection('tenant')->table('business_activities')->get();
+        $buildings                = PropertyManagement::forUser()->get();
+        $unit_descriptions        = DB::connection('tenant')->table('unit_descriptions')->get();
+        $unit_conditions          = DB::connection('tenant')->table('unit_conditions')->get();
+        $unit_types               = DB::connection('tenant')->table('unit_types')->get();
+        $views                    = DB::connection('tenant')->table('views')->get();
+        $property_types           = DB::connection('tenant')->table('property_types')->get();         
+        $company = (new Company())->setConnection('tenant')->where('id', auth()->user()->company_id)->first() ?? (new Company())->setConnection('tenant')->first();
+
+        $data                     = [ 
+            'unit_types'               => $unit_types,
+            'property_types'           => $property_types,
+            'views'                    => $views,
+            'unit_conditions'          => $unit_conditions,
+            'unit_descriptions'        => $unit_descriptions,
+            'buildings'                => $buildings, 
+            'country_master'           => $country_master,
+            'live_withs'               => $live_withs,
+            'business_activities'      => $business_activities,
+            'customers'                  => $customers,
+            'dail_code_main'           => $dail_code_main,
+            'company'                   => $company,
+        ];
+        return view('admin-views.sales.proposals.create', $data);
     }
 }

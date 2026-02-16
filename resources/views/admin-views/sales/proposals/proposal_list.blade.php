@@ -1,6 +1,6 @@
 @extends('layouts.back-end.app')
 
-@section('title', ui_change('all_proposals' , 'property_transaction'))
+@section('title', ui_change('all_proposals', 'property_transaction'))
 
 @push('css_or_js')
 @endpush
@@ -11,7 +11,7 @@
         <div class="mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex gap-2">
                 {{-- <img src="{{ asset(main_path() . 'back-end/img/inhouse-subscription-list.png') }}" alt=""> --}}
-                {{ ui_change('all_proposals' , 'property_transaction') }}
+                {{ ui_change('all_proposals', 'property_transaction') }}
                 <span class="badge badge-soft-dark radius-50 fz-14 ml-1">{{ $proposals->total() }}</span>
             </h2>
         </div>
@@ -33,10 +33,11 @@
                                             </div>
                                         </div>
                                         <input id="datatableSearch_" type="search" name="search" class="form-control"
-                                            placeholder="{{ ui_change('proposal_search' , 'property_transaction') }}" aria-label="Search orders"
-                                            value="{{ request('search') }}">
+                                            placeholder="{{ ui_change('proposal_search', 'property_transaction') }}"
+                                            aria-label="Search orders" value="{{ request('search') }}">
                                         <input type="hidden" value="{{ request('status') }}" name="status">
-                                        <button type="submit" class="btn btn--primary">{{ ui_change('search' , 'property_transaction') }}</button>
+                                        <button type="submit"
+                                            class="btn btn--primary">{{ ui_change('search', 'property_transaction') }}</button>
                                     </div>
                                 </form>
                                 <!-- End Search -->
@@ -46,7 +47,7 @@
                                 {{-- @can('create_proposal') --}}
                                 <a href="{{ route('sales.proposal.create') }}" class="btn btn--primary">
                                     <i class="tio-add"></i>
-                                    <span class="text">{{ ui_change('create_proposal' , 'property_transaction') }}</span>
+                                    <span class="text">{{ ui_change('create_proposal', 'property_transaction') }}</span>
                                 </a>
                                 <button type="button" data-target="#filter" data-filter="" data-toggle="modal"
                                     class="btn btn--primary btn-sm">
@@ -65,13 +66,16 @@
                                 <thead class="thead-light thead-50 text-capitalize">
                                     <tr>
                                         <th><input id="bulk_check_all" class="bulk_check_all" type="checkbox" />
-                                            {{ ui_change('sl' , 'property_transaction') }}</th>
-                                        <th class="text-center">{{ ui_change('proposal_no' , 'property_transaction') }}</th>
-                                        <th class="text-center">{{ ui_change('proposal_date' , 'property_transaction') }}</th>
-                                        <th class="text-center">{{ ui_change('customer' , 'property_transaction') }}</th>
-                                        <th class="text-center">{{ ui_change('customer_type' , 'property_transaction') }}</th>
-                                        <th class="text-center">{{ ui_change('status' , 'property_transaction') }}</th>
-                                        <th class="text-center">{{ ui_change('Actions' , 'property_transaction') }}</th>
+                                            {{ ui_change('sl', 'property_transaction') }}</th>
+                                        <th class="text-center">{{ ui_change('proposal_no', 'property_transaction') }}
+                                        </th>
+                                        <th class="text-center">{{ ui_change('proposal_date', 'property_transaction') }}
+                                        </th>
+                                        <th class="text-center">{{ ui_change('customer', 'property_transaction') }}</th>
+                                        <th class="text-center">{{ ui_change('customer_type', 'property_transaction') }}
+                                        </th>
+                                        <th class="text-center">{{ ui_change('status', 'property_transaction') }}</th>
+                                        <th class="text-center">{{ ui_change('Actions', 'property_transaction') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -82,7 +86,7 @@
                                                 {{ $proposals->firstItem() + $k }}</th>
 
                                             <td class="text-center">
-                                                {{ $proposal_item->proposal_no ?? ui_change('not_available' , 'property_transaction') }}
+                                                {{ $proposal_item->proposal_no ?? ui_change('not_available', 'property_transaction') }}
                                             </td>
 
                                             <td class="text-center">
@@ -92,14 +96,14 @@
                                                         strtotime($proposal_item->proposal_date),
                                                     );
                                                 @endphp
-                                                {{ $formatted_date ?? ui_change('not_available' , 'property_transaction') }}
+                                                {{ $formatted_date ?? ui_change('not_available', 'property_transaction') }}
                                             </td>
 
                                             <td class="text-center">
-                                                {{ $proposal_item->customer?->type == 'individual' ? $proposal_item->customer?->name ?? ui_change('not_available' , 'property_transaction') : $proposal_item->customer?->company_name ?? ui_change('not_available' , 'property_transaction') }}
+                                                {{ $proposal_item->customer?->type == 'individual' ? $proposal_item->customer?->name ?? ui_change('not_available', 'property_transaction') : $proposal_item->customer?->company_name ?? ui_change('not_available', 'property_transaction') }}
                                             </td>
                                             <td class="text-center">
-                                                {{ ucfirst($proposal_item->customer->type) ?? ui_change('not_available' , 'property_transaction') }}
+                                                {{ ucfirst($proposal_item->customer->type) ?? ui_change('not_available', 'property_transaction') }}
                                             </td>
 
 
@@ -112,7 +116,7 @@
                                                             : (strtolower($proposal_item->status) == 'canceled'
                                                                 ? 'bg-danger p-2 text-white border border-danger rounded'
                                                                 : '')) }}">
-                                                    {{ ucfirst($proposal_item->status) ?? ui_change('not_available' , 'property_transaction') }}
+                                                    {{ ucfirst($proposal_item->status) ?? ui_change('not_available', 'property_transaction') }}
                                                 </span>
                                             </td>
 
@@ -124,25 +128,25 @@
                                                     @if ($proposal_item->booking_status == 'proposal')
                                                         <a class="btn btn-outline--primary "
                                                             href="{{ route('sales.proposal.add_to_booking', [$proposal_item->id]) }}">
-                                                            {{ ui_change('booking' , 'property_transaction') }}
+                                                            {{ ui_change('booking', 'property_transaction') }}
                                                         </a>
 
                                                         <a class="btn btn-outline--primary "
-                                                            title="{{ ui_change('edit' , 'property_transaction') }}"
+                                                            title="{{ ui_change('edit', 'property_transaction') }}"
                                                             href="{{ route('sales.proposal.add_to_agreement', [$proposal_item->id]) }}">
-                                                            {{ ui_change('agreement' , 'property_transaction') }}
+                                                            {{ ui_change('agreement', 'property_transaction') }}
                                                         </a>
                                                     @endif
-                                                    
+
                                                     <a class="btn btn-outline--primary btn-sm square-btn"
-                                                        title="{{ ui_change('edit' , 'property_transaction') }}"
+                                                        title="{{ ui_change('edit', 'property_transaction') }}"
                                                         href="{{ route('sales.proposal.edit', [$proposal_item->id]) }}">
                                                         <i class="tio-edit"></i>
                                                     </a>
-                                                     
+
                                                     @if ($proposal_item->booking_status == 'proposal')
                                                         <a class="btn btn-outline-danger btn-sm delete square-btn"
-                                                            title="{{ ui_change('delete' , 'property_transaction') }}"
+                                                            title="{{ ui_change('delete', 'property_transaction') }}"
                                                             id="{{ $proposal_item->id }}">
                                                             <i class="tio-delete"></i>
                                                         </a>
@@ -169,7 +173,7 @@
                         <div class="text-center p-4">
                             <img class="mb-3 w-160" src="{{ asset(main_path() . 'back-end') }}/svg/illustrations/sorry.svg"
                                 alt="Image Description">
-                            <p class="mb-0">{{ ui_change('no_data_to_show' , 'property_transaction') }}</p>
+                            <p class="mb-0">{{ ui_change('no_data_to_show', 'property_transaction') }}</p>
                         </div>
                     @endif
                 </div>
@@ -181,7 +185,7 @@
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">{{ ui_change('filter' , 'property_transaction') }}</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">{{ ui_change('filter', 'property_transaction') }}</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -193,31 +197,39 @@
                                 <div class="row align-items-center">
                                     <div class="col-md-12 col-lg-4 col-xl-3">
                                         <label for="">
-                                            {{ ui_change('booking_status' , 'property_transaction') }}
+                                            {{ ui_change('booking_status', 'property_transaction') }}
                                         </label>
                                         <select name="booking_status" class="form-control select2">
-                                            <option value="-1">{{ ui_change('All_Booking_Status' , 'property_transaction') }}</option>
-                                            <option value="proposal">{{ ui_change('proposal' , 'property_transaction') }}</option>
-                                            <option value="booking">{{ ui_change('booking' , 'property_transaction') }}</option>
-                                            <option value="agreement">{{ ui_change('agreement' , 'property_transaction') }}</option>
+                                            <option value="-1">
+                                                {{ ui_change('All_Booking_Status', 'property_transaction') }}</option>
+                                            <option value="proposal">{{ ui_change('proposal', 'property_transaction') }}
+                                            </option>
+                                            <option value="booking">{{ ui_change('booking', 'property_transaction') }}
+                                            </option>
+                                            <option value="agreement">
+                                                {{ ui_change('agreement', 'property_transaction') }}</option>
                                         </select>
                                     </div>
                                     <div class="col-md-12 col-lg-4 col-xl-3">
                                         <label for="">
-                                            {{ ui_change('status' , 'property_transaction') }}
+                                            {{ ui_change('status', 'property_transaction') }}
                                         </label>
                                         <select name="status" class="form-control select2">
 
-                                            <option value="-1">{{ ui_change('All_Status' , 'property_transaction') }}</option>
-                                            <option value="pending" selected>{{ ui_change('Pending'  , 'property_transaction')}}</option>
-                                            <option value="completed">{{ ui_change('Completed'  , 'property_transaction')}}</option>
-                                            <option value="canceled">{{ ui_change('Canceled'  , 'property_transaction')}}</option>
+                                            <option value="-1">{{ ui_change('All_Status', 'property_transaction') }}
+                                            </option>
+                                            <option value="pending" selected>
+                                                {{ ui_change('Pending', 'property_transaction') }}</option>
+                                            <option value="completed">
+                                                {{ ui_change('Completed', 'property_transaction') }}</option>
+                                            <option value="canceled">{{ ui_change('Canceled', 'property_transaction') }}
+                                            </option>
                                         </select>
                                     </div>
 
                                     <div class="col-md-12 col-lg-4 col-xl-3">
                                         <label for="">
-                                            {{ ui_change('from' , 'property_transaction') }}
+                                            {{ ui_change('from', 'property_transaction') }}
                                         </label>
                                         <input type="text" id="from_search_date" name="from"
                                             class="form-control ">
@@ -225,17 +237,17 @@
                                     </div>
                                     <div class="col-md-12 col-lg-4 col-xl-3">
                                         <label for="">
-                                            {{ ui_change('to' , 'property_transaction') }}
+                                            {{ ui_change('to', 'property_transaction') }}
                                         </label>
                                         <input type="text" id="to_search_date" name="to" class="form-control ">
 
                                     </div>
-                                     
+
                                 </div>
                             </div>
                             <div class="d-flex gap-3 justify-content-end mt-4">
                                 <button type="submit" class="btn btn--primary px-4 m-2" name="bulk_action_btn"
-                                    value="filter"> {{ ui_change('filter' , 'property_transaction') }}</button>
+                                    value="filter"> {{ ui_change('filter', 'property_transaction') }}</button>
                             </div>
                         </form>
                     </div>
@@ -275,10 +287,11 @@
                 data: $(this).serialize(),
                 success: function(data) {
                     if (data.success == true) {
-                        toastr.success('{{ ui_change('updated_successfully' , 'property_transaction') }}');
+                        toastr.success(
+                            '{{ ui_change('updated_successfully', 'property_transaction') }}');
                     } else if (data.success == false) {
                         toastr.error(
-                            '{{ ui_change('Status_updated_failed.'  , 'property_transaction')}} {{ ui_change('Product_must_be_approved'  , 'property_transaction')}}'
+                            '{{ ui_change('Status_updated_failed.', 'property_transaction') }} {{ ui_change('Product_must_be_approved', 'property_transaction') }}'
                         );
                         setTimeout(function() {
                             location.reload();
@@ -291,14 +304,14 @@
         $(document).on('click', '.delete', function() {
             var id = $(this).attr("id");
             Swal.fire({
-                title: "{{ ui_change('are_you_sure_delete_this' , 'property_transaction') }}",
-                text: "{{ ui_change('you_will_not_be_able_to_revert_this' , 'property_transaction') }}!",
+                title: "{{ ui_change('are_you_sure_delete_this', 'property_transaction') }}",
+                text: "{{ ui_change('you_will_not_be_able_to_revert_this', 'property_transaction') }}!",
                 type: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
-                confirmButtonText: "{{ ui_change('yes_delete_it' , 'property_transaction') }}!",
-                cancelButtonText: "{{ ui_change('cancel' , 'property_transaction') }}",
+                confirmButtonText: "{{ ui_change('yes_delete_it', 'property_transaction') }}!",
+                cancelButtonText: "{{ ui_change('cancel', 'property_transaction') }}",
                 reverseButtons: true
             }).then((result) => {
                 if (result.value) {
@@ -314,7 +327,9 @@
                             id: id
                         },
                         success: function() {
-                            toastr.success("{{ ui_change('deleted_successfully' , 'property_transaction') }}");
+                            toastr.success(
+                                "{{ ui_change('deleted_successfully', 'property_transaction') }}"
+                                );
                             location.reload();
                         }
                     });

@@ -1027,8 +1027,8 @@ if (! function_exists('SalesEnquiryNo')) {
         return Sales_Enquiry_no_prefix . $newIdFormatted;
     }
 }
-if (! function_exists('Sales_ProposalNo')) {
-    function Sales_ProposalNo()
+if (! function_exists('SalesProposalNo')) {
+    function SalesProposalNo()
     {
   
         define('sales_proposal_no_prefix', 'PRO-');

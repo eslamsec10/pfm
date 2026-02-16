@@ -100,7 +100,7 @@ Route::group(['prefix' => 'sales/proposal','as' => 'sales.', 'middleware' => 'au
     Route::get('/check_property/{id}', [SalesProposalController::class, 'check_property'])->name('proposal.check_property');
     Route::get('/view_image/{id}/{proposal_id}', [SalesProposalController::class, 'view_image'])->name('proposal.image_view');
     Route::get('/list_view/{id}/{proposal_id}', [SalesProposalController::class, 'list_view'])->name('proposal.list_view');
-    Route::get('get_tenant/{id}', [SalesProposalController::class, 'get_tenant'])->name('proposal.get_tenant');
+    Route::get('get_customer/{id}', [SalesProposalController::class, 'get_customer'])->name('proposal.get_customer');
     Route::get('get_units', [SalesProposalController::class, 'get_units'])->name('proposal.get_units');
     Route::get('get_unit_service/{id}', [SalesProposalController::class, 'get_unit_service'])->name('proposal.get_unit_service');
     Route::get('add_to_booking/{id}', [SalesProposalController::class, 'add_to_booking'])->name('proposal.add_to_booking');

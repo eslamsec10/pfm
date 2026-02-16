@@ -42,7 +42,7 @@
                             <div class="form-group">
                                 <label for="">{{ ui_change('proposal_no', 'property_transaction') }}</label>
                                 <input readonly type="text" name="proposal_no" class="form-control"
-                                    value="{{ Sales_ProposalNo() }}">
+                                    value="{{ SalesProposalNo() }}">
                             </div>
                         </div>
                         <div class="col-md-12 col-lg-4 col-xl-6">

@@ -558,7 +558,7 @@
     <script>
         function unit_desc_func(idd) {
             var input_val = $('input[name="no_of_unit-' + idd + '"]').val();
-            var rent_amount = $('input[name="rent_amount-' + idd + '"]').val();
+            var sales_price = $('input[name="sales_price-' + idd + '"]').val();
             var from = $('input[name="date-from-' + idd + '"]').val() || "{{ \Carbon\Carbon::now()->format('d/m/Y') }}";
             var to = $('input[name="date-to-' + idd + '"]').val() ||
                 "{{ \Carbon\Carbon::now()->addYear()->subDay()->format('d/m/Y') }}";

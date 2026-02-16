@@ -93,6 +93,7 @@ class ProposalController extends Controller
 
     public function create()
     {
+        $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
         $tenants                  = DB::connection('tenant')->table('tenants')->get();
         $agents                   = DB::connection('tenant')->table('agents')->get();
         $enquiry_statuses         = DB::connection('tenant')->table('enquiry_statuses')->get();
@@ -124,6 +125,7 @@ class ProposalController extends Controller
             'live_withs'               => $live_withs,
             'business_activities'      => $business_activities,
             'tenants'                  => $tenants,
+            'dail_code_main'           => $dail_code_main,
         ];
         return view('admin-views.property_transactions.proposals.create', $data);
     }
@@ -387,6 +389,7 @@ class ProposalController extends Controller
         $proposal         = (new Proposal())->setConnection('tenant')->findOrFail($id);
         $proposal_details = (new ProposalDetails())->setConnection('tenant')->where('proposal_id', $id)->first();
         $proposal_units   = (new ProposalUnits())->setConnection('tenant')->where('proposal_id', $id)->get();
+        $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
 
         $tenants                  = DB::connection('tenant')->table('tenants')->get();
         $agents                   = DB::connection('tenant')->table('agents')->get();
@@ -422,6 +425,7 @@ class ProposalController extends Controller
             'proposal'                 => $proposal,
             'proposal_details'         => $proposal_details,
             'proposal_units'           => $proposal_units,
+            'dail_code_main'           => $dail_code_main,
         ];
         return view('admin-views.property_transactions.proposals.edit', $data);
     }
@@ -698,7 +702,7 @@ class ProposalController extends Controller
         $proposal         = (new Proposal())->setConnection('tenant')->findOrFail($id);
         $proposal_details = (new ProposalDetails())->setConnection('tenant')->where('proposal_id', $id)->first();
         $proposal_units   = (new ProposalUnits())->setConnection('tenant')->where('proposal_id', $id)->get();
-
+        
         $tenants                  = DB::connection('tenant')->table('tenants')->get();
         $agents                   = DB::connection('tenant')->table('agents')->get();
         $enquiry_statuses         = DB::connection('tenant')->table('enquiry_statuses')->get();
@@ -714,8 +718,10 @@ class ProposalController extends Controller
         $views                    = DB::connection('tenant')->table('views')->get();
         $property_types           = DB::connection('tenant')->table('property_types')->get();
         $services_master          = (new ServiceMaster())->setConnection('tenant')->select('id', 'name')->get();
+        $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
 
         $data = [
+            'dail_code_main'            => $dail_code_main,
             'services_master'          => $services_master,
             'unit_types'               => $unit_types,
             'property_types'           => $property_types,
@@ -733,7 +739,7 @@ class ProposalController extends Controller
             'tenants'                  => $tenants,
             'booking'                  => $proposal,
             'booking_details'          => $proposal_details,
-            'booking_units'            => $proposal_units,
+            'booking_units'            => $proposal_units, 
         ];
         return view('admin-views.property_transactions.proposals.add_to_booking', $data);
     }
@@ -761,7 +767,10 @@ class ProposalController extends Controller
         $property_types           = DB::connection('tenant')->table('property_types')->get();
         $services_master          = (new ServiceMaster())->setConnection('tenant')->select('id', 'name')->get();
 
+             $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
+
         $data = [
+            'dail_code_main'            => $dail_code_main,
             'services_master'          => $services_master,
             'unit_types'               => $unit_types,
             'property_types'           => $property_types,
@@ -1369,7 +1378,10 @@ class ProposalController extends Controller
         $views               = (new View())->setConnection('tenant')->select('id', 'name')->lazy();
         $property_types      = (new PropertyType())->setConnection('tenant')->select('id', 'name')->lazy();
         $services_master      =  (new ServiceMaster())->setConnection('tenant')->select('id', 'name')->lazy();
-        $data                = [
+             $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
+
+        $data = [
+            'dail_code_main'            => $dail_code_main,
             'services_master'                => $services_master,
             'tenant_id'                => $tenant_id,
             'tenant'                   => $tenant,

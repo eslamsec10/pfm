@@ -212,9 +212,9 @@
                                     @php
                                         $formatted_amount = sprintf("%.{$company->decimals}f", 0);
                                     @endphp
-                                    {{-- {{ dd($enquiry_unit_details->where('unit_description_id', 4)->first()->rent_amount) }} --}}
+                                    {{-- {{ dd($enquiry_unit_details->where('unit_description_id', 4)->first()->sales_price) }} --}}
                                     @foreach ($unit_descriptions as $unit_desc)
-                                        {{-- {{ dd( $enquiry_unit_details->where('unit_description_id', $unit_desc->id)->first()->rent_amount) }} --}}
+                                        {{-- {{ dd( $enquiry_unit_details->where('unit_description_id', $unit_desc->id)->first()->sales_price) }} --}}
                                         <tr>
                                             <td class="unit-label">{{ $unit_desc->name }}</td>
                                             <td>
@@ -266,7 +266,7 @@
 
                     <div id="units-container">
                         @php
-                            $unitCount = count($enquiry_unit_details);
+                            $unitCount = count($enquiry_unit_details); 
                         @endphp
                         @foreach ($enquiry_unit_details as $enquiry_unit_details_item)
                             <div class="card-header">
@@ -324,10 +324,10 @@
                         @endif
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="building">{{ ui_change('Rent_Amount', 'property_transaction') }}</label>
+                                <label for="building">{{ ui_change('Sales_Price', 'property_transaction') }}</label>
                                 <input type="number"
-                                    value="{{ number_format($enquiry_unit_details_item->rent_amount, $company->decimals) ?? 0 }}"
-                                    class="from-control " name="rent_amount[]">
+                                    value="{{ $enquiry_unit_details_item->price  }}"
+                                    class="from-control " name="sales_price[]">
                             </div>
                             <div class="form-group">
                                 <label
@@ -630,7 +630,7 @@
     <script>
         function unit_desc_func(idd) {
             var input_val = $(`input[name="no_of_unit-${idd}"]`).val();
-            var rent_amount = $(`input[name="rent_amount-${idd}"]`).val();
+            var sales_price = $(`input[name="sales_price-${idd}"]`).val();
             document.getElementById('main_content').classList.remove('d-none');
             const container = document.getElementById('units-container');
 

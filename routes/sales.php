@@ -4,6 +4,7 @@ use App\Http\Controllers\property_management\DailyRentListController;
 use App\Http\Controllers\property_management\SalesPriceListController;
 use App\Http\Controllers\sales\PropertyCustomerController;
 use App\Http\Controllers\sales\SalesEnquiryController;
+use App\Http\Controllers\sales\SalesProposalController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -56,7 +57,7 @@ Route::group(['prefix' => 'sales/property_customer', 'as' => 'sales.', 'middlewa
 });
 
 
-Route::group(['prefix' => 'sales/enquiry', 'as' => 'sales.','middleware' => 'auth:web'], function () {
+Route::group(['prefix' => 'sales/enquiry', 'as' => 'sales.', 'middleware' => 'auth:web'], function () {
     Route::get('/', [SalesEnquiryController::class, 'index'])->name('enquiry.index');
     Route::get('/create', [SalesEnquiryController::class, 'create'])->name('enquiry.create');
     Route::get('/create_with_select_unit', [SalesEnquiryController::class, 'create_with_select_unit'])->name('enquiry.create_with_select_unit');
@@ -84,3 +85,30 @@ Route::group(['prefix' => 'sales/enquiry', 'as' => 'sales.','middleware' => 'aut
 });
 
 Route::get('sales/book-now', [SalesEnquiryController::class, 'book_now'])->name('sales.book_now');
+
+
+
+Route::group(['prefix' => 'sales/proposal','as' => 'sales.', 'middleware' => 'auth:web'], function () {
+    Route::get('/', [SalesProposalController::class, 'index'])->name('proposal.index');
+    Route::get('/create', [SalesProposalController::class, 'create'])->name('proposal.create');
+    Route::post('store', [SalesProposalController::class, 'store'])->name('proposal.store');
+    Route::get('/edit/{id}', [SalesProposalController::class, 'edit'])->name('proposal.edit');
+    Route::get('/show/{id}', [SalesProposalController::class, 'show'])->name('proposal.show');
+    Route::patch('/update/{id}', [SalesProposalController::class, 'update'])->name('proposal.update');
+    Route::get('delete', [SalesProposalController::class, 'delete'])->name('proposal.delete');
+    Route::post('status-update', [SalesProposalController::class, 'statusUpdate'])->name('proposal.status-update');
+    Route::get('/check_property/{id}', [SalesProposalController::class, 'check_property'])->name('proposal.check_property');
+    Route::get('/view_image/{id}/{proposal_id}', [SalesProposalController::class, 'view_image'])->name('proposal.image_view');
+    Route::get('/list_view/{id}/{proposal_id}', [SalesProposalController::class, 'list_view'])->name('proposal.list_view');
+    Route::get('get_tenant/{id}', [SalesProposalController::class, 'get_tenant'])->name('proposal.get_tenant');
+    Route::get('get_units', [SalesProposalController::class, 'get_units'])->name('proposal.get_units');
+    Route::get('get_unit_service/{id}', [SalesProposalController::class, 'get_unit_service'])->name('proposal.get_unit_service');
+    Route::get('add_to_booking/{id}', [SalesProposalController::class, 'add_to_booking'])->name('proposal.add_to_booking');
+    Route::get('add_to_agreement/{id}', [SalesProposalController::class, 'add_to_agreement'])->name('proposal.add_to_agreement');
+    Route::post('/store_to_booking', [SalesProposalController::class, 'store_to_booking'])->name('proposal.store_to_booking');
+    Route::post('/store_to_agreement', [SalesProposalController::class, 'store_to_agreement'])->name('proposal.store_to_agreement');
+    Route::get('/empty_unit_from_proposal_unit/{id}', [SalesProposalController::class, 'empty_unit_from_proposal_unit'])->name('proposal.empty_unit_from_proposal_unit');
+    Route::get('/empty_unit_from_service_proposal/{id}', [SalesProposalController::class, 'empty_unit_from_service_proposal'])->name('proposal.empty_unit_from_service_proposal');
+    Route::post('search', [SalesProposalController::class, 'search'])->name('proposal.search');
+    Route::get('/create_with_select_unit', [SalesProposalController::class, 'create_with_select_unit'])->name('proposal.create_with_select_unit');
+});

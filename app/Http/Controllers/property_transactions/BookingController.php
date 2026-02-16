@@ -106,7 +106,10 @@ class BookingController extends Controller
         $property_types           = DB::connection('tenant')->table('property_types')->get();
         $services_master          = (new ServiceMaster())->setConnection('tenant')->get();
 
+            $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
+
         $data = [
+            'dail_code_main'            => $dail_code_main,
             'services_master'          => $services_master,
             'unit_types'               => $unit_types,
             'property_types'           => $property_types,
@@ -614,7 +617,10 @@ class BookingController extends Controller
         $views                    = DB::connection('tenant')->table('views')->get();
         $property_types           = DB::connection('tenant')->table('property_types')->get();
         $services_master          = (new ServiceMaster())->setConnection('tenant')->get();
-        $data                     = [
+            $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
+
+        $data = [
+            'dail_code_main'            => $dail_code_main,
             'services_master'          => $services_master,
             'unit_types'               => $unit_types,
             'property_types'           => $property_types,
@@ -685,7 +691,10 @@ class BookingController extends Controller
         $property_types           = DB::connection('tenant')->table('property_types')->get();
         $services_master          = (new ServiceMaster())->setConnection('tenant')->select('id', 'name')->get();
 
+             $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
+
         $data = [
+            'dail_code_main'            => $dail_code_main,
             'services_master'          => $services_master,
             'unit_types'               => $unit_types,
             'property_types'           => $property_types,
@@ -1013,7 +1022,10 @@ class BookingController extends Controller
         $views               = (new View())->setConnection('tenant')->select('id', 'name')->lazy();
         $property_types      = (new PropertyType())->setConnection('tenant')->select('id', 'name')->lazy();
         $services_master     = (new ServiceMaster())->setConnection('tenant')->select('id', 'name')->lazy();
-        $data                = [
+             $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
+
+        $data = [
+            'dail_code_main'            => $dail_code_main,
             'services_master'          => $services_master,
             'tenant_id'                => $tenant_id,
             'tenant'                   => $tenant,

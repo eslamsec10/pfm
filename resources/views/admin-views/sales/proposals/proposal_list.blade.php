@@ -16,7 +16,7 @@
             </h2>
         </div>
         <!-- End Page Title -->
-        @include('admin-views.inline_menu.property_transaction.inline-menu')
+        @include('admin-views.inline_menu.sales.inline-menu')
 
         <div class="row mt-20">
             <div class="col-md-12">
@@ -44,7 +44,7 @@
                             <div class="col-lg-8 mt-3 mt-lg-0 d-flex flex-wrap gap-3 justify-content-lg-end">
 
                                 {{-- @can('create_proposal') --}}
-                                <a href="{{ route('proposal.create') }}" class="btn btn--primary">
+                                <a href="{{ route('sales.proposal.create') }}" class="btn btn--primary">
                                     <i class="tio-add"></i>
                                     <span class="text">{{ ui_change('create_proposal' , 'property_transaction') }}</span>
                                 </a>
@@ -68,8 +68,8 @@
                                             {{ ui_change('sl' , 'property_transaction') }}</th>
                                         <th class="text-center">{{ ui_change('proposal_no' , 'property_transaction') }}</th>
                                         <th class="text-center">{{ ui_change('proposal_date' , 'property_transaction') }}</th>
-                                        <th class="text-center">{{ ui_change('tenant' , 'property_transaction') }}</th>
-                                        <th class="text-center">{{ ui_change('tenant_type' , 'property_transaction') }}</th>
+                                        <th class="text-center">{{ ui_change('customer' , 'property_transaction') }}</th>
+                                        <th class="text-center">{{ ui_change('customer_type' , 'property_transaction') }}</th>
                                         <th class="text-center">{{ ui_change('status' , 'property_transaction') }}</th>
                                         <th class="text-center">{{ ui_change('Actions' , 'property_transaction') }}</th>
                                     </tr>
@@ -96,10 +96,10 @@
                                             </td>
 
                                             <td class="text-center">
-                                                {{ $proposal_item->tenant->type == 'individual' ? $proposal_item->name ?? ui_change('not_available' , 'property_transaction') : $proposal_item->company_name ?? ui_change('not_available' , 'property_transaction') }}
+                                                {{ $proposal_item->customer?->type == 'individual' ? $proposal_item->customer?->name ?? ui_change('not_available' , 'property_transaction') : $proposal_item->customer?->company_name ?? ui_change('not_available' , 'property_transaction') }}
                                             </td>
                                             <td class="text-center">
-                                                {{ ucfirst($proposal_item->tenant->type) ?? ui_change('not_available' , 'property_transaction') }}
+                                                {{ ucfirst($proposal_item->customer->type) ?? ui_change('not_available' , 'property_transaction') }}
                                             </td>
 
 
@@ -123,30 +123,23 @@
 
                                                     @if ($proposal_item->booking_status == 'proposal')
                                                         <a class="btn btn-outline--primary "
-                                                            href="{{ route('proposal.add_to_booking', [$proposal_item->id]) }}">
+                                                            href="{{ route('sales.proposal.add_to_booking', [$proposal_item->id]) }}">
                                                             {{ ui_change('booking' , 'property_transaction') }}
                                                         </a>
 
                                                         <a class="btn btn-outline--primary "
                                                             title="{{ ui_change('edit' , 'property_transaction') }}"
-                                                            href="{{ route('proposal.add_to_agreement', [$proposal_item->id]) }}">
+                                                            href="{{ route('sales.proposal.add_to_agreement', [$proposal_item->id]) }}">
                                                             {{ ui_change('agreement' , 'property_transaction') }}
                                                         </a>
                                                     @endif
-                                                    <a class="btn btn-outline--primary "
-                                                        href="{{ route('proposal.check_property', [$proposal_item->id]) }}">
-                                                        {{ ui_change('check_property' , 'property_transaction') }}
-                                                    </a>
+                                                    
                                                     <a class="btn btn-outline--primary btn-sm square-btn"
                                                         title="{{ ui_change('edit' , 'property_transaction') }}"
-                                                        href="{{ route('proposal.edit', [$proposal_item->id]) }}">
+                                                        href="{{ route('sales.proposal.edit', [$proposal_item->id]) }}">
                                                         <i class="tio-edit"></i>
                                                     </a>
-                                                    <a class="btn btn-outline--primary btn-sm square-btn"
-                                                        title="{{ ui_change('show' , 'property_transaction') }}"
-                                                        href="{{ route('proposal.show', [$proposal_item->id]) }}">
-                                                        <i class="fa fa-eye"></i>
-                                                    </a>
+                                                     
                                                     @if ($proposal_item->booking_status == 'proposal')
                                                         <a class="btn btn-outline-danger btn-sm delete square-btn"
                                                             title="{{ ui_change('delete' , 'property_transaction') }}"
@@ -277,7 +270,7 @@
                 }
             });
             $.ajax({
-                url: "{{ route('proposal.status-update') }}",
+                url: "{{ route('sales.proposal.status-update') }}",
                 method: 'POST',
                 data: $(this).serialize(),
                 success: function(data) {
@@ -315,7 +308,7 @@
                         }
                     });
                     $.ajax({
-                        url: "{{ route('proposal.delete') }}",
+                        url: "{{ route('sales.proposal.delete') }}",
                         method: 'get',
                         data: {
                             id: id

@@ -1027,3 +1027,24 @@ if (! function_exists('SalesEnquiryNo')) {
         return Sales_Enquiry_no_prefix . $newIdFormatted;
     }
 }
+if (! function_exists('Sales_ProposalNo')) {
+    function Sales_ProposalNo()
+    {
+  
+        define('sales_proposal_no_prefix', 'PRO-');
+
+        $newId = 1;
+        $table = DB::connection('tenant')->select("SELECT AUTO_INCREMENT FROM information_schema.TABLES WHERE TABLE_SCHEMA = 'facility_management' AND TABLE_NAME = 'sales_proposals'");
+
+        if (! empty($table)) {
+            $newId = $table[0]->AUTO_INCREMENT;
+        } else {
+            $getId = DB::connection('tenant')->table('sales_proposals')->orderBy('id', 'desc')->limit(1)->first();
+            $newId = $getId ? $getId->id + 1 : 1;
+        }
+
+        $newIdFormatted = str_pad($newId, 5, '0', STR_PAD_LEFT);
+
+        return sales_proposal_no_prefix . $newIdFormatted;
+    }
+}

@@ -53,11 +53,18 @@ return [
     | your application so that it is used when running Artisan tasks.
     |
     */
-
+ 
     'url' => env('APP_URL', 'https://admin-pfm.finexerp.com/'),
 
     'asset_url' => env('ASSET_URL', 'https://admin-pfm.finexerp.com/'),
+ 
+    'url' => env('APP_URL', 'http://localhost:8080/pfm/'),
 
+    'asset_url' => 'http://localhost:8080/pfm/public/',
+    // 'url' => env('APP_URL', 'https://admin-pfm.finexerp.com/'),
+
+    // 'asset_url' => env('ASSET_URL', 'https://admin-pfm.finexerp.com/'),
+ 
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

@@ -306,7 +306,7 @@
                                             <label
                                                 for="total-area">{{ ui_change('price', 'property_transaction') }}</label>
                                             <input type="number" name="price-{{ $item->id }}" class="form-control"
-                                                value="{{ $item->price }}" step="0.001"
+                                                value="{{ $item->price }}"  data-id="{{ $item->id }}" step="0.001"
                                                 placeholder="{{ number_format(0, $company->decimals) }}">
                                         </div>
                                     </div>
@@ -316,7 +316,7 @@
                                             <label
                                                 for="total-area">{{ ui_change('advance_percentage', 'property_transaction') }}</label>
                                             <input type="number" name="advance_percentage-{{ $item->id }}"
-                                                class="form-control" value="" step="0.001"
+                                                class="form-control"  data-id="{{ $item->id }}" value="" step="0.001"
                                                 placeholder="{{ number_format(0, $company->decimals) }}">
                                         </div>
                                     </div>
@@ -325,7 +325,7 @@
                                             <label
                                                 for="total-area">{{ ui_change('advance_amount', 'property_transaction') }}</label>
                                             <input type="number" readonly name="advance_amount-{{ $item->id }}"
-                                                class="form-control text-white" value="" step="0.001"
+                                                class="form-control text-white"  data-id="{{ $item->id }}" value="" step="0.001"
                                                 placeholder="{{ number_format(0, $company->decimals) }}">
                                         </div>
                                     </div>
@@ -335,14 +335,14 @@
                                             <label
                                                 for="total-area">{{ ui_change('number_of_installments', 'property_transaction') }}</label>
                                             <input type="number" name="number_of_installments-{{ $item->id }}"
-                                                class="form-control" value="" step="0.001"
+                                                class="form-control"  data-id="{{ $item->id }}" value="" step="0.001"
                                                 placeholder="{{ number_format(0, $company->decimals) }}">
                                         </div>
                                     </div>
                                     <div class="col-md-6 col-lg-4 col-xl-3">
                                         <div class="form-group">
                                             <label>{{ ui_change('Payment Plan') }}</label>
-                                            <select name="payment_plan-{{ $item->id }}" class="form-control">
+                                            <select  data-id="{{ $item->id }}" name="payment_plan-{{ $item->id }}" class="form-control">
                                                 <option value="1">{{ ui_change('Monthly') }}</option>
                                                 <option value="2">{{ ui_change('Bimonthly') }}</option>
                                                 <option value="3">{{ ui_change('Quarterly') }}</option>
@@ -357,7 +357,7 @@
                                         <div class="form-group">
                                             <label
                                                 for="">{{ ui_change('start_date', 'property_transaction') }}</label>
-                                            <input type="text" class="form-control start_date text-white"
+                                            <input  data-id="{{ $item->id }}" type="text" class="form-control start_date text-white"
                                                 name="start_date-{{ $item->id }}">
                                         </div>
                                     </div>
@@ -384,7 +384,126 @@
 @endsection
 
 @push('script')
-    <script>
+<script>
+    $(document).ready(function () {
+
+    function calculateAdvance(itemId) {
+
+        let $price = $(`[name="price-${itemId}"]`);
+        let $percentage = $(`[name="advance_percentage-${itemId}"]`);
+        let $advance = $(`[name="advance_amount-${itemId}"]`);
+
+        let price = parseFloat($price.val()) || 0;
+        let percentage = parseFloat($percentage.val()) || 0;
+
+        let advanceAmount = (price * percentage) / 100;
+
+        $advance.val(advanceAmount.toFixed(2));
+
+        generateInstallments(itemId);
+    }
+
+    function generateInstallments(itemId) {
+
+        let price = parseFloat($(`[name="price-${itemId}"]`).val()) || 0;
+        let advance = parseFloat($(`[name="advance_amount-${itemId}"]`).val()) || 0;
+        let installments = parseInt($(`[name="number_of_installments-${itemId}"]`).val()) || 0;
+        let planValue = parseInt($(`[name="payment_plan-${itemId}"]`).val()) || 1;
+        let startVal = $(`[name="start_date-${itemId}"]`).val();
+        let $table = $(`#installments_table_${itemId}`);
+
+        if (installments <= 0 || !startVal) {
+            $table.html('');
+            return;
+        }
+
+        let monthStep = 1;
+        if (planValue == 2) monthStep = 2;
+        if (planValue == 3) monthStep = 3;
+        if (planValue == 4) monthStep = 6;
+        if (planValue == 5) monthStep = 12;
+
+        let remaining = price - advance;
+        let installmentAmount = remaining / installments;
+
+        let parts = startVal.split('/');
+        let startDate = new Date(parts[2], parts[1] - 1, parts[0]);
+        let originalDay = startDate.getDate();
+
+        let html = `
+        <table class="table table-bordered mt-3 text-white">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Installment Amount</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+        `;
+
+        for (let i = 0; i < installments; i++) {
+
+            let installmentDate = new Date(startDate);
+            installmentDate.setMonth(startDate.getMonth() + (i * monthStep));
+
+            if (installmentDate.getDate() !== originalDay) {
+                installmentDate.setDate(0);
+            }
+
+            let day = ("0" + installmentDate.getDate()).slice(-2);
+            let month = ("0" + (installmentDate.getMonth() + 1)).slice(-2);
+            let year = installmentDate.getFullYear();
+
+            let formattedDate = `${day}/${month}/${year}`;
+
+            html += `
+            <tr>
+                <td>${i + 1}</td>
+                <td>${installmentAmount.toFixed(2)}</td>
+                <td>
+                    <input type="text" 
+                           name="installment_date_${itemId}[]" 
+                           class="form-control main_date text-white" 
+                           value="${formattedDate}">
+                </td>
+                <td>
+                    <input type="number" 
+                           name="installment_amount_${itemId}[]" 
+                           class="form-control installment-input" 
+                           value="${installmentAmount.toFixed(2)}">
+                </td>
+            </tr>
+            `;
+        }
+
+        html += `</tbody></table>`;
+        $table.html(html);
+
+        flatpickr($table.find(".main_date"), {
+            dateFormat: "d/m/Y"
+        });
+    } 
+    $(document).on('input', '[name^="price-"], [name^="advance_percentage-"]', function () {
+        let itemId = $(this).attr('name').split('-')[1];
+        calculateAdvance(itemId);
+    });
+
+    $(document).on('input', '[name^="number_of_installments-"]', function () {
+        let itemId = $(this).attr('name').split('-')[1];
+        generateInstallments(itemId);
+    });
+
+    $(document).on('change', '[name^="payment_plan-"], [name^="start_date-"]', function () {
+        let itemId = $(this).attr('name').split('-')[1];
+        generateInstallments(itemId);
+    });
+
+});
+
+</script>
+    {{-- <script>
         $(document).ready(function() {
 
             let itemId = "{{ $item->id }}";
@@ -497,7 +616,7 @@
 
         });
         
-    </script>
+    </script> --}}
 
 
 

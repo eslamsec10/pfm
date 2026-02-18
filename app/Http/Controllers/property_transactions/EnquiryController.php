@@ -616,10 +616,7 @@ class EnquiryController extends Controller
             }
             if (Str::startsWith($key, 'unit-')) {
                 $rules[$key] = 'required';
-            }
-            // if (Str::startsWith($key, 'payment_mode-')) {
-            //     $rules[$key] = 'required';
-            // }
+            } 
         }
 
         $validatedData = $request->validate($rules);

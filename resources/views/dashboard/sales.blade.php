@@ -73,6 +73,18 @@
                              href="{{ route('sales.proposal.index') }}">{{ ui_change('proposals', 'sales') }}</a>
                      </p>
                  </div> 
+                 <div class="accordion-item ">
+                     <p class="accordion-header list-group-item">
+                         <a class="accordion-button"
+                             href="{{ route('sales.booking.index') }}">{{ ui_change('bookings', 'sales') }}</a>
+                     </p>
+                 </div> 
+                 <div class="accordion-item ">
+                     <p class="accordion-header list-group-item">
+                         <a class="accordion-button"
+                             href="{{ route('sales.agreement.index') }}">{{ ui_change('agreements', 'sales') }}</a>
+                     </p>
+                 </div> 
              </div>
         
           

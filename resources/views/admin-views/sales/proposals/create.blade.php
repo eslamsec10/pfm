@@ -50,7 +50,7 @@
                                 <label for="">{{ ui_change('proposal_date', 'property_transaction') }} <span
                                         class="text-danger"> *</span></label></label>
                                 <input type="text" class="form-control" id="proposal_date" name="proposal_date"
-                                    class="form-control">
+                                    class="form-control"  >
                             </div>
                         </div>
 
@@ -146,9 +146,9 @@
                     class="btn btn-secondary px-5">{{ ui_change('reset', 'property_transaction') }}</button>
                 <button type="submit" class="btn btn--primary px-5"
                     onclick="setFormAction('{{ route('sales.proposal.store') }}')">{{ ui_change('submit', 'property_transaction') }}</button>
-                <button type="submit" class="btn btn-warning px-5"
+                {{-- <button type="submit" class="btn btn-warning px-5"
                     onclick="setFormAction('{{ route('sales.proposal.search') }}')"><i
-                        class="fa fa-search"></i>{{ ui_change('search', 'property_transaction') }}</button>
+                        class="fa fa-search"></i>{{ ui_change('search', 'property_transaction') }}</button> --}}
 
             </div>
         </form>
@@ -223,6 +223,11 @@
         function setFormAction(actionUrl) {
             document.getElementById('productForm').action = actionUrl;
         }
+         flatpickr("#proposal_date", {
+                dateFormat: "d/m/Y",
+                minDate: "today",
+                defaultDate: "today"
+            });
 
         function calculation_method(i) {
             calculation_method_val = $('select[name="calculation_method-' + i + '"]').val();
@@ -281,15 +286,15 @@
                         $('select[name="unit-' + i + '"]').empty();
                         $.each(data, function(key, value) {
                             let isBooked = '';
-                            if (value.booking_status === 'agreement') {
+                            if (value.sales_status === 'agreement') {
                                 isBooked = 'style="background-color:red;color:white"';
-                            } else if (value.booking_status === 'booking') {
+                            } else if (value.sales_status === 'booking') {
                                 isBooked =
                                     'style="background-color:#d500f9;color:white"';
-                            } else if (value.booking_status === 'proposal') {
+                            } else if (value.sales_status === 'proposal') {
                                 isBooked =
                                     'style="background-color:#ffeb3b;color:black"';
-                            } else if (value.booking_status === 'enquiry') {
+                            } else if (value.sales_status === 'enquiry') {
                                 isBooked =
                                     'style="background-color:#372be2;color:white"';
                             }
@@ -788,7 +793,7 @@
             var customer_id = $(this).val();
             if (customer_id) {
                 $.ajax({
-                    url: "{{ URL::to('enquiry/get_customer') }}/" + customer_id,
+                    url: "{{ URL::to('sales/enquiry/get_customer') }}/" + customer_id,
                     type: "GET",
                     dataType: "json",
                     success: function(data) {

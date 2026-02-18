@@ -12,7 +12,11 @@ class SalesProposalUnit extends Model
     protected $connection = 'tenant';
 
     public function proposal(){
-        return $this->belongsTo(Proposal::class , 'proposal_id');
+        return $this->belongsTo(SalesProposal::class , 'proposal_id');
+    }
+     public function unit_management()
+    {
+        return $this->belongsTo(UnitManagement::class, 'unit_management_id');
     }
 
     public function installments(){

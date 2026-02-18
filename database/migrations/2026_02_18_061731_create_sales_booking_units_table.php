@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sales_proposal_units', function (Blueprint $table) {
+        Schema::create('sales_booking_units', function (Blueprint $table) {
             $table->id();
-            $table->integer('proposal_id')->nullable();
+            $table->integer('booking_id')->nullable();
             $table->integer('property_management_id')->nullable();
             $table->integer('unit_description_id')->nullable();
             $table->integer('unit_type_id')->nullable();
@@ -37,6 +37,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sales_proposal_units');
+        Schema::dropIfExists('sales_booking_units');
     }
 };

@@ -2,9 +2,13 @@
 
 use App\Http\Controllers\property_management\DailyRentListController;
 use App\Http\Controllers\property_management\SalesPriceListController;
+use App\Http\Controllers\property_transactions\EnquiryController;
 use App\Http\Controllers\sales\PropertyCustomerController;
+use App\Http\Controllers\sales\SalesAgreementController;
+use App\Http\Controllers\sales\SalesBookingController;
 use App\Http\Controllers\sales\SalesEnquiryController;
 use App\Http\Controllers\sales\SalesProposalController;
+use App\Http\Controllers\sales\SalesSalesBookingController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -111,4 +115,66 @@ Route::group(['prefix' => 'sales/proposal','as' => 'sales.', 'middleware' => 'au
     Route::get('/empty_unit_from_service_proposal/{id}', [SalesProposalController::class, 'empty_unit_from_service_proposal'])->name('proposal.empty_unit_from_service_proposal');
     Route::post('search', [SalesProposalController::class, 'search'])->name('proposal.search');
     Route::get('/create_with_select_unit', [SalesProposalController::class, 'create_with_select_unit'])->name('proposal.create_with_select_unit');
+});
+
+
+// Booking Management
+Route::group(['prefix' => 'sales/booking', 'as'=>'sales.','middleware' => 'auth:web'], function () {
+    Route::get('/', [SalesBookingController::class, 'index'])->name('booking.index');
+    Route::get('/create', [SalesBookingController::class, 'create'])->name('booking.create');
+    Route::post('store', [SalesBookingController::class, 'store'])->name('booking.store');
+    Route::get('/edit/{id}', [SalesBookingController::class, 'edit'])->name('booking.edit');
+    Route::get('/show/{id}', [SalesBookingController::class, 'show'])->name('booking.show');
+    Route::get('/view_image/{id}', [SalesBookingController::class, 'view_image'])->name('booking.show');
+    Route::patch('/update/{id}', [SalesBookingController::class, 'update'])->name('booking.update');
+    Route::get('delete', [SalesBookingController::class, 'delete'])->name('booking.delete');
+    Route::post('status-update', [SalesBookingController::class, 'statusUpdate'])->name('booking.status-update');
+    Route::get('/view_image/{id}', [SalesBookingController::class, 'view_image'])->name('booking.check_propoerty');
+    Route::get('add_to_agreement/{id}', [SalesBookingController::class, 'add_to_agreement'])->name('booking.add_to_agreement');
+    Route::post('/store_to_agreement', [SalesBookingController::class, 'store_to_agreement'])->name('booking.store_to_agreement');
+    Route::get('get_unit_service/{id}', [SalesBookingController::class, 'get_unit_service'])->name('booking.get_unit_service');
+    Route::post('search', [SalesBookingController::class, 'search'])->name('booking.search');
+
+    Route::get('/create_with_select_unit', [SalesBookingController::class, 'create_with_select_unit'])->name('booking.create_with_select_unit');
+
+    Route::get('/check_property/{id}', [SalesBookingController::class, 'check_property'])->name('booking.check_property');
+    Route::get('/view_image/{id}/{booking_id}', [SalesBookingController::class, 'view_image'])->name('booking.image_view');
+    Route::get('/list_view/{id}/{booking_id}', [SalesBookingController::class, 'list_view'])->name('booking.list_view');
+    Route::get('/empty_unit_from_booking_unit/{id}', [SalesBookingController::class, 'empty_unit_from_booking_unit'])->name('booking.empty_unit_from_booking_unit');
+    Route::get('/empty_unit_from_service_booking/{id}', [SalesBookingController::class, 'empty_unit_from_service_booking'])->name('booking.empty_unit_from_service_booking');
+
+    Route::get('get_tenant/{id}', [SalesBookingController::class, 'get_tenant'])->name('booking.get_tenant');
+    Route::get('get_units', [SalesBookingController::class, 'get_units'])->name('booking.get_units'); 
+
+});
+
+
+// Agreement Management
+Route::group(['prefix' => 'sales/agreement', 'as' => 'sales.','middleware' => 'auth:web'], function () {
+    Route::get('/', [SalesAgreementController::class, 'index'])->name('agreement.index');
+    Route::get('/create', [SalesAgreementController::class, 'create'])->name('agreement.create');
+    Route::post('store', [SalesAgreementController::class, 'store'])->name('agreement.store');
+    Route::get('/edit/{id}', [SalesAgreementController::class, 'edit'])->name('agreement.edit');
+    Route::get('/review/{id}', [SalesAgreementController::class, 'review'])->name('agreement.review');
+    Route::patch('/update_review', [SalesAgreementController::class, 'update_review'])->name('agreement.update_review');
+    Route::get('/show/{id}', [SalesAgreementController::class, 'show'])->name('agreement.show_info');
+    Route::get('/view_image/{id}', [SalesAgreementController::class, 'view_image'])->name('agreement.show');
+    Route::patch('/update/{id}', [SalesAgreementController::class, 'update'])->name('agreement.update');
+    Route::get('delete', [SalesAgreementController::class, 'delete'])->name('agreement.delete');
+    Route::post('status-update', [SalesAgreementController::class, 'statusUpdate'])->name('agreement.status-update');
+    Route::get('/signed/{id}', [SalesAgreementController::class, 'signed'])->name('agreement.signed');
+    Route::get('get_unit_service/{id}', [SalesAgreementController::class, 'get_unit_service'])->name('agreement.get_unit_service');
+    Route::get('/empty_unit_from_service_agreement/{id}', [SalesAgreementController::class, 'empty_unit_from_service_agreement'])->name('agreement.empty_unit_from_service_agreement');
+ 
+    Route::get('/create_with_select_unit', [SalesAgreementController::class, 'create_with_select_unit'])->name('agreement.create_with_select_unit');
+
+    Route::get('/check_property/{id}', [SalesAgreementController::class, 'check_property'])->name('agreement.check_property');
+    Route::get('/view_image/{id}', [SalesAgreementController::class, 'view_image'])->name('agreement.image_view');
+    Route::get('/list_view/{id}', [SalesAgreementController::class, 'list_view'])->name('agreement.list_view');
+    Route::post('search', [SalesAgreementController::class, 'search'])->name('agreement.search');
+
+    Route::get('get_tenant/{id}', [SalesAgreementController::class, 'get_tenant'])->name('agreement.get_tenant');
+    Route::get('get_units', [SalesAgreementController::class, 'get_units'])->name('agreement.get_units');
+    Route::get('schedule/{id}', [SalesAgreementController::class, 'schedule'])->name('agreement.schedule');
+  
 });

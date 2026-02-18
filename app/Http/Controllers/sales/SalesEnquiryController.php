@@ -532,10 +532,7 @@ class SalesEnquiryController extends Controller
             'customers'                  => $customers,
             'enquiry'                  => $enquiry,
 
-        ];
-        // $data = [
-        //     'enquiry'           => $enquiry,
-        // ];
+        ]; 
         return view('admin-views.sales.enquiries.add_to_proposal', $data);
     }
 
@@ -543,7 +540,7 @@ class SalesEnquiryController extends Controller
     {
         DB::beginTransaction();
 
-        try { 
+        try {
             $proposal = SalesProposal::create([
                 'enquiry_id'     => $request->enquiry_id,
                 'proposal_no'    => $request->proposal_no,
@@ -552,39 +549,42 @@ class SalesEnquiryController extends Controller
                 'status'         => 'proposal',
                 'booking_status' => 'proposal',
             ]);
- 
-            $suffix = 6;
+            $enquiry_units = SalesEnquiryUnitSearchDetails::where('enquiry_id', $request->enquiry_id)
+                ->pluck('id');
 
-            $unit = SalesProposalUnit::create([
-                'property_management_id' => $request["property_id-$suffix"],
-                'unit_description_id'    => $request["unit_description_id-$suffix"] ?: null,
-                'unit_type_id'           => $request["unit_type_id-$suffix"] ?: null,
-                'unit_condition_id'      => $request["unit_condition_id-$suffix"],
-                'view_id'                => $request["view_id-$suffix"],
-                'unit_management_id'     => $request["unit-$suffix"],
-                'property_type'          => $request["property_type-$suffix"],
-                'comment'                => $request["notes-$suffix"],
-                'price'                  => $request["price-$suffix"],
-                'advance_percentage'     => $request["advance_percentage-$suffix"],
-                'advance_amount'         => $request["advance_amount-$suffix"],
-                'number_of_installments' => $request["number_of_installments-$suffix"],
-                'payment_plan'           => $request["payment_plan-$suffix"],
-                'start_date'             => ($request["start_date-$suffix"]) ? Carbon::createFromFormat('d/m/Y', $request["start_date-$suffix"])->format('Y-m-d') : '',
-            ]); 
-            $installmentDates   = $request["installment_date_$suffix"] ?? [];
-            $installmentAmounts = $request["installment_amount_$suffix"] ?? [];
-
-            foreach ($installmentDates as $key => $date) {
-
-                SalesProposalInstallment::create([
-                    'proposal_id'                   => $proposal->id,
-                    'sales_proposal_unit_id'        => $unit->id,
-                    'unit_management_id'            => $request["unit-$suffix"],
-                    'amount'                        => $installmentAmounts[$key] ?? 0,
-                    'due_date'                      => Carbon::createFromFormat('d/m/Y', $date)->format('Y-m-d'),
+            foreach ($enquiry_units as $suffix) {
+                $unit = SalesProposalUnit::create([
+                    'property_management_id' => $request["property_id-$suffix"],
+                    'proposal_id'            => $proposal->id, 
+                    'unit_description_id'    => $request["unit_description_id-$suffix"] ?: null,
+                    'unit_type_id'           => $request["unit_type_id-$suffix"] ?: null,
+                    'unit_condition_id'      => $request["unit_condition_id-$suffix"],
+                    'view_id'                => $request["view_id-$suffix"],
+                    'unit_management_id'     => $request["unit-$suffix"],
+                    'property_type'          => $request["property_type-$suffix"],
+                    'comment'                => $request["notes-$suffix"],
+                    'price'                  => $request["price-$suffix"],
+                    'advance_percentage'     => $request["advance_percentage-$suffix"],
+                    'advance_amount'         => $request["advance_amount-$suffix"],
+                    'number_of_installments' => $request["number_of_installments-$suffix"],
+                    'payment_plan'           => $request["payment_plan-$suffix"],
+                    'start_date'             => ($request["start_date-$suffix"]) ? Carbon::createFromFormat('d/m/Y', $request["start_date-$suffix"])->format('Y-m-d') : '',
                 ]);
-            }
 
+                $installmentDates   = $request["installment_date_$suffix"] ?? [];
+                $installmentAmounts = $request["installment_amount_$suffix"] ?? [];
+
+                foreach ($installmentDates as $key => $date) {
+
+                    SalesProposalInstallment::create([
+                        'proposal_id'                   => $proposal->id,
+                        'sales_proposal_unit_id'        => $unit->id,
+                        'unit_management_id'            => $request["unit-$suffix"],
+                        'amount'                        => $installmentAmounts[$key] ?? 0,
+                        'due_date'                      => Carbon::createFromFormat('d/m/Y', $date)->format('Y-m-d'),
+                    ]);
+                }
+            }
             DB::commit();
 
             return redirect()->route('sales.proposal.index')->with('success', 'Proposal saved successfully');

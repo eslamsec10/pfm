@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('sales_proposal_units', function (Blueprint $table) {
             $table->id();
+            $table->integer('proposal_id')->nullable();
             $table->integer('property_management_id')->nullable();
             $table->integer('unit_description_id')->nullable();
             $table->integer('unit_type_id')->nullable();

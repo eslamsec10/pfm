@@ -416,24 +416,7 @@
                                     @endif
                                 </div>
                                 <div class="form-row">
-                                    <div class="form-group">
-                                        <label
-                                            for="period-from">{{ ui_change('Period_From_-To', 'property_transaction') }}
-                                            <span style="color: red;">*</span></label>
-                                        <div style="display: flex; gap: 10px">
-                                            <input type="text" value="{{ \Carbon\Carbon::now()->format('d/m/Y') }}"
-                                                name="period_from_unit_desc[]" style="background-color:white;"
-                                                id="period-from-{{ $all_unit_details_item->id }}"
-                                                onchange="(search_unit_edit_date({{ $all_unit_details_item->id }}))"
-                                                class="enquiry_unit_main_date form-control  period-from-{{ $all_unit_details_item->unit_description_id }}">
-
-                                            <input type="text"
-                                                value="{{ isset($periodFrom) ? \Carbon\Carbon::parse($periodFrom)->format('d/m/Y') : \Carbon\Carbon::now()->subDay()->addYear()->format('d/m/Y') }}"
-                                                name="period_to_unit_desc[]" style="background-color:white;"
-                                                id="period-to-{{ $all_unit_details_item->id }}"
-                                                class="enquiry_unit_main_date form-control period-to-{{ $all_unit_details_item->unit_description_id }}">
-                                        </div>
-                                    </div>
+                                     
                                     <div class="form-group">
                                         <label
                                             for="property-type">{{ ui_change('Property_Type', 'property_transaction') }}</label>
@@ -759,13 +742,7 @@
                     </div>
                 </div>
                 <div class="form-row">
-                    <div class="form-group">
-                        <label for="period-from[]">{{ ui_change('Period_From-_To', 'property_transaction') }}</label>
-                        <div style="display: flex; gap: 10px;">
-                            <input type="text" name="period_from_unit_desc[]" value="{{ \Carbon\Carbon::now()->format('Y-m-d') }}" id="enquiry_unit_date_from_search_details" class="form-control date-input">
-                            <input type="text" name="period_to_unit_desc[]" value="{{ \Carbon\Carbon::now()->addYear()->subDay()->format('Y-m-d') }}"  id="enquiry_unit_date_to_search_details" class=" date-to-input form-control">
-                        </div>
-                    </div>
+                   
                     <div class="form-group">
                         <label for="property-type[]">{{ ui_change('Property_Type', 'property_transaction') }}</label>
                         <select id="property-type[]" name="property_type[]" class="js-select2-custom form-control">
@@ -870,13 +847,7 @@
                             </div>
                         </div>
                         <div class="form-row">
-                            <div class="form-group">
-                                <label for="period-from">{{ ui_change('Period_From-_To', 'property_transaction') }} <span style="color: red;">*</span></label>
-                                <div style="display: flex; gap: 10px;"  >
-                                    <input type="date" value="{{ \Carbon\Carbon::today() }}" name="period_from-${i}"  id="period-from" class=" form-control">
-                                    <input type="date" value="{{ \Carbon\Carbon::today()->addYear() }}" name="period_to-${i}"  id="period-to" class=" form-control">
-                                </div>
-                            </div>
+                             
                             <div class="form-group">
                                 <label for="property-type">{{ ui_change('Property_Type', 'property_transaction') }}</label>
                                 <select id="property-type"  class="js-select2-custom form-control">

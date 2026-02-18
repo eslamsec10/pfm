@@ -1048,3 +1048,47 @@ if (! function_exists('SalesProposalNo')) {
         return sales_proposal_no_prefix . $newIdFormatted;
     }
 }
+
+if (! function_exists('SalesBookingNo')) {
+    function SalesBookingNo()
+    {
+  
+        define('sales_booking_no_prefix', 'Book-');
+
+        $newId = 1;
+        $table = DB::connection('tenant')->select("SELECT AUTO_INCREMENT FROM information_schema.TABLES WHERE TABLE_SCHEMA = 'facility_management' AND TABLE_NAME = 'sales_bookings'");
+
+        if (! empty($table)) {
+            $newId = $table[0]->AUTO_INCREMENT;
+        } else {
+            $getId = DB::connection('tenant')->table('sales_bookings')->orderBy('id', 'desc')->limit(1)->first();
+            $newId = $getId ? $getId->id + 1 : 1;
+        }
+
+        $newIdFormatted = str_pad($newId, 5, '0', STR_PAD_LEFT);
+
+        return sales_booking_no_prefix . $newIdFormatted;
+    }
+}
+
+if (! function_exists('SalesAgreementNo')) {
+    function SalesAgreementNo()
+    {
+  
+        define('sales_agreement_no_prefix', 'Agr-');
+
+        $newId = 1;
+        $table = DB::connection('tenant')->select("SELECT AUTO_INCREMENT FROM information_schema.TABLES WHERE TABLE_SCHEMA = 'facility_management' AND TABLE_NAME = 'sales_agreements'");
+
+        if (! empty($table)) {
+            $newId = $table[0]->AUTO_INCREMENT;
+        } else {
+            $getId = DB::connection('tenant')->table('sales_agreements')->orderBy('id', 'desc')->limit(1)->first();
+            $newId = $getId ? $getId->id + 1 : 1;
+        }
+
+        $newIdFormatted = str_pad($newId, 5, '0', STR_PAD_LEFT);
+
+        return sales_agreement_no_prefix . $newIdFormatted;
+    }
+}

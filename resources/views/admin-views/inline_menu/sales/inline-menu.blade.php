@@ -4,5 +4,7 @@
         <li class="{{ Request::is('sales/property_customer*') ?'active':'' }}"><a href="{{ route('sales.customer.index') }}">{{ui_change('customers' , 'property_master')}}</a></li> 
         <li class="{{ Request::is('sales/enquiry*') ? 'active':'' }}"><a href="{{ route('sales.enquiry.index') }}">{{ui_change('enquiries' , 'property_master')}}</a></li> 
         <li class="{{ Request::is('sales/proposal*') ? 'active':'' }}"><a href="{{ route('sales.proposal.index') }}">{{ui_change('proposals' , 'property_master')}}</a></li> 
+        <li class="{{ Request::is('sales/booking*') ? 'active':'' }}"><a href="{{ route('sales.booking.index') }}">{{ui_change('bookings' , 'property_master')}}</a></li> 
+        <li class="{{ Request::is('sales/agreement*') ? 'active':'' }}"><a href="{{ route('sales.agreement.index') }}">{{ui_change('agreements' , 'property_master')}}</a></li> 
     </ul>
 </div>

@@ -11,16 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sales_proposal_units', function (Blueprint $table) {
+        Schema::create('sales_agreement_units', function (Blueprint $table) {
             $table->id();
-            $table->integer('proposal_id')->nullable();
+            $table->integer('agreement_id')->nullable();
             $table->integer('property_management_id')->nullable();
             $table->integer('unit_description_id')->nullable();
             $table->integer('unit_type_id')->nullable();
             $table->integer('unit_condition_id')->nullable();
             $table->integer('view_id')->nullable();
             $table->integer('unit_management_id')->nullable();
-            $table->string('property_type')->nullable(); 
+            $table->string('property_type')->nullable();
             $table->text('comment')->nullable();
             $table->string('price')->nullable();
             $table->string('advance_percentage')->nullable();
@@ -37,6 +37,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sales_proposal_units');
+        Schema::dropIfExists('sales_agreement_units');
     }
 };

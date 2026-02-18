@@ -353,7 +353,7 @@ class SalesProposalController extends Controller
                     ]);
                 }
 
-                $proposal = SalesProposal::where('id', $request->proposal_id)->first();
+                // $proposal = SalesProposal::where('id', $request->proposal_id)->first();
                 $proposal->update([
                     'booking_status'    => 'agreement',
                     'status'            => 'completed',
@@ -361,7 +361,7 @@ class SalesProposalController extends Controller
             }
             DB::commit();
 
-            return redirect()->route('sales.agreement.index')->with('success', 'Booking saved successfully');
+            return redirect()->route('sales.agreement.index')->with('success', 'Agreement saved successfully');
         } catch (Exception $e) {
 
             DB::rollBack();

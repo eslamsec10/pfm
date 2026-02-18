@@ -42,7 +42,7 @@
                             <div class="form-group">
                                 <label for="">{{ ui_change('booking_no', 'property_transaction') }}</label>
                                 <input readonly type="text" name="booking_no" class="form-control"
-                                    value="{{ SalesProposalNo() }}">
+                                    value="{{ SalesBookingNo() }}">
                             </div>
                         </div>
                         <div class="col-md-12 col-lg-4 col-xl-6">

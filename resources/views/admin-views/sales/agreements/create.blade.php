@@ -1,34 +1,29 @@
 @extends('layouts.back-end.app')
 
 @section('title', ui_change('create_agreement', 'property_transaction'))
-@php
-    $lang = Session::get('locale');
-@endphp
+
 @push('css_or_js')
     <link href="{{ asset('assets/back-end') }}/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
     <link href="{{ asset('assets/back-end/css/croppie.css') }}" rel="stylesheet">
 @endpush
 
 @section('content')
+    @php
+        $lang = Session::get('locale');
+    @endphp
     <div class="content container-fluid">
         <!-- Page Title -->
         <div class="mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex gap-2">
+                {{-- <img src="{{ asset(main_path() . 'back-end/img/inhouse-product-list.png') }}" alt=""> --}}
                 {{ ui_change('create_agreement', 'property_transaction') }}
             </h2>
         </div>
         <!-- End Page Title -->
-        @include('admin-views.inline_menu.property_transaction.inline-menu')
+        @include('admin-views.inline_menu.sales.inline-menu')
 
-        <div>
-            {{-- d-flex align-items-center --}}
-            <a href="{{ route('general_image_view') }}"
-                class="btn btn--primary btn-sm  text-end">{{ ui_change('view_image', 'property_transaction') }}</a>
-            <a href="{{ route('general_list_view') }}"
-                class="btn btn--primary btn-sm  text-end">{{ ui_change('list_view', 'property_transaction') }}</a>
-        </div>
-        <!-- Form -->
-        <form id="productForm" class="product-form text-start" action="{{ route('agreement.store') }}" method="POST"
+
+        <form id="productForm" class="product-form text-start" action="{{ route('sales.agreement.store') }}" method="POST"
             enctype="multipart/form-data">
             @csrf
             <!-- general setup -->
@@ -47,14 +42,15 @@
                             <div class="form-group">
                                 <label for="">{{ ui_change('agreement_no', 'property_transaction') }}</label>
                                 <input readonly type="text" name="agreement_no" class="form-control"
-                                    value="{{ agreementNo() }}">
+                                    value="{{ SalesAgreementNo() }}">
                             </div>
                         </div>
                         <div class="col-md-12 col-lg-4 col-xl-6">
                             <div class="form-group">
-                                <label for="">{{ ui_change('agreement_date', 'property_transaction') }}</label>
+                                <label for="">{{ ui_change('agreement_date', 'property_transaction') }} <span
+                                        class="text-danger"> *</span></label></label>
                                 <input type="text" class="form-control" id="agreement_date" name="agreement_date"
-                                    class="form-control">
+                                    class="form-control"  >
                             </div>
                         </div>
 
@@ -62,22 +58,23 @@
                         <div class="col-md-12 col-lg-4 col-xl-6">
                             <div class="form-group">
                                 <label for="name"
-                                    class="title-color">{{ ui_change('tenant', 'property_transaction') }}<span
-                                        class="text-danger"> *</span>
-                                         <button type="button" data-target="#add_tenant" data-add_tenant="" data-toggle="modal"
+                                    class="title-color">{{ ui_change('customer', 'property_transaction') }}
+                                    <span class="text-danger"> *</span></label>
+                                <button type="button" data-target="#add_customer" data-add_customer="" data-toggle="modal"
                                     class="btn btn--primary btn-sm">
                                     <i class="fa fa-plus-square"></i>
                                 </button>
                                 </label>
-                                <select class="js-select2-custom form-control" id="tenant_id" name="tenant_id" required>
-                                    <option selected>{{ ui_change('select', 'property_transaction') }}</option>
-                                    @foreach ($tenants as $tenant)
-                                        <option value="{{ $tenant->id }}">
-                                            {{ $tenant->name ?? $tenant->company_name }}
+                                <select class="js-select2-custom form-control" id="customer_id" name="customer_id" required>
+                                    <option value="" selected>{{ ui_change('select', 'property_transaction') }}
+                                    </option>
+                                    @foreach ($customers as $customer)
+                                        <option value="{{ $customer->id }}">
+                                            {{ $customer->name ?? $customer->company_name }}
                                         </option>
                                     @endforeach
                                 </select>
-                                @error('tenant_id')
+                                @error('customer_id')
                                     <div class="invalid-feedback">
                                         {{ $message }}
                                     </div>
@@ -88,10 +85,11 @@
 
                         <div class="col-md-12 col-lg-4 col-xl-3">
                             <div class="form-group">
-                                <label for="">{{ ui_change('tenant_type', 'property_transaction') }}</label>
-                                <input type="text" class="form-control" name="tenant_type" readonly class="form-control">
+                                <label for="">{{ ui_change('customer_type', 'property_transaction') }}</label>
+                                <input type="text" class="form-control" name="customer_type" readonly
+                                    class="form-control">
                             </div>
-                            @error('tenant_type')
+                            @error('customer_type')
                                 <div class="invalid-feedback">
                                     {{ $message }}
                                 </div>
@@ -99,9 +97,8 @@
                         </div>
                         <div class="col-md-12 col-lg-4 col-xl-3">
                             <div class="form-group">
-                                <label
-                                    for="">{{ ui_change('total_no_of_required_units', 'property_transaction') }}<span
-                                        class="text-danger"> *</span></label>
+                                <label for="">{{ ui_change('total_no_of_required_units', 'property_transaction') }}
+                                    <span class="text-danger"> *</span></label></label>
                                 <input type="number" id="total-no-units" class="form-control"
                                     name="total_no_of_required_units">
                             </div>
@@ -121,19 +118,19 @@
             <div class="card mt-3 rest-part">
                 <div class="card-header">
                     <div class="d-flex gap-2">
-                        <h4 class="mb-0">{{ ui_change('tenant_details', 'property_transaction') }}</h4>
+                        <h4 class="mb-0">{{ ui_change('customer_details', 'property_transaction') }}</h4>
                     </div>
                 </div>
                 <div class="card-body">
                     <div class="row">
 
-                        <div class="col-md-12 tenant_form d-none company-form" id="company-form">
+                        <div class="col-md-12 customer_form d-none company-form" id="company-form">
 
-                            @include('admin-views.property_transactions.enquiries.company_form')
+                            @include('admin-views.sales.enquiries.company_form')
 
                         </div>
-                        <div class="col-md-12 tenant_form d-none personal-form" id="personal-form">
-                            @include('admin-views.property_transactions.enquiries.personal_form')
+                        <div class="col-md-12 customer_form d-none personal-form" id="personal-form">
+                            @include('admin-views.sales.enquiries.personal_form')
                         </div>
                     </div>
 
@@ -141,14 +138,6 @@
 
             </div>
 
-            <div class="card mt-3 rest-part">
-                <div class="card-header">
-                    <div class="d-flex gap-2">
-                        <h4 class="mb-0">{{ ui_change('agreement_details', 'property_transaction') }}</h4>
-                    </div>
-                </div>
-                @include('includes.property_transactions.main_info')
-            </div>
 
 
             <div id="main-content"></div>
@@ -156,10 +145,10 @@
                 <button type="reset"
                     class="btn btn-secondary px-5">{{ ui_change('reset', 'property_transaction') }}</button>
                 <button type="submit" class="btn btn--primary px-5"
-                    onclick="setFormAction('{{ route('agreement.store') }}')">{{ ui_change('submit', 'property_transaction') }}</button>
-                <button type="submit" class="btn btn-warning px-5"
-                    onclick="setFormAction('{{ route('agreement.search') }}')"><i
-                        class="fa fa-search"></i>{{ ui_change('search', 'property_transaction') }}</button>
+                    onclick="setFormAction('{{ route('sales.agreement.store') }}')">{{ ui_change('submit', 'property_transaction') }}</button>
+                {{-- <button type="submit" class="btn btn-warning px-5"
+                    onclick="setFormAction('{{ route('sales.agreement.search') }}')"><i
+                        class="fa fa-search"></i>{{ ui_change('search', 'property_transaction') }}</button> --}}
 
             </div>
         </form>
@@ -167,14 +156,13 @@
 
 
     </div>
-
-        <div class="modal fade" id="add_tenant" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    <div class="modal fade" id="add_customer" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
         aria-hidden="true">
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">
-                        {{ ui_change('create_tenant', 'property_transaction') }}</h5>
+                        {{ ui_change('create_customer', 'property_transaction') }}</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -191,33 +179,33 @@
                                     id="company-link_create">{{ ui_change('company', 'property_transaction') }}</a>
                             </li>
                         </ul>
-                        <div class="col-md-12 tenant_form_create personal-form_create" id="personal-form_create">
-                            <form id="tenantForm_personal" action="{{ route('tenant.store_for_anything') }}"
-                                method="post" class="tenantForm">
+                        <div class="col-md-12 customer_form_create personal-form_create" id="personal-form_create">
+                            <form id="customerForm_personal" action="{{ route('sales.customer.store_for_anything') }}"
+                                method="post" class="customerForm">
                                 @csrf
                                 @method('post')
-                                @include('admin-views.property_transactions.tenants.personal_form')
+                                @include('admin-views.sales.customer.personal_form')
                                 <div class="row justify-content-end gap-3 mt-3 mx-1">
                                     <button type="reset"
                                         class="btn btn-secondary px-5">{{ ui_change('reset', 'property_transaction') }}</button>
-                                    <button type="submit" id="saveTenantPersonal"
-                                        class="btn btn--primary px-5 saveTenant">{{ ui_change('submit', 'property_transaction') }}</button>
+                                    <button type="submit" id="savecustomerPersonal"
+                                        class="btn btn--primary px-5 savecustomer">{{ ui_change('submit', 'property_transaction') }}</button>
                                 </div>
 
                             </form>
                         </div>
-                        <div class="col-md-12 tenant_form_create d-none company-form_create" id="company-form_create">
-                            <form id="tenantForm_company" action="{{ route('tenant.store_for_anything') }}"
-                                method="post" class="tenantForm">
+                        <div class="col-md-12 customer_form_create d-none company-form_create" id="company-form_create">
+                            <form id="customerForm_company" action="{{ route('sales.customer.store_for_anything') }}"
+                                method="post" class="customerForm">
                                 @csrf
                                 @method('post')
 
-                                @include('admin-views.property_transactions.tenants.company_form')
+                                @include('admin-views.sales.customer.company_form')
                                 <div class="row justify-content-end gap-3 mt-3 mx-1">
                                     <button type="reset"
                                         class="btn btn-secondary px-5">{{ ui_change('reset', 'property_transaction') }}</button>
-                                    <button type="submit" id="saveTenantCompany"
-                                        class="btn btn--primary px-5 saveTenant">{{ ui_change('submit', 'property_transaction') }}</button>
+                                    <button type="submit" id="savecustomerCompany"
+                                        class="btn btn--primary px-5 savecustomer">{{ ui_change('submit', 'property_transaction') }}</button>
                                 </div>
 
                             </form>
@@ -235,11 +223,15 @@
         function setFormAction(actionUrl) {
             document.getElementById('productForm').action = actionUrl;
         }
+         flatpickr("#agreement_date", {
+                dateFormat: "d/m/Y",
+                minDate: "today",
+                defaultDate: "today"
+            });
 
         function calculation_method(i) {
             calculation_method_val = $('select[name="calculation_method-' + i + '"]').val();
             console.log(calculation_method_val)
-            // $('select[name="area_measurement-' + i + '"]').removeAttr('disabled');
             if (calculation_method_val == 2) {
                 $('#area_measurement-' + i).removeClass('d-none');
                 $('#amount-' + i).removeClass('d-none');
@@ -253,11 +245,10 @@
         $(".type_link_create").click(function(e) {
             e.preventDefault();
             $(".type_link_create").removeClass('active');
-            $(".tenant_form_create").addClass('d-none');
+            $(".customer_form_create").addClass('d-none');
             $(this).addClass('active');
 
             let form_id = this.id;
-            console.log(form_id)
             if (form_id === 'personal-link_create') {
                 $("#personal-form_create").removeClass('d-none').addClass('active');
                 $("#company-form_create").removeClass('active').addClass('d-none');
@@ -269,75 +260,6 @@
         });
     </script>
     <script>
-        flatpickr("#agreement_date", {
-            dateFormat: "d/m/Y",
-            defaultDate: "today",
-            minDate: "today"
-        });
-        flatpickr(".main_date", {
-            dateFormat: "d/m/Y",
-
-        });
-        flatpickr(".relocation_date", {
-            dateFormat: "d/m/Y",
-            minDate: "today"
-        });
-        flatpickr(".period_from", {
-            dateFormat: "d/m/Y",
-            minDate: "today"
-        });
-        flatpickr(".period_to", {
-            dateFormat: "d/m/Y",
-            minDate: "today"
-        });
-        flatpickr("#period-from", {
-            dateFormat: "d/m/Y",
-            minDate: "today"
-        });
-
-        function proposal_period_date_clc() {
-            var form_unit_date = $(`input[name=period_from]`).val();
-            if (form_unit_date) {
-                var parts = form_unit_date.split('/');
-                if (parts.length === 3) {
-                    var day = parseInt(parts[0]) - 1;
-                    var month = parseInt(parts[1]) - 1;
-                    var year = parseInt(parts[2]) + 1;
-
-                    var dateObj = new Date(year, month, day);
-                    var formattedDate =
-                        `${dateObj.getDate().toString().padStart(2, '0')}/${(dateObj.getMonth() + 1).toString().padStart(2, '0')}/${dateObj.getFullYear()}`;
-                    $(`input[name=period_to]`).val(formattedDate);
-                }
-            }
-        }
-
-        function deposite(id) {
-            rent_amount = $('input[name="rent_amount-' + id + '"]').val();
-            deposite_month = $('input[name="security_deposit_months_rent-' + id + '"]').val();
-            deposite_all = $('input[name="security_deposit_amount-' + id + '"]').val((rent_amount * deposite_month));
-        }
-
-        function service_date(i, key) {
-            var form_unit_date = $(`input[name='start_date-${i}-${key}[]']`).val();
-
-            if (form_unit_date) {
-                var parts = form_unit_date.split('/');
-                if (parts.length === 3) {
-                    var day = parseInt(parts[0]) - 1;
-                    var month = parseInt(parts[1]) - 1;
-                    var year = parseInt(parts[2]) + 1;
-
-                    var dateObj = new Date(year, month, day);
-                    var formattedDate =
-                        `${dateObj.getDate().toString().padStart(2, '0')}/${(dateObj.getMonth() + 1).toString().padStart(2, '0')}/${dateObj.getFullYear()}`;
-                    $(`input[name='expiry_date-${i}-${key}[]']`).val(formattedDate);
-
-
-                }
-            }
-        }
-
         function unitFunc(i) {
             var property_id = $('select[name="property_id-' + i + '"]').val();
             var unit_description_id = $('select[name="unit_description_id-' + i + '"]').val();
@@ -348,7 +270,7 @@
             (property_id, unit_description_id, unit_type_id, unit_condition_id, view_id, property_type);
 
             $.ajax({
-                url: "{{ route('agreement.get_units') }}",
+                url: "{{ route('sales.agreement.get_units') }}",
                 type: "GET",
                 data: {
                     property_id: property_id,
@@ -364,15 +286,15 @@
                         $('select[name="unit-' + i + '"]').empty();
                         $.each(data, function(key, value) {
                             let isBooked = '';
-                            if (value.booking_status === 'agreement') {
+                            if (value.sales_status === 'agreement') {
                                 isBooked = 'style="background-color:red;color:white"';
-                            } else if (value.booking_status === 'booking') {
+                            } else if (value.sales_status === 'agreement') {
                                 isBooked =
                                     'style="background-color:#d500f9;color:white"';
-                            } else if (value.booking_status === 'proposal') {
+                            } else if (value.sales_status === 'agreement') {
                                 isBooked =
                                     'style="background-color:#ffeb3b;color:black"';
-                            } else if (value.booking_status === 'enquiry') {
+                            } else if (value.sales_status === 'enquiry') {
                                 isBooked =
                                     'style="background-color:#372be2;color:white"';
                             }
@@ -388,7 +310,7 @@
                     } else if (data.length == 0) {
                         $('select[name="unit-' + i + '"]').empty();
                         $('select[name="unit-' + i + '"]').append(
-                            '<option value="0">{{ ui_change('Not_Found', 'property_transaction') }}</option>'
+                            '<option value="0">Not Found</option>'
                         );
                     } else {
                         ('No data found.');
@@ -399,269 +321,12 @@
                 }
             });
         }
-
-        function payment_mode_func(i) {
-            var payment_mode_id = $('select[name="payment_mode-' + i + '"]').val();
-            $('select[name="rent_mode-' + i + '"]').val(payment_mode_id);
-            $('select[name="area_measurement-' + i + '"]').removeAttr('disabled');
-            // $('input[name="amount-' + i + '"]').removeAttr('disabled');
-            $('input[name="total_area_amount-' + i + '"]').removeAttr('disabled');
-        }
-
-        function disabled_false(i) {
-            $('input[name="amount-' + i + '"]').removeAttr('disabled');
-        }
-
-        function rent_mode_amount(i) {
-            var amount = parseFloat($('input[name="amount-' + i + '"]').val()) || 0;
-            var total_area_amount = parseFloat($('input[name="total_area_amount-' + i + '"]').val());
-
-            if (amount != 0 && total_area_amount != 0) {
-                $('input[name="rent_amount-' + i + '"]').empty().val(0)
-                $('input[name="vat_percentage-' + i + '"]').removeAttr('disabled');
-
-                var rent_amount = amount * total_area_amount;
-                $('input[name="rent_amount-' + i + '"]').val(rent_amount.toFixed(2));
-            } else if ((amount == 0 && amount != null) || total_area_amount == 0) {
-                $('input[name="rent_amount-' + i + '"]').empty().val()
-            }
-            vat_amount_func(i)
-        }
-
-        function vat_amount_func(i) {
-            var rent_amount = parseFloat($('input[name="rent_amount-' + i + '"]').val()) || 0;
-            var rental_gl = parseFloat($('select[name="rental_gl-' + i + '"]').val()) || 0;
-            var vat_percentage = $('input[name="vat_percentage-' + i + '"]').empty();
-
-            $('input[name="vat_amount-' + i + '"]').val(0);
-            $('input[name="vat_percentage-' + i + '"]').val(0);
-            $('input[name="total_net_rent_amount-' + i + '"]').val(0);
-
-            var vat_amount = (rent_amount * rental_gl) / 100;
-            var total_net_rent_amount = parseFloat(vat_amount) + parseFloat(rent_amount);
-            $('input[name="vat_amount-' + i + '"]').val(vat_amount.toFixed(2));
-            $('input[name="vat_percentage-' + i + '"]').val(rental_gl.toFixed(2));
-            $('input[name="total_net_rent_amount-' + i + '"]').val(total_net_rent_amount.toFixed(2));
-        }
-
-
-        const counters = {};
-
-        function add_service(i) {
-            const container = document.getElementById('main_service_content-' + i);
-            var form_unit_date = $(`input[name=period_from-${i}]`).val();
-            var to_unit_date = $(`input[name=period_to-${i}]`).val();
-            if (!counters[i]) {
-                counters[i] = 0;
-            }
-            counters[i]++;
-
-            let counterInput = document.getElementById('service_counter-' + i);
-            if (!counterInput) {
-
-                const formContainer = document.createElement('div');
-                formContainer.innerHTML = `
-                                            <input type="hidden" id="service_counter-${i}" name="service_counter[${i}]" value="${counters[i]}">
-                                            `;
-                container.appendChild(formContainer);
-            } else {
-
-                counterInput.value = counters[i];
-            }
-
-            const bladeContent = `
-<div class="row mt-1 bg-warning  border rounded p-2 position-relative " id="service-${i}-${counters[i]}"  >
-<button type="button" class="btn btn-danger btn-sm position-absolute " 
-                                    style="top: 5px; right: 5px; z-index: 10;" 
-                                    onclick="removeService(this)">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-    <div class="col-md-6 col-lg-4 col-xl-3">
-        <div class="form-group">
-            <label for="charge_mode-${i}-${counters[i]}" class="form-control-label">{{ ui_change('Charge_Mode', 'property_transaction') }}</label> <span class="starColor">*</span>
-            <select name="charge_mode-${i}-${counters[i]}[]" class="form-control" onchange="charge_type(${i},${counters[i]}) , amount_charge_func(${i},${counters[i]}) , percentage_amount_charge_func(${i},${counters[i]})">
-                <option value="0">{{ ui_change('Select_Other_Charge_Type', 'property_transaction') }}</option>
-                @foreach ($services_master as $service_master_item)
-                    <option value="{{ $service_master_item->id }}">{{ $service_master_item->name }}</option>
-                @endforeach
-               
-            </select>
-        </div>
-    </div>
-
-    <div class="col-md-6 col-lg-4 col-xl-3">
-        <div class="form-group">
-            <label for="charge_mode_type-${i}-${counters[i]}" class="form-control-label">{{ ui_change('Charge_Mode', 'property_transaction') }}</label> <span class="starColor">*</span>
-            <select name="charge_mode_type-${i}-${counters[i]}[]" class="form-control" onchange="service_value_calc(${i},${counters[i]})">
-                <option value="amount">{{ ui_change('amount', 'property_transaction') }}</option>
-                <option value="percentage">{{ ui_change('percentage', 'property_transaction') }}</option>
-            </select>
-        </div>
-    </div>
-
-    <div class="col-md-6 col-lg-4 col-xl-3" id="amount_charge-${i}-${counters[i]}">
-        <div class="form-group">
-            <label for="total-area">{{ ui_change('amount', 'property_transaction') }}</label>
-            <input type="number" onkeyup="amount_charge_func(${i},${counters[i]})" name="amount_charge-${i}-${counters[i]}[]" class="form-control"
-                step="0.001" placeholder="0.000">
-        </div>
-    </div>
-
-    <div class="col-md-6 col-lg-4 col-xl-3 d-none" id="percentage_amount_charge-${i}-${counters[i]}">
-        <div class="form-group ">
-            <label for="total-area">{{ ui_change('percentage', 'property_transaction') }}</label>
-            <input type="number" onkeyup="percentage_amount_charge_func(${i},${counters[i]})" name="percentage_amount_charge-${i}-${counters[i]}[]" class="form-control"
-                step="0.001" placeholder="0.000">
-        </div>
-    </div>
-
-    <div class="col-md-6 col-lg-4 col-xl-3">
-        <div class="form-group">
-            <label for="total-area">{{ ui_change('calculate_amount', 'property_transaction') }}</label>
-            <input type="number" readonly id="total-area" name="calculate_amount-${i}-${counters[i]}[]" class="form-control  bg-white"
-                step="0.001" placeholder="0.000">
-        </div>
-    </div>
-    <div class="col-md-6 col-lg-4 col-xl-3">
-        <div class="form-group">
-            <label for="total-area">{{ ui_change('start_date', 'property_transaction') }}</label>
-            <input type="text" name="start_date-${i}-${counters[i]}[]" onchange="(service_date(${i} , ${counters[i]}))" class="form-control main_date text-white"  value="${form_unit_date}" >
-        </div>
-    </div>
-    <div class="col-md-6 col-lg-4 col-xl-3">
-        <div class="form-group">
-            <label for="total-area">{{ ui_change('expaired_date', 'property_transaction') }}</label>
-            <input type="text" name="expiry_date-${i}-${counters[i]}[]" class="form-control main_date text-white"  value="${to_unit_date}" >
-        </div>
-    </div>
-
-    <div class="col-md-6 col-lg-4 col-xl-3">
-        <div class="form-group">
-            <label for="total-area">{{ ui_change('VAT_percentage', 'property_transaction') }}</label>
-            <input type="number" readonly  name="vat_percentage-${i}-${counters[i]}[]" class="form-control  bg-white"
-                step="0.001" placeholder="0.000">
-        </div>
-    </div>
-
-    <div class="col-md-6 col-lg-4 col-xl-3">
-        <div class="form-group">
-            <label for="total-area">{{ ui_change('VAT_amount', 'property_transaction') }}</label>
-            <input type="number" readonly  name="vat_amount-${i}-${counters[i]}[]" class="form-control  bg-white"
-                step="0.001" placeholder="0.000">
-        </div>
-    </div>
-
-    <div class="col-md-6 col-lg-4 col-xl-12">
-        <div class="form-group">
-            <label for="total-area">{{ ui_change('total_amount', 'property_transaction') }}</label>
-            <input type="number" readonly id="total-area" name="total_amount-${i}-${counters[i]}[]" class="form-control  bg-white"
-                step="0.001" placeholder="0.000">
-        </div>
-    </div>
-</div>
-`;
-            container.insertAdjacentHTML('beforeend', bladeContent);
-            flatpickr(".main_date", {
-                dateFormat: "d/m/Y",
-                minDate: "today"
-            });
-        }
-
-        function removeService(button) {
-            button.closest('.row').remove();
-        }
-
-
-        function charge_type(i, j) {
-            var charge_type_amount = $('select[name="charge_mode-' + i + '-' + j + '[]"]').val();
-            $.ajax({
-                url: "{{ route('agreement.get_unit_service', ':id') }}".replace(':id', charge_type_amount),
-                type: "GET",
-                dataType: "json",
-                success: function(data) {
-                    var vat_percentage = $('input[name="vat_percentage-' + i + '-' + j + '[]"]').val(data
-                        .get_service.vat);
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error occurred:', error);
-                }
-            });
-        }
-
-        function service_value_calc(i, j) {
-            var service_type = $('select[name="charge_mode_type-' + i + '-' + j + '[]"]').val();
-
-            $('input[name="total_amount-' + i + '-' + j + '[]"]').empty().val(0)
-            $('input[name="calculate_amount-' + i + '-' + j + '[]"]').empty().val(0)
-            $('input[name="vat_amount-' + i + '-' + j + '[]"]').empty().val(0)
-
-            if (service_type == 'percentage') {
-                $('input[name="amount_charge-' + i + '-' + j + '[]"]').empty().val(0)
-
-                $('#percentage_amount_charge-' + i + '-' + j + '').removeClass('d-none');
-                $('#amount_charge-' + i + '-' + j + '').addClass('d-none');
-                var rent_amount = parseFloat($('input[name="rent_amount-' + i + '"]').val()) || 0;
-
-            } else if (service_type == 'amount') {
-                $('input[name="percentage_amount_charge-' + i + '-' + j + '[]"]').empty().val(0)
-                $('#amount_charge-' + i + '-' + j + '').removeClass('d-none');
-                $('#percentage_amount_charge-' + i + '-' + j + '').addClass('d-none');
-            }
-        }
-
-        function amount_charge_func(i, j) {
-            var amount_val = parseFloat($('input[name="amount_charge-' + i + '-' + j + '[]"]').val()) || 0;
-            var vat_percentage_val = parseFloat($('input[name="vat_percentage-' + i + '-' + j + '[]"]').val()) || 0;
-            var total_vat_service = amount_val * (vat_percentage_val / 100);
-            var total_amount_val = amount_val + total_vat_service;
-            $('input[name="vat_amount-' + i + '-' + j + '[]"]').val(total_vat_service.toFixed(2));
-            $('input[name="calculate_amount-' + i + '-' + j + '[]"]').val(amount_val.toFixed(2));
-            $('input[name="total_amount-' + i + '-' + j + '[]"]').empty().val(total_amount_val.toFixed(2));
-        }
-
-        function unit_change_main_date() {
-            var form_unit_date = $(`input[name=period_from]`).val();
-            if (form_unit_date) {
-                $(`.general_period_date`).val(form_unit_date)
-                var parts = form_unit_date.split('/');
-                if (parts.length === 3) {
-                    var day = parseInt(parts[0]) - 1;
-                    var month = parseInt(parts[1]) - 1;
-                    var year = parseInt(parts[2]) + 1;
-
-                    var dateObj = new Date(year, month, day);
-                    var formattedDate =
-                        `${dateObj.getDate().toString().padStart(2, '0')}/${(dateObj.getMonth() + 1).toString().padStart(2, '0')}/${dateObj.getFullYear()}`;
-
-                    $(`.general_period_date_to`).val(formattedDate)
-
-                }
-            }
-        }
-
-        function percentage_amount_charge_func(i, j) {
-            var percentage_amount_charge_val = parseFloat($('input[name="percentage_amount_charge-' + i + '-' + j + '[]"]')
-                .val()) || 0;
-            var rent_amount = parseFloat($('input[name="amount-' + i + '"]').val()) || 0;
-            // var rent_amount = parseFloat($('input[name="rent_amount-' + i + '"]').val()) || 0;
-            var percentage_amount = rent_amount * (percentage_amount_charge_val / 100);
-            $('input[name="calculate_amount-' + i + '-' + j + '[]"]').val(percentage_amount.toFixed(2));
-            var vat_percentage_val = parseFloat($('input[name="vat_percentage-' + i + '-' + j + '[]"]').val()) || 0;
-
-            var total_vat_service = percentage_amount * (vat_percentage_val / 100);
-
-            var total_amount_val = percentage_amount + total_vat_service;
-
-            $('input[name="vat_amount-' + i + '-' + j + '[]"]').val(total_vat_service.toFixed(3));
-            $('input[name="total_amount-' + i + '-' + j + '[]"]').val(total_amount_val.toFixed(3));
-
-        }
     </script>
     <script>
         document.getElementById('total-no-units').addEventListener('input', function() {
             const totalUnits = parseInt(this.value) || 0;
             const container = document.getElementById('main-content');
-
+            var decimals = parseFloat($('#decimals').val()) || 0;
             container.innerHTML = '';
 
             for (let i = 1; i <= totalUnits; i++) {
@@ -669,8 +334,7 @@
                         <div class="card mt-3 rest-part" id="main_content" style="background-color: #2b368f;color:white">
                 <div class="card-header">
                     <div class="d-flex gap-2">
-                        <img width="40px" src="{{ asset('/public/assets/back-end/img/agreement.jpg') }}" class="mb-1"
-                            alt="">
+
                         <h4 class="mb-0">{{ ui_change('unit_search_details', 'property_transaction') }}</h4>
                     </div>
                 </div>
@@ -682,7 +346,7 @@
         <div class="col-md-6 col-lg-4 col-xl-3">
 
             <div class="form-group">
-                <label for="building">{{ ui_change('property', 'property_transaction') }} <span class="starColor " style="font-size: 18px; "> *</span></label>
+                <label for="building">{{ ui_change('property', 'property_transaction') }}</label>
                 <select id="building" name="property_id-${i}"  onchange="unitFunc(${i})" class="js-select2-custom form-control">
                     <option value="0">{{ ui_change('select', 'property_transaction') }}</option>
                     @foreach ($buildings as $building)
@@ -755,56 +419,12 @@
                 </select>
             </div>
         </div>
-        <div class="col-md-6 col-lg-4 col-xl-3">
-            <div class="form-group">
-                <label for="period-from">{{ ui_change('period_from_to', 'property_transaction') }}</label>
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" name="period_from-${i}" id="period-from" class="form-control main_date_func  text-white general_period_date"  onchange="(agreement_unit_date_clc(${i}))"  value="{{ Carbon\Carbon::now()->format('d/m/Y') }}" >
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 col-lg-4 col-xl-3">
-            <div class="form-group">
-                <label for="price" class="title-color"> </label>
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" name="period_to-${i}" id="period-to" class="form-control mt-2 main_date_func text-white general_period_date_to" value="{{ Carbon\Carbon::now()->subDay()->addYear()->format('d/m/Y') }}" >
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6 col-lg-4 col-xl-3">
-
-            <div class="form-group">
-                <label for="city">{{ ui_change('city', 'property_transaction') }}</label>
-                <input type="text" id="city" name="city-${i}" class="form-control">
-            </div>
-        </div>
-        <div class="col-md-6 col-lg-4 col-xl-3">
-
-            <div class="form-group">
-                <label for="total-area">{{ ui_change('total_area_required', 'property_transaction') }}</label>
-                <input type="number" id="total-area" name="total_area-${i}" class="form-control"
-                    step="0.001" placeholder="0.000">
-            </div>
-        </div>
        
-        <div class="col-md-6 col-lg-4 col-xl-3">
 
+        
+        <div class="col-md-6 col-lg-4 col-xl-6">
             <div class="form-group">
-                <label for="area-measurement">{{ ui_change('area_measurement', 'property_transaction') }}</label>
-                <select id="area-measurement" name="area_measurement-${i}"
-                    class="js-select2-custom form-control">
-                    <option>{{ ui_change('select_area_measurement', 'property_transaction') }}</option>
-                    <option>{{ ui_change('Sq._Mtr.', 'property_transaction') }}</option>
-                    <option>{{ ui_change('Sq._Ft.', 'property_transaction') }}</option>
-                </select>
-            </div>
-        </div>
-    </div>
-    <div class="form-row">
-        <div class="col-md-6 col-lg-4 col-xl-12">
-            <div class="form-group">
-                <label for="notes">{{ ui_change('notes_&_comments', 'property_transaction') }}</label>
+                <label for="notes">{{ ui_change('notes_comments', 'property_transaction') }}</label>
                 <textarea id="notes" name="notes-${i}" class="form-control" rows="2"> </textarea>
             </div>
         </div>
@@ -815,265 +435,210 @@
         <div class="col-md-6 col-lg-4 col-xl-6">
 
             <div class="form-group">
-                <label for="area-measurement">{{ ui_change('unit', 'property_transaction') }} <span class="starColor " style="font-size: 18px; "> *</span></label>
-                <select id="area-measurement" name="unit-${i}" onchange="(rent_amount_from_unit(${i}))"
+                <label for="area-measurement">{{ ui_change('unit', 'property_transaction') }}</label>
+                <select id="area-measurement" name="unit-${i}"  
                     class="js-select2-custom form-control">
                     <option>{{ ui_change('select_unit', 'property_transaction') }}</option>
                 </select>
             </div>
         </div>
-        <div class="col-md-6 col-lg-4 col-xl-3">
+       
+          <div class="col-md-6 col-lg-4 col-xl-3  " id="price-${i}">
+                                        <div class="form-group">
+                                            <label
+                                                for="total-area">{{ ui_change('price', 'property_transaction') }}</label>
+                                            <input type="number" name="price-${i}" class="form-control"
+                                                value="" step="0.001"
+                                                placeholder="{{ number_format(0, $company->decimals) }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-lg-4 col-xl-3  "
+                                        id="advance_percentage-${i}">
+                                        <div class="form-group">
+                                            <label
+                                                for="total-area">{{ ui_change('advance_percentage', 'property_transaction') }}</label>
+                                            <input type="number" name="advance_percentage-${i}"
+                                                class="form-control" value="" step="0.001"
+                                                placeholder="{{ number_format(0, $company->decimals) }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-lg-4 col-xl-3  " id="advance_amount-${i}">
+                                        <div class="form-group">
+                                            <label
+                                                for="total-area">{{ ui_change('advance_amount', 'property_transaction') }}</label>
+                                            <input type="number" readonly name="advance_amount-${i}"
+                                                class="form-control text-white" value="" step="0.001"
+                                                placeholder="{{ number_format(0, $company->decimals) }}">
+                                        </div>
+                                    </div>
+      
 
-            <div class="form-group">
-                <label for="area-measurement">{{ ui_change('payment_mode', 'property_transaction') }} <span class="starColor " style="font-size: 18px; "> *</span></label>
-                <select id="area-measurement" name="payment_mode-${i}" required onchange="payment_mode_func(${i})"
-                    class="js-select2-custom form-control">
-                    <option value="0">{{ ui_change('select_payment_mode', 'property_transaction') }}</option>
-                    <option value="1">{{ ui_change('daily', 'property_transaction') }}</option>
-                    <option value="2">{{ ui_change('monthly', 'property_transaction') }}</option>
-                    <option value="3">{{ ui_change('bi_monthly', 'property_transaction') }}</option>
-                    <option value="4">{{ ui_change('quarterly', 'property_transaction') }}</option>
-                    <option value="5">{{ ui_change('half_yearly', 'property_transaction') }}</option>
-                    <option value="6">{{ ui_change('yearly', 'property_transaction') }}</option>
-                </select>
-            </div>
-        </div>
-        <div class="col-md-6 col-lg-4 col-xl-3">
-            <div class="form-group">
-                <label for="area-measurement">{{ ui_change('pdc', 'property_transaction') }}</label>
-                <select id="area-measurement" name="pdc-${i}" class="js-select2-custom form-control">
-                    <option>{{ ui_change('yes', 'property_transaction') }}</option>
-                    <option>{{ ui_change('no', 'property_transaction') }}</option>
-                </select>
-            </div>
-        </div>
-        <div class="col-md-6 col-lg-4 col-xl-3">
-            <div class="form-group">
-                <label for="area-measurement">{{ ui_change('Calculation_Method', 'property_transaction') }}</label>
-                <select id="area-measurement"
-                    onchange="calculation_method(${i})"
-                    name="calculation_method-${i}"
-                    class="js-select2-custom form-control">
-                    <option value="1" selected>{{ ui_change('Fixed', 'property_transaction') }}</option>
-                    <option value="2">{{ ui_change('Based_on_area', 'property_transaction') }}</option>
-                </select>
-            </div>
-        </div>
-        <div class="col-md-6 col-lg-4 col-xl-3 d-none" id="area_measurement-${i}">
-            <div class="form-group">
-                <label
-                    for="area-measurement">{{ ui_change('area_measurement', 'property_transaction') }}</label>
-                <select id="area-measurement" disabled name="area_measurement-${i}"
-                    class="js-select2-custom form-control">
-                    <option>{{ ui_change('Sq._Mtr.', 'property_transaction') }}</option>
-                    <option>{{ ui_change('Sq._Ft.', 'property_transaction') }}</option>
-                </select>
-            </div>
-        </div>
 
-        <div class="col-md-6 col-lg-4 col-xl-3 d-none" id="total_area_amount-${i}">
-            <div class="form-group">
-                <label for="total-area">{{ ui_change('total_area', 'property_transaction') }}</label>
-                <input type="number" disabled  name="total_area_amount-${i}"  onkeyup="disabled_false(${i}),rent_mode_amount(${i})" class="form-control" placeholder="0.000"  >
-            </div>
-        </div>
+                                                          <div class="col-md-6 col-lg-4 col-xl-3  "
+                                        id="number_of_installments-${i}">
+                                        <div class="form-group">
+                                            <label
+                                                for="total-area">{{ ui_change('number_of_installments', 'property_transaction') }}</label>
+                                            <input type="number" name="number_of_installments-${i}"
+                                                class="form-control" value="" step="0.001"
+                                                placeholder="{{ number_format(0, $company->decimals) }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 col-lg-4 col-xl-3">
+                                        <div class="form-group">
+                                            <label>{{ ui_change('Payment Plan') }}</label>
+                                            <select name="payment_plan-${i}" class="form-control">
+                                                <option value="1">{{ ui_change('Monthly') }}</option>
+                                                <option value="2">{{ ui_change('Bimonthly') }}</option>
+                                                <option value="3">{{ ui_change('Quarterly') }}</option>
+                                                <option value="4">{{ ui_change('Semi_Anuual') }}</option>
+                                                <option value="5">{{ ui_change('Annual') }}</option>
+                                            </select>
+                                        </div>
+                                    </div>
 
-        <div class="col-md-6 col-lg-4 col-xl-3 d-none" id="amount-${i}">
-            <div class="form-group">
-                <label for="total-area">{{ ui_change('amount', 'property_transaction') }}</label>
-                <input type="number"   name="amount-${i}" disabled class="form-control" onkeyup="rent_mode_amount(${i}) "
-                    step="0.001" placeholder="0.000">
-            </div>
-        </div>
 
-        <div class="col-md-6 col-lg-4 col-xl-3">
-            <div class="form-group">
-                <label for="total-area">{{ ui_change('rent_amount', 'property_transaction') }} <span class="starColor " style="font-size: 18px; "> *</span></label>
-                <input type="number"   name="rent_amount-${i}" class="form-control" required onkeyup="rent_mode_amount(${i}), vat_amount_func(${i})"
-                    step="0.001" placeholder="0.000">
-            </div>
-        </div>
+                                    <div class="col-md-12 col-lg-4 col-xl-3">
+                                        <div class="form-group">
+                                            <label
+                                                for="">{{ ui_change('start_date', 'property_transaction') }}</label>
+                                            <input type="text" class="form-control start_date text-white"
+                                                name="start_date-${i}">
+                                        </div>
+                                    </div>
 
-        <div class="col-md-6 col-lg-4 col-xl-3">
-            <div class="form-group">
-                <label for="area-measurement">{{ ui_change('rent_mode', 'property_transaction') }}</label>
-                <select id="area-measurement" name="rent_mode-${i}"
-                    class="js-select2-custom form-control">
-                    <option value="0">{{ ui_change('select_rent_mode', 'property_transaction') }}</option>
-                    <option value="1">{{ ui_change('daily', 'property_transaction') }}</option>
-                    <option value="2">{{ ui_change('monthly', 'property_transaction') }}</option>
-                    <option value="3">{{ ui_change('bi_monthly', 'property_transaction') }}</option>
-                    <option value="4">{{ ui_change('quarterly', 'property_transaction') }}</option>
-                    <option value="5">{{ ui_change('half_yearly', 'property_transaction') }}</option>
-                    <option value="6">{{ ui_change('yearly', 'property_transaction') }}</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="col-md-6 col-lg-4 col-xl-3">
-            <div class="form-group">
-                <label for="area-measurement">{{ ui_change('rental_gl', 'property_transaction') }}</label>
-                <select id="area-measurement" name="rental_gl-${i}"
-                    class="js-select2-custom form-control"  onchange="vat_amount_func(${i})">
-                    <option value="0">{{ ui_change('select_rental_gl', 'property_transaction') }}</option>
-                    <option value="0">{{ ui_change('Rental_Income_0%', 'property_transaction') }}</option>
-                    <option value="10">{{ ui_change('Rental_Income_10%', 'property_transaction') }}</option>
-                    <option value="20">{{ ui_change('Rental_Income_20%', 'property_transaction') }}</option>
-                    <option value="30">{{ ui_change('Rental_Income_30%', 'property_transaction') }}</option>
-                </select>
-            </div>
-        </div>
-        <div class="col-md-6 col-lg-4 col-xl-3">
-            <div class="form-group">
-                <label for="total-area">{{ ui_change('VAT_percentage', 'property_transaction') }}</label>
-                <input type="number" readonly name="vat_percentage-${i}" class="form-control text-white"
-                    step="0.001" placeholder="0.000">
-            </div>
-        </div>
-        <div class="col-md-6 col-lg-4 col-xl-3">
-            <div class="form-group">
-                <label for="total-area">{{ ui_change('VAT_amount', 'property_transaction') }}</label>
-                <input type="number" readonly name="vat_amount-${i}" class="form-control text-white" step="0.001"
-                    placeholder="0.000">
-            </div>
-        </div>
-        <div class="col-md-6 col-lg-4 col-xl-12">
-            <div class="form-group">
-                <label
-                    for="total-area">{{ ui_change('total_net_rent_amount', 'property_transaction') }}</label>
-                <input type="number" readonly name="total_net_rent_amount-${i}" class="form-control text-white"
-                    step="0.001" placeholder="0.000">
-            </div>
-        </div>
-        <div class="col-md-6 col-lg-4 col-xl-12">
-            <div class="form-group">
-                <button type="button" class="btn btn--primary form-control" onclick="add_service(${i})">{{ ui_change('add_other_services', 'property_transaction') }}</button>
-            </div>
-        </div>
-        <div class="card-body" id="main_service_content-${i}">
-
-        </div>
-        </div>
-        <div class="card-body">
-            <div  class="row">
-                <div class="col-md-6 col-lg-4 col-xl-3">
-                    <div class="form-group">
-                        <label
-                            for="total-area">{{ ui_change('security_deposit_months_rent', 'property_transaction') }}</label>
-                        <input type="number"  name="security_deposit_months_rent-${i}"
-                            class="form-control" step="0.001" placeholder="0.000" onkeyup="deposite(${i})">
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-4 col-xl-3">
-                    <div class="form-group">
-                        <label
-                            for="total-area">{{ ui_change('security_deposit_amount', 'property_transaction') }}</label>
-                        <input type="number"  name="security_deposit_amount-${i}" class="form-control"
-                            step="0.001" placeholder="0.000">
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-4 col-xl-3">
-                    <div class="form-group">
-                        <label
-                            for="area-measurement">{{ ui_change('is_rent_inclusive_of_ewa', 'property_transaction') }}</label>
-                        <select name="is_rent_inclusive_of_ewa-${i}" class="js-select2-custom form-control">
-                            <option>{{ ui_change('yes', 'property_transaction') }}</option>
-                            <option>{{ ui_change('no', 'property_transaction') }}</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-4 col-xl-3">
-                    <div class="form-group">
-                        <label for="area-measurement">{{ ui_change('ewa_limit_mode', 'property_transaction') }}</label>
-                        <select name="ewa_limit_mode-${i}" class="js-select2-custom form-control">
-                            <option>{{ ui_change('monthly', 'property_transaction') }}</option>
-                            <option>{{ ui_change('yearly', 'property_transaction') }}</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-lg-4 col-xl-3">
-                    <div class="form-group">
-                        <label for="total-area">{{ ui_change('ewa_limit_monthly', 'property_transaction') }}</label>
-                        <input type="number"  name="ewa_limit_monthly-${i}" class="form-control"
-                            step="0.001" value="0.000">
-                    </div>
-                </div>
-                <div class="col-md-12 col-lg-4 col-xl-3">
-                    <div class="form-group">
-                        <label for="">{{ ui_change('lease_break_date', 'property_transaction') }}</label>
-                        <input type="text" class="form-control main_date_func text-white" name="lease_break_date-${i}" value="{{ \Carbon\Carbon::now()->addMonth()->format('d/m/Y') }}">
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-lg-4 col-xl-3">
-                    <div class="form-group">
-                        <label for="area-measurement">{{ ui_change('notice_period', 'property_transaction') }}</label>
-                        <select name="notice_period-${i}" class="js-select2-custom form-control">
-                            <option>{{ ui_change('one_month', 'property_transaction') }}</option>
-                            <option>{{ ui_change('two_month', 'property_transaction') }}</option>
-                            <option>{{ ui_change('three_month', 'property_transaction') }}</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-4 col-xl-6">
-                    <div class="form-group">
-                        <label for="total-area">{{ ui_change('lease_break_comments', 'property_transaction') }}</label>
-                        <input type="text" name="lease_break_comments-${i}" class="form-control">
-                    </div>
-                </div>
-            </div>
-        </div>
+                                    <div class="col-12">
+                                        <div id="installments_table_${i}"></div>
+                                    </div> 
 
                 </div>
             </div>
         `;
+                // container.innerHTML += bladeContent;
+                let tempDiv = document.createElement('div');
+                tempDiv.innerHTML = bladeContent;
+                container.appendChild(tempDiv);
 
-                container.innerHTML += bladeContent;
-                flatpickr(".main_date_func", {
-                    dateFormat: "d/m/Y",
-                    minDate: "today"
-                })
+                attachUnitEvents(i);
             }
 
-        });
+            function attachUnitEvents(itemId) {
 
-        function rent_amount_from_unit(i) {
-            var unit_id = $('select[name="unit-' + i + '"]').val();
-            $.ajax({
-                url: "{{ route('general.get_unit_by_id', ':id') }}".replace(':id', unit_id),
-                type: "GET",
+                let $price = $(`[name="price-${itemId}"]`);
+                let $percentage = $(`[name="advance_percentage-${itemId}"]`);
+                let $advance = $(`[name="advance_amount-${itemId}"]`);
+                let $installments = $(`[name="number_of_installments-${itemId}"]`);
+                let $plan = $(`[name="payment_plan-${itemId}"]`);
+                let $start = $(`[name="start_date-${itemId}"]`);
+                let $table = $(`#installments_table_${itemId}`);
 
-                dataType: "json",
-                success: function(data) {
-                    $('input[name="rent_amount-' + i + '"]').empty();
-                    $('input[name="rent_amount-' + i + '"]').val(data.latest_rent_schedule.rent_amount);
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error occurred:', error);
+                function calculateAdvance() {
+
+                    let price = parseFloat($price.val()) || 0;
+                    let percentage = parseFloat($percentage.val()) || 0;
+
+                    let advanceAmount = (price * percentage) / 100;
+
+                    $advance.val(advanceAmount.toFixed(decimals));
+
+                    generateInstallments();
                 }
+
+                function generateInstallments() {
+
+                    let price = parseFloat($price.val()) || 0;
+                    let advance = parseFloat($advance.val()) || 0;
+                    let installments = parseInt($installments.val()) || 0;
+                    let planValue = parseInt($plan.val()) || 1;
+                    let startVal = $start.val();
+
+                    if (installments <= 0 || !startVal) {
+                        $table.html('');
+                        return;
+                    }
+
+                    let monthStep = 1;
+                    if (planValue == 2) monthStep = 2;
+                    if (planValue == 3) monthStep = 3;
+                    if (planValue == 4) monthStep = 6;
+                    if (planValue == 5) monthStep = 12;
+
+                    let remaining = price - advance;
+                    let installmentAmount = remaining / installments;
+
+                    let parts = startVal.split('/');
+                    let startDate = new Date(parts[2], parts[1] - 1, parts[0]);
+                    let originalDay = startDate.getDate();
+
+                    let html = `
+        <table class="table table-bordered mt-3 text-white">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Due Date</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+        `;
+
+                    for (let x = 0; x < installments; x++) {
+
+                        let installmentDate = new Date(startDate);
+                        installmentDate.setMonth(startDate.getMonth() + (x * monthStep));
+
+                        if (installmentDate.getDate() !== originalDay) {
+                            installmentDate.setDate(0);
+                        }
+
+                        let day = ("0" + installmentDate.getDate()).slice(-2);
+                        let month = ("0" + (installmentDate.getMonth() + 1)).slice(-2);
+                        let year = installmentDate.getFullYear();
+
+                        let formattedDate = `${day}/${month}/${year}`;
+
+                        html += `
+            <tr>
+                <td>${x + 1}</td>
+                <td>
+                    <input type="text" 
+                        name="installment_date_${itemId}[]" 
+                        class="form-control main_date text-white"
+                        value="${formattedDate}">
+                </td>
+                <td>
+                    <input type="number" 
+                        name="installment_amount_${itemId}[]" 
+                        class="form-control"
+                        value="${installmentAmount.toFixed(decimals)}"
+                        step="0.001">
+                </td>
+            </tr>
+            `;
+                    }
+
+                    html += `</tbody></table>`;
+                    $table.html(html);
+
+                    flatpickr(`#installments_table_${itemId} .main_date`, {
+                        dateFormat: "d/m/Y"
+                    });
+                }
+
+                $price.on('input', calculateAdvance);
+                $percentage.on('input', calculateAdvance);
+                $installments.on('input', generateInstallments);
+                $plan.on('change', generateInstallments);
+                $start.on('change', generateInstallments);
+            }
+
+
+            flatpickr(".start_date", {
+                dateFormat: "d/m/Y",
+                minDate: "today",
+                defaultDate: "today"
             });
-        }
-    </script>
-    <script>
-        function agreement_unit_date_clc(i) {
-            var form_unit_date = $(`input[name=period_from-${i}]`).val();
-            if (form_unit_date) {
-                var parts = form_unit_date.split('/');
-                if (parts.length === 3) {
-                    var day = parseInt(parts[0]) - 1;
-                    var month = parseInt(parts[1]) - 1;
-                    var year = parseInt(parts[2]) + 1;
-
-                    var dateObj = new Date(year, month, day);
-                    var formattedDate =
-                        `${dateObj.getDate().toString().padStart(2, '0')}/${(dateObj.getMonth() + 1).toString().padStart(2, '0')}/${dateObj.getFullYear()}`;
-                    $(`input[name=period_to-${i}]`).val(formattedDate);
-
-
-                }
-            }
-        }
+        });
     </script>
     <script>
         function collectUnitValues() {
@@ -1169,14 +734,14 @@
                         </div>
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="period-from-${i}">{{ ui_change('Period_From-_To', 'property_transaction') }}</label>
+                                <label for="period-from-${i}"> ui_change('Period_From-_To' , 'property_transaction') </label>
                                 <div style="display: flex; gap: 10px;">
                                     <input type="date" name="period_from-${i}" id="period-from-${i}" class="form-control">
                                     <input type="date" name="period_to-${i}" id="period-to-${i}" class="form-control">
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="property-type-${i}">{{ ui_change('Property_Type', 'property_transaction') }}</label>
+                                <label for="property-type-${i}"> ui_change('Property_Type' , 'property_transaction') </label>
                                 <select id="property-type-${i}" name="property_type-${i}" class="js-select2-custom form-control">
                                     <option value="">{{ ui_change('any', 'property_transaction') }}</option>
                                     @foreach ($property_types as $property_type)
@@ -1185,21 +750,21 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="city-${i}">{{ ui_change('City', 'property_transaction') }}</label>
+                                <label for="city-${i}"> ui_change('City' , 'property_transaction') </label>
                                 <input type="text" id="city-${i}" name="city-${i}" class="form-control">
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="total-area-${i}">{{ ui_change('Total_Area_Required', 'property_transaction') }}</label>
+                                <label for="total-area-${i}"> ui_change('Total_Area_Required' , 'property_transaction') </label>
                                 <input type="number" id="total-area-${i}" name="total_area-${i}" class="form-control" step="0.001" value="0.000">
                             </div>
                             <div class="form-group">
-                                <label for="area-measurement-${i}">{{ ui_change('Area_Measurement', 'property_transaction') }}</label>
+                                <label for="area-measurement-${i}"> ui_change('Area_Measurement' , 'property_transaction') </label>
                                 <select id="area-measurement-${i}" name="area_measurement-${i}" class="js-select2-custom form-control">
-                                    <option>{{ ui_change('Select_Area_Measurement', 'property_transaction') }}</option>
-                                    <option>{{ ui_change('Sq._Mtr.', 'property_transaction') }}</option>
-                                    <option>{{ ui_change('Sq._Ft.', 'property_transaction') }}</option>
+                                    <option> ui_change('Select_Area_Measurement' , 'property_transaction') </option>
+                                    <option> ui_change('Sq._Mtr.' , 'property_transaction') </option>
+                                    <option> ui_change('Sq._Ft.' , 'property_transaction') </option>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -1224,17 +789,17 @@
     </script>
 
     <script>
-        $('select[name=tenant_id]').on('change', function() {
-            var tenant_id = $(this).val();
-            if (tenant_id) {
+        $('select[name=customer_id]').on('change', function() {
+            var customer_id = $(this).val();
+            if (customer_id) {
                 $.ajax({
-                    url: "{{ URL::to('enquiry/get_tenant') }}/" + tenant_id,
+                    url: "{{ URL::to('sales/enquiry/get_customer') }}/" + customer_id,
                     type: "GET",
                     dataType: "json",
                     success: function(data) {
                         if (data) {
-                            $('input[name="tenant_type"]').empty();
-                            $('input[name="tenant_type"]').val(data.type);
+                            $('input[name="customer_type"]').empty();
+                            $('input[name="customer_type"]').val(data.type);
                             if (data.type == 'company') {
                                 $("#company-form").removeClass('d-none').addClass('active');
                                 $("#personal-form").removeClass('active').addClass('d-none');
@@ -1245,8 +810,8 @@
                                 $("#docs_personal_id").addClass('d-none');
                             }
                             $('input[name="name"]').empty();
-                            // $('input[name="tenant_type"]').empty();
-                            // $('input[name="tenant_type"]').val(data.tenant_type);
+                            // $('input[name="customer_type"]').empty();
+                            // $('input[name="customer_type"]').val(data.customer_type);
                             $('input[name="name"]').empty();
                             $('input[name="name"]').val(data.name);
                             $('input[name="id_number"]').empty();
@@ -1339,19 +904,6 @@
                             }
                             $('select[name="business_activity_id"]').val(business_activity_id_value)
                                 .change();
-                            // $('input[name="region"]').empty();
-                            // $('input[name="region"]').val(data.region.name);
-                            // $('input[name="currency"]').empty();
-                            // $('input[name="currency"]').val(data.currency_name);
-                            // $('input[name="symbol"]').empty();
-                            // $('input[name="symbol"]').val(data.currency_symbol);
-                            // $('input[name="international_currency_code"]').empty();
-                            // $('input[name="international_currency_code"]').val(data
-                            //     .international_currency_code);
-                            // $('input[name="denomination"]').empty();
-                            // $('input[name="denomination"]').val(data.denomination_name);
-                            // $('input[name="decimals"]').empty();
-                            // $('input[name="decimals"]').val(data.no_of_decimals);
 
 
                         } else {}

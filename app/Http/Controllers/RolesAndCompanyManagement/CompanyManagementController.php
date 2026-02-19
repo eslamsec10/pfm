@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\RolesAndCompanyManagement;
 
 use Carbon\Carbon;
@@ -52,13 +53,13 @@ class CompanyManagementController extends Controller
         $user           = (new User())->setConnection('tenant')->first();
         $country        = (new CountryMaster())->setConnection('tenant')->get();
         $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
-        $levies         = Levy::select('id' , 'name' ,'percentage')->get(); 
+        $levies         = Levy::select('id', 'name', 'percentage')->get();
         $data = [
             'company'           => $company,
             'country'           => $country,
             'dail_code_main'    => $dail_code_main,
             'user'              => $user,
-            'levies'            => $levies 
+            'levies'            => $levies
 
         ];
         return view("admin-views.companies.edit", $data);
@@ -335,7 +336,7 @@ class CompanyManagementController extends Controller
                 "levy_date"                             => $levy_applicable_date,
             ]);
 
-           
+
             (new User())->setConnection('tenant')->first()->update([
                 'user_name' => $request->user_name ?? null,
                 'password'  => Hash::make($request->password),
@@ -379,7 +380,6 @@ class CompanyManagementController extends Controller
                 }
                 $signature->move($signaturePath, $imageNameSignature);
                 $company->update(['signature' => $imageNameSignature]);
-
             }
             if ($request->hasFile('seal')) {
                 $sealPath = public_path('seal/' . $request->name);
@@ -442,5 +442,4 @@ class CompanyManagementController extends Controller
 
         return response()->json(['error' => 'Country not found'], 404);
     }
-
 }

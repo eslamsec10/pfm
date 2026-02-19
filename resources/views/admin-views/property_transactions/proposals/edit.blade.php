@@ -83,7 +83,7 @@
                             <div class="form-group">
                                 <label for="">{{  ui_change('tenant_type' , 'property_transaction')  }}</label>
                                 <input type="text" class="form-control" name="tenant_type" readonly class="form-control"
-                                    value="{{ $proposal->tenant->type }}">
+                                    value="{{ $proposal->tenant?->type }}">
                             </div>
                             @error('tenant_type')
                                 <div class="invalid-feedback">

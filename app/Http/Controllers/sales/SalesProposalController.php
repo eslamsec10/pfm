@@ -165,6 +165,57 @@ class SalesProposalController extends Controller
         }
     }
 
+
+    public function edit($id)
+    {
+        $proposal              = SalesProposal::findOrFail($id);
+        $proposal_unit_details = SalesProposalUnit::where('proposal_id', $id)->get();
+        $customers                  = PropertyCustomer::select('id', 'name', 'company_name', 'type')->paginate();
+        $unit_management_all  = UnitManagement::select('id', 'sales_price', 'property_management_id', 'booking_status', 'view_id', 'unit_type_id', 'unit_condition_id', 'unit_description_id', 'unit_id', 'block_management_id', 'floor_management_id')
+            ->with(
+                'block_unit_management',
+                'property_unit_management',
+                'block_unit_management.block',
+                'floor_unit_management.floor_management_main',
+                'floor_unit_management',
+                'unit_management_main',
+                'unit_description',
+                'unit_type',
+                'view',
+                'unit_condition'
+            )->lazy();
+
+        $company = (new Company())->setConnection('tenant')->where('id', auth()->user()->company_id)->first() ?? (new Company())->setConnection('tenant')->first();
+
+        $country_master           = (new CountryMaster())->setConnection('tenant')->get();
+        $live_withs               = DB::connection('tenant')->table('live_withs')->get();
+        $business_activities      = DB::connection('tenant')->table('business_activities')->get();
+        $buildings                = PropertyManagement::forUser()->get();
+        $unit_descriptions        = DB::connection('tenant')->table('unit_descriptions')->get();
+        $unit_conditions          = DB::connection('tenant')->table('unit_conditions')->get();
+        $unit_types               = DB::connection('tenant')->table('unit_types')->get();
+        $views                    = DB::connection('tenant')->table('views')->get();
+        $property_types           = DB::connection('tenant')->table('property_types')->get();
+        $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
+        $data                     = [
+            'proposal'                  => $proposal,
+            'unit_types'               => $unit_types,
+            'views'                    => $views,
+            'unit_conditions'          => $unit_conditions,
+            'unit_descriptions'        => $unit_descriptions,
+            'buildings'                => $buildings,
+            'country_master'           => $country_master,
+            'live_withs'               => $live_withs,
+            'business_activities'      => $business_activities,
+            'customers'                  => $customers,
+            'property_types'           => $property_types,
+            'proposal_unit_details'     => $proposal_unit_details,
+            'unit_management_all'      => $unit_management_all,
+            'dail_code_main'            => $dail_code_main,
+            'company'                   => $company,
+        ];
+        return view('admin-views.sales.proposals.edit', $data);
+    }
     public function add_to_booking($id)
     {
         $proposal                  = SalesProposal::with('proposal_units', 'customer')->findOrFail($id);

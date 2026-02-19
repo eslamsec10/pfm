@@ -869,16 +869,7 @@
                 }
             });
         });
-        // $('select[name="tax_type"]').on('change', function() {
-        //         var tax_type = $(this).val();
-        //         var $tax_rate_input = $('input[name="tax_rate"]');
-
-        //         if (tax_type === 'exempted' || tax_type === 'taxable') {
-        //             $tax_rate_input.removeAttr('disabled').val('0');
-        //         } else if (tax_type === 'zero_rated' || tax_type === 'non_taxable') {
-        //             $tax_rate_input.attr('disabled', 'disabled').val('0');
-        //         }
-        //     });
+         
     </script>
     <script>
         flatpickr("#financial_year_start_edit", {
@@ -1048,17 +1039,21 @@
             $("input[data-role=tagsinput], select[multiple][data-role=tagsinput]").tagsinput();
         }
 
-        $('#colors-selector').on('change', function() {
-            update_sku();
-            $('#color_switcher').prop('checked') {
-                color_wise_image($('#colors-selector'));
-            }
-            $('.remove_button').on('click', function() {
-                alert('ok');
-                $(this).parents('.upload_images').find('.color_image').attr('src',
-                    '{{ asset('assets/back-end/img/400x400/img2.jpg') }}')
-            })
-        });
+     $('#colors-selector').on('change', function() {
+    update_sku();
+
+    if ($('#color_switcher').prop('checked')) {
+        color_wise_image($('#colors-selector'));
+    }
+
+    $('.remove_button').on('click', function() {
+        alert('ok');
+        $(this).parents('.upload_images')
+            .find('.color_image')
+            .attr('src', '{{ asset('assets/back-end/img/400x400/img2.jpg') }}');
+    });
+});
+
 
 
         function color_wise_image(t) {

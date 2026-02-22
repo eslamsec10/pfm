@@ -512,24 +512,36 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="d-flex flex-wrap gap-3">
+                        <div class="col-md-6 col-lg-4 col-xl-3 ">
                             <div class="tax_status_html tax_status_saudi_html">
                                 <label class="title-color">{{ ui_change('vat_no', 'hierarchy') }}</label>
                                 <input type="text" name="vat_no" class="form-control"
                                     value="{{ old('vat_no', $company->vat_no) }}">
                             </div>
-
+                        </div>
+                        <div class="col-md-6 col-lg-4 col-xl-3 ">
                             <div class="tax_status_html tax_status_saudi_html">
                                 <label class="title-color">{{ ui_change('group_vat_no', 'hierarchy') }}</label>
                                 <input type="text" name="group_vat_no" class="form-control"
                                     value="{{ old('group_vat_no', $company->group_vat_no) }}">
                             </div>
-
+                        </div>
+                        <div class="col-md-6 col-lg-4 col-xl-3 ">
                             <div class="tax_status_html tax_status_saudi_html">
                                 <label class="title-color">{{ ui_change('tax_registration_date', 'hierarchy') }}</label>
                                 <input type="date" name="tax_reg_date" id="tax_registration_date_edit"
                                     class="form-control" value="{{ old('tax_reg_date', $company->tax_reg_date) }}">
                             </div>
+                        </div>
+                      
+                        <div class="col-md-6 col-lg-4 col-xl-3 ">
+                            <div class="tax_status_html" style="{{ old('tax_type', $company->tax_type) == 1 }}">
+                                <label class="title-color">{{ ui_change('tax_rate', 'hierarchy') }}</label>
+                                <input type="number" name="tax_rate" class="form-control"
+                                    value="{{ old('tax_rate', $company->tax_rate) }}">
+                            </div>
+                        </div>
+                          <div class="col-md-6 col-lg-4 col-xl-3 ">
                             <div class="tax_status_html tax_status_saudi_html">
                                 <div>
                                     <input type="radio" name="status" value="active"
@@ -541,15 +553,7 @@
                                     <label class="title-color">{{ ui_change('inactive', 'hierarchy') }}</label>
                                 </div>
                             </div>
-
-                            <div class="tax_status_html"
-                                style="{{ old('tax_type', $company->tax_type) == 1 && $isSaudi != 2 ? '' : 'display:none;' }}">
-                                <label class="title-color">{{ ui_change('tax_rate', 'hierarchy') }}</label>
-                                <input type="text" name="tax_rate" class="form-control"
-                                    value="{{ old('tax_rate', $company->tax_rate) }}">
-                            </div>
                         </div>
-
                         {{-- 
             <div class="col-md-6 col-lg-4 col-xl-3 {{ old('tax_type', $company->tax_type) == 1 ? '' : 'd-none' }} tax_status_html tax_status_saudi_html">
                 <div class="form-group">
@@ -869,7 +873,6 @@
                 }
             });
         });
-         
     </script>
     <script>
         flatpickr("#financial_year_start_edit", {
@@ -1039,20 +1042,20 @@
             $("input[data-role=tagsinput], select[multiple][data-role=tagsinput]").tagsinput();
         }
 
-     $('#colors-selector').on('change', function() {
-    update_sku();
+        $('#colors-selector').on('change', function() {
+            update_sku();
 
-    if ($('#color_switcher').prop('checked')) {
-        color_wise_image($('#colors-selector'));
-    }
+            if ($('#color_switcher').prop('checked')) {
+                color_wise_image($('#colors-selector'));
+            }
 
-    $('.remove_button').on('click', function() {
-        alert('ok');
-        $(this).parents('.upload_images')
-            .find('.color_image')
-            .attr('src', '{{ asset('assets/back-end/img/400x400/img2.jpg') }}');
-    });
-});
+            $('.remove_button').on('click', function() {
+                alert('ok');
+                $(this).parents('.upload_images')
+                    .find('.color_image')
+                    .attr('src', '{{ asset('assets/back-end/img/400x400/img2.jpg') }}');
+            });
+        });
 
 
 

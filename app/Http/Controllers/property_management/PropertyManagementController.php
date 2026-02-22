@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers\property_management;
 
-use Carbon\Carbon;
-use App\Models\Ownership;
-use App\Models\PropertyType;
-use Illuminate\Http\Request;
-use App\Models\CountryMaster;
-use App\Models\general\Groups;
-use App\Models\facility\Supplier;
-use App\Models\PropertyManagement;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\Company;
+use App\Models\CountryMaster;
+use App\Models\facility\Supplier;
+use App\Models\general\Groups;
 use App\Models\hierarchy\CostCenterCategory;
+use App\Models\Ownership;
+use App\Models\PropertyManagement;
+use App\Models\PropertyType;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PropertyManagementController extends Controller
 {
@@ -46,19 +47,23 @@ class PropertyManagementController extends Controller
         $property_type  = (new PropertyType())->setConnection('tenant')->all();
         $owner_ship     = (new Ownership())->setConnection('tenant')->all();
         $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
+        $company = (new Company())->setConnection('tenant')->where('id', auth()->user()->company_id)->first() ?? (new Company())->setConnection('tenant')->first();
 
         $data = [
             "property_type"  => $property_type,
             "owner_ship"     => $owner_ship,
             "country_master" => $country_master,
             'dail_code_main' => $dail_code_main,
-            'suppliers'      => $suppliers,
+            'suppliers'      => $suppliers,            
+            'company'        => $company,
+
         ];
         return view("admin-views.property_management.property.create", $data);
     }
     public function edit($id)
     {
         $suppliers = Supplier::select('id', 'name')->get();
+        $company = (new Company())->setConnection('tenant')->where('id', auth()->user()->company_id)->first() ?? (new Company())->setConnection('tenant')->first();
 
         $country_master      = (new CountryMaster())->setConnection('tenant')->all();
         $property_type       = (new PropertyType())->setConnection('tenant')->all();
@@ -73,6 +78,7 @@ class PropertyManagementController extends Controller
             "property_management" => $property_management,
             'dail_code_main'      => $dail_code_main,
             'suppliers'           => $suppliers,
+            'company'             => $company,
 
         ];
         return view("admin-views.property_management.property.edit", $data);
@@ -94,7 +100,7 @@ class PropertyManagementController extends Controller
             if ($buildingCount <= $building_management_count) {
                 return redirect()->back()->with("error", __('general.you_have_reached_the_maximum_limit'));
             }
-            $master_group                                                      = (new Groups())->setConnection('tenant')->where('id', 48)->first();
+            // $master_group                                                      = (new Groups())->setConnection('tenant')->where('id', 48)->first();
             ($request->insurance_period_to != null) ? $insurance_period_to     = Carbon::createFromFormat('d/m/Y', $request->insurance_period_to)->format('Y-m-d') : $insurance_period_to     = null;
             ($request->insurance_period_from != null) ? $insurance_period_from = Carbon::createFromFormat('d/m/Y', $request->insurance_period_from)->format('Y-m-d') : $insurance_period_from = null;
             ($request->established_on != null) ? $established_on               = Carbon::createFromFormat('d/m/Y', $request->established_on)->format('Y-m-d') : $established_on               = null;
@@ -114,6 +120,7 @@ class PropertyManagementController extends Controller
                 'established_on'        => $established_on,
                 'registration_on'       => $registration_on,
                 'tax_no'                => $request->input('tax_no'),
+                'tax_rate'              => $request->input('tax_rate'),
                 'municipality_no'       => $request->input('municipality_no'),
                 'electricity_no'        => $request->input('electricity_no'),
                 'land_lord_name'        => $request->input('land_lord_name'),
@@ -179,7 +186,7 @@ class PropertyManagementController extends Controller
         ]);
         DB::beginTransaction();
         try {
-            $master_group = (new Groups())->setConnection('tenant')->where('id', 48)->first();
+            // $master_group = (new Groups())->setConnection('tenant')->where('id', 48)->first();
 
             $property_management                                               = (new PropertyManagement())->setConnection('tenant')->findOrFail($id);
             ($request->insurance_period_to != null) ? $insurance_period_to     = Carbon::createFromFormat('d/m/Y', $request->insurance_period_to)->format('Y-m-d') : $insurance_period_to     = null;
@@ -202,6 +209,7 @@ class PropertyManagementController extends Controller
                 'established_on'        => $established_on,
                 'registration_on'       => $registration_on,
                 'tax_no'                => $request->input('tax_no'),
+                'tax_rate'              => $request->input('tax_rate'),
                 'municipality_no'       => $request->input('municipality_no'),
                 'electricity_no'        => $request->input('electricity_no'),
                 'land_lord_name'        => $request->input('land_lord_name'),

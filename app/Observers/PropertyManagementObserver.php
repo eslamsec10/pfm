@@ -3,11 +3,15 @@
 namespace App\Observers;
 
 use App\Models\general\Groups;
-use App\Models\PropertyManagement;
 use App\Models\hierarchy\CostCenterCategory;
+use App\Models\hierarchy\MainLedger;
+use App\Models\PropertyManagement;
+use App\Models\UnitManagement; 
+use Illuminate\Support\Facades\Log;
 
 class PropertyManagementObserver
 {
+
     public function created(PropertyManagement $property)
     {
         $master_group = (new Groups())
@@ -46,8 +50,27 @@ class PropertyManagementObserver
 
         // ================= UPDATE PROPERTY =================
         $property->update([
-            'group_id'        => $group->id,       
-            'cost_center_category_id'  => $costCenter->id,    
+            'group_id'        => $group->id,
+            'cost_center_category_id'  => $costCenter->id,
         ]);
+    }
+    public function updated(PropertyManagement $property)
+    {
+        
+        if (!$property->wasChanged('tax_rate')) {
+            return;
+        }
+        $unit_management = UnitManagement::where('property_management_id', $property->id)->get(); 
+        $group = Groups::where('property_id', $property->id)->first(); 
+        if(!$group){
+            return;
+        }
+        foreach ($unit_management as $unit) {
+            $ledger = MainLedger::where('group_id', $group->id)->first();
+            $ledger->update([
+                'main_type'         => 'unit',
+                'tax_rate'          =>  $group->tax_rate
+            ]);
+        }
     }
 }

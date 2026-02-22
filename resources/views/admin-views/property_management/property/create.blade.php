@@ -100,6 +100,20 @@
                         </div>
                         <div class="col-md-6 col-lg-4 col-xl-4">
                             <div class="form-group">
+                                <label for="name" class="title-color">{{ ui_change('tax_rate' , 'property_config') }}<span
+                                        class="text-danger"> *</span>
+
+                                </label>
+                                <input class="form-control" type="number" value="{{ $company->tax_rate }}" name="tax_rate" required/>
+                                @error('tax_rate')
+                                    <div class="invalid-feedback">
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4 col-xl-4">
+                            <div class="form-group">
                                 <label for="name" class="title-color">{{ ui_change('property_type' , 'property_config') }}<span
                                         class="text-danger"> *</span>
 

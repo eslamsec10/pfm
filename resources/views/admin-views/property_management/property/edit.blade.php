@@ -106,6 +106,20 @@
                                 @enderror
                             </div>
                         </div>
+                             <div class="col-md-6 col-lg-4 col-xl-4">
+                            <div class="form-group">
+                                <label for="name" class="title-color">{{ ui_change('tax_rate' , 'property_config') }}<span
+                                        class="text-danger"> *</span>
+
+                                </label>
+                                <input class="form-control" type="number" value="{{  $property_management->tax_rate ?? $company->tax_rate }}" name="tax_rate" required/>
+                                @error('tax_rate')
+                                    <div class="invalid-feedback">
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
+                        </div>
                         <div class="col-md-6 col-lg-4 col-xl-4">
                             <div class="form-group">
                                 <label for="name"
@@ -237,9 +251,7 @@
             <div class="card mt-3">
                 <div class="card-body">
                     <input type="hidden" name="status" value="approved">
-                    <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 pl-4">
-                        {{-- <img src="{{ asset('/assets/back-end/img/seller-information.png') }}" class="mb-1"
-                            alt=""> --}}
+                    <h5 class="mb-0 text-capitalize d-flex align-items-center gap-2 border-bottom pb-3 mb-4 pl-4"> 
                         {{ ui_change('personal_info', 'property_config') }}
                     </h5>
                     <div class="row">

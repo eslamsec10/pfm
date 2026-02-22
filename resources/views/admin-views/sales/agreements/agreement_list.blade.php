@@ -125,13 +125,18 @@
                                             <td>
                                                 <div class="d-flex justify-content-center gap-2">
 
-                                                  
 
+                                                    <a class="btn btn-outline--primary btn-sm square-btn"
+                                                        title="{{ ui_change('installments', 'property_transaction') }}"
+                                                        href="{{ route('sales.installment.list', [$agreement_item->id]) }}">
+                                                        <i class="tio-info"></i>
+                                                    </a>
                                                     <a class="btn btn-outline--primary btn-sm square-btn"
                                                         title="{{ ui_change('edit', 'property_transaction') }}"
                                                         href="{{ route('sales.agreement.edit', [$agreement_item->id]) }}">
                                                         <i class="tio-edit"></i>
                                                     </a>
+
 
                                                     @if ($agreement_item->booking_status == 'agreement')
                                                         <a class="btn btn-outline-danger btn-sm delete square-btn"
@@ -318,7 +323,7 @@
                         success: function() {
                             toastr.success(
                                 "{{ ui_change('deleted_successfully', 'property_transaction') }}"
-                                );
+                            );
                             location.reload();
                         }
                     });

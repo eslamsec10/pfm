@@ -2,12 +2,13 @@
 
 namespace App\Observers;
 
-use App\Models\User;
+use App\Models\Company;
 use App\Models\general\Groups;
-use App\Models\UnitManagement;
 use App\Models\hierarchy\CostCenter;
-use App\Models\hierarchy\MainLedger;
 use App\Models\hierarchy\CostCenterCategory;
+use App\Models\hierarchy\MainLedger;
+use App\Models\UnitManagement;
+ 
 
 
 class UnitManagementObserver
@@ -15,8 +16,7 @@ class UnitManagementObserver
     public function created(UnitManagement $unitManagement)
     {
         // ================= COMPANY =================
-        $company = auth()->user()
-            ?? (new User())->setConnection('tenant')->first();
+        $company =   (new Company())->setConnection('tenant')->first();
 
         // ================= GROUP (PROPERTY GROUP) =================
         $group = (new Groups())
@@ -42,9 +42,10 @@ class UnitManagementObserver
                     ?->id ?? 1,
                 'group_id'            => $group?->id,
                 'main_id'             => $unitManagement->id,
+                'main_type'           => 'unit',
                 'is_taxable'          => $group?->is_taxable ?? 0,
                 'vat_applicable_from' => $group?->vat_applicable_from,
-                'tax_rate'            => $group?->tax_rate ?? 0,
+                'tax_rate'            => $group?->tax_rate ?? $company?->tax_rate,
                 'tax_applicable'      => $group?->tax_applicable ?? 0,
                 'status'              => 'active',
             ]);

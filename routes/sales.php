@@ -3,6 +3,7 @@
 use App\Http\Controllers\property_management\DailyRentListController;
 use App\Http\Controllers\property_management\SalesPriceListController;
 use App\Http\Controllers\property_transactions\EnquiryController;
+use App\Http\Controllers\sales\InstallmentController;
 use App\Http\Controllers\sales\PropertyCustomerController;
 use App\Http\Controllers\sales\SalesAgreementController;
 use App\Http\Controllers\sales\SalesBookingController;
@@ -178,3 +179,13 @@ Route::group(['prefix' => 'sales/agreement', 'as' => 'sales.','middleware' => 'a
     Route::get('schedule/{id}', [SalesAgreementController::class, 'schedule'])->name('agreement.schedule');
   
 });
+
+
+
+// Installment Management
+Route::group(['prefix' => 'sales/installment', 'as' => 'sales.installment.','middleware' => 'auth:web'], function () {
+    Route::get('/{id}', [InstallmentController::class, 'list'])->name('list'); 
+    Route::get('/', [InstallmentController::class, 'index'])->name('index'); 
+  
+});
+

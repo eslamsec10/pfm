@@ -6,5 +6,6 @@
         <li class="{{ Request::is('sales/proposal*') ? 'active':'' }}"><a href="{{ route('sales.proposal.index') }}">{{ui_change('proposals' , 'property_master')}}</a></li> 
         <li class="{{ Request::is('sales/booking*') ? 'active':'' }}"><a href="{{ route('sales.booking.index') }}">{{ui_change('bookings' , 'property_master')}}</a></li> 
         <li class="{{ Request::is('sales/agreement*') ? 'active':'' }}"><a href="{{ route('sales.agreement.index') }}">{{ui_change('agreements' , 'property_master')}}</a></li> 
+        <li class="{{ Request::is('sales/installment*') ? 'active':'' }}"><a href="{{ route('sales.installment.index') }}">{{ui_change('installment' , 'property_master')}}</a></li> 
     </ul>
 </div>

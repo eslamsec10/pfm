@@ -6,7 +6,7 @@ use App\Models\general\Groups;
 use App\Models\hierarchy\CostCenterCategory;
 use App\Models\hierarchy\MainLedger;
 use App\Models\PropertyManagement;
-use App\Models\UnitManagement; 
+use App\Models\UnitManagement;
 use Illuminate\Support\Facades\Log;
 
 class PropertyManagementObserver
@@ -56,21 +56,32 @@ class PropertyManagementObserver
     }
     public function updated(PropertyManagement $property)
     {
-        
+
         if (!$property->wasChanged('tax_rate')) {
             return;
         }
-        $unit_management = UnitManagement::where('property_management_id', $property->id)->get(); 
-        $group = Groups::where('property_id', $property->id)->first(); 
-        if(!$group){
+        $unit_management = UnitManagement::where('property_management_id', $property->id)->get();
+        $group = Groups::where('property_id', $property->id)->first();
+        if (!$group) {
             return;
         }
+        $group->update([
+            'is_taxable' => 1,
+            'tax_rate' => $property->tax_rate,
+        ]);
         foreach ($unit_management as $unit) {
-            $ledger = MainLedger::where('group_id', $group->id)->first();
+            $ledger = MainLedger::where('group_id', $group->id)->where('main_id' , $unit->id)->first();
+            Log::info($ledger);
             $ledger->update([
                 'main_type'         => 'unit',
-                'tax_rate'          =>  $group->tax_rate
+                'tax_rate'          =>  $group->tax_rate,
+                'is_taxable'        => 1,
             ]);
         }
+    }
+
+    public function deleted(PropertyManagement $property)
+    {
+        Groups::where('property_id', $property->id)->delete();
     }
 }

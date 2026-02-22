@@ -8,7 +8,7 @@ use App\Models\hierarchy\CostCenter;
 use App\Models\hierarchy\CostCenterCategory;
 use App\Models\hierarchy\MainLedger;
 use App\Models\UnitManagement;
- 
+
 
 
 class UnitManagementObserver
@@ -76,5 +76,15 @@ class UnitManagementObserver
             'ledger_id'       => $ledger->id,
             'cost_center_id'  => $costCenter->id,
         ]);
+    }
+
+    public function deleted(UnitManagement $unitManagement)
+    {
+        $ledger = MainLedger::where('main_id', $unitManagement->id)->where('main_type', 'unit')->first();
+
+        if (!$ledger) {
+
+            $ledger->delete();
+        }
     }
 }

@@ -9,8 +9,7 @@
 
 @section('content')
     @php
-        $lang = Session::get('locale');
-        $company = (new App\Models\Company())->setConnection('tenant')->select('decimals')->first();
+        $lang = Session::get('locale'); 
     @endphp
     <div class="content container-fluid">
         <!-- Page Title -->
@@ -326,7 +325,7 @@
                     var dateObj = new Date(year, month, day);
                     var formattedDate =
                         `${dateObj.getDate().toString().padStart(2, '0')}/${(dateObj.getMonth() + 1).toString().padStart(2, '0')}/${dateObj.getFullYear()}`;
-                     
+
                     $(`.general_period_date_to`).val(formattedDate)
 
                 }
@@ -386,6 +385,9 @@
                 success: function(data) {
                     if (data.length > 0) {
                         $('select[name="unit-' + i + '"]').empty();
+                        $('select[name="unit-' + i + '"]').append(
+                            '<option value="">select</option>'
+                        );
                         $.each(data, function(key, value) {
                             let isBooked = '';
                             if (value.booking_status === 'agreement') {
@@ -450,6 +452,7 @@
         }
 
         function rent_mode_amount(i) {
+           
             var amount = parseFloat($('input[name="amount-' + i + '"]').val()) || 0;
             var total_area_amount = parseFloat($('input[name="total_area_amount-' + i + '"]').val());
             var decimals = parseFloat($('#decimals').val()) || 0;
@@ -465,12 +468,12 @@
         function vat_amount_func(i) {
             var rent_amount = parseFloat($('input[name="rent_amount-' + i + '"]').val()) || 0;
             var rental_gl = parseFloat($('select[name="rental_gl-' + i + '"]').val()) || 0;
-            var vat_percentage = $('input[name="vat_percentage-' + i + '"]').empty();
+            var vat_percentage = $('input[name="vat_percentage-' + i + '"]').val();
             var decimals = parseFloat($('#decimals').val()) || 0;
-            var vat_amount = (rent_amount * rental_gl) / 100;
+            var vat_amount = (rent_amount * vat_percentage) / 100;
             var total_net_rent_amount = parseFloat(vat_amount) + parseFloat(rent_amount);
             $('input[name="vat_amount-' + i + '"]').val(vat_amount.toFixed(decimals));
-            $('input[name="vat_percentage-' + i + '"]').val(rental_gl.toFixed(decimals));
+            // $('input[name="vat_percentage-' + i + '"]').val(rental_gl.toFixed(decimals));
             $('input[name="total_net_rent_amount-' + i + '"]').val(total_net_rent_amount.toFixed(decimals));
         }
 
@@ -509,10 +512,10 @@
                     </button>
         <div class="col-md-6 col-lg-4 col-xl-3">
             <div class="form-group">
-                <label for="charge_mode-${i}-${counters[i]}" class="form-control-label"> {{ ui_change('Charge_Mode' , 'property_transaction') }} </label> <span class="starColor">*</span>
+                <label for="charge_mode-${i}-${counters[i]}" class="form-control-label"> {{ ui_change('Charge_Mode', 'property_transaction') }} </label> <span class="starColor">*</span>
                 <select name="charge_mode-${i}-${counters[i]}[]" class="form-control"
                     onchange="charge_type(${i},${counters[i]}) , amount_charge_func(${i},${counters[i]}) , percentage_amount_charge_func(${i},${counters[i]})">
-                    <option value="0"> {{ ui_change('Select_Other_Charge_Type' , 'property_transaction') }} </option>
+                    <option value="0"> {{ ui_change('Select_Other_Charge_Type', 'property_transaction') }} </option>
                     @foreach ($services_master as $service_master_item)
                         <option value="{{ $service_master_item->id }}">{{ $service_master_item->name }}</option>
                     @endforeach
@@ -667,6 +670,24 @@
             $('input[name="vat_amount-' + i + '-' + j + '[]"]').val(total_vat_service.toFixed(decimals));
             $('input[name="calculate_amount-' + i + '-' + j + '[]"]').val(amount_val.toFixed(decimals));
             $('input[name="total_amount-' + i + '-' + j + '[]"]').empty().val(total_amount_val.toFixed(decimals));
+        }
+
+        function ledger(element, id) { 
+            var unit_id = element.value;
+            $.ajax({
+                url: "{{ route('get_ledger',':id') }}".replace(':id' ,unit_id ),
+                type: "GET", 
+                dataType: "json",
+                success: function(data) { 
+                    $('select[name="rental_gl-' + id + '"]').append(
+                            '<option value="'+data.id +'">'+ data.name +'</option>'
+                        );
+                    $('input[name="vat_percentage-' + id+ '"]' ).val(data.tax_rate);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error occurred:', error);
+                }
+            });
         }
 
         function percentage_amount_charge_func(i, j) {
@@ -844,7 +865,7 @@
 
             <div class="form-group">
                 <label for="area-measurement">{{ ui_change('unit', 'property_transaction') }}</label>
-                <select id="area-measurement" name="unit-${i}" onchange="(rent_amount_from_unit(${i}))"
+                <select id="area-measurement" name="unit-${i}" onchange="(rent_amount_from_unit(${i}));ledger(this,${i})"
                     class="js-select2-custom form-control">
                     <option>{{ ui_change('select_unit', 'property_transaction') }}</option>
                 </select>
@@ -942,12 +963,7 @@
             <div class="form-group">
                 <label for="area-measurement">{{ ui_change('rental_gl', 'property_transaction') }}</label>
                 <select id="area-measurement" name="rental_gl-${i}"
-                    class="js-select2-custom form-control"  onchange="vat_amount_func(${i})">
-                    <option value="0">{{ ui_change('select_rental_gl', 'property_transaction') }}</option>
-                    <option value="0">{{ ui_change('Rental_Income_0%', 'property_transaction') }}</option>
-                    <option value="10">{{ ui_change('Rental_Income_10%', 'property_transaction') }}</option>
-                    <option value="20">{{ ui_change('Rental_Income_20%', 'property_transaction') }}</option>
-                    <option value="30">{{ ui_change('Rental_Income_30%', 'property_transaction') }}</option>
+                    class="js-select2-custom form-control"  onchange="vat_amount_func(${i})"> 
                 </select>
             </div>
         </div>

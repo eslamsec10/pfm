@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\hierarchy\MainLedger;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -15,5 +16,8 @@ class ProposalUnits extends Model
     }
      public function unit_management(){
         return $this->belongsTo(UnitManagement::class , 'unit_id');
+    }
+     public function rental(){
+        return $this->belongsTo(MainLedger::class , 'rental_gl');
     }
 }

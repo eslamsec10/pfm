@@ -136,8 +136,8 @@
 
 @section('content')
     <div class="content container-fluid">
-        {{-- <button class="btn btn--primary mt-3" onclick="printInvoice()">{{ ui_change('print', 'property_report') }}</button> --}}
-        <a class="btn btn--primary mt-3" target="_blank" href="{{ route('invoice.pdf' , $invoice->id) }}">{{ ui_change('print', 'property_report') }}</a>
+        <button class="btn btn--primary mt-3" onclick="printInvoice()">{{ ui_change('print', 'property_report') }}</button>
+        {{-- <a class="btn btn--primary mt-3" target="_blank" href="{{ route('invoice.pdf' , $invoice->id) }}">{{ ui_change('print', 'property_report') }}</a> --}}
 
 
         <div class="row mt-20">

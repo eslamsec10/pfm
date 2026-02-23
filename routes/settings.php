@@ -9,6 +9,7 @@ use App\Http\Controllers\settings\ComplaintSettingsController;
 use App\Http\Controllers\settings\NotificationSettingsController;
 use App\Http\Controllers\Room_Reservation\ReservationSettingsController;
 use App\Http\Controllers\property_transactions\PropertyTransactionSettingsController;
+use App\Http\Controllers\property_transactions\ProposalController;
 
 Route::group(["prefix" => "settings", 'middleware' => 'auth:web'], function () {
     Route::group(["prefix" => "ui-settings"], function () {
@@ -61,3 +62,5 @@ Route::group(['prefix' => 'room-reservation/settings', 'as' => 'room_reservation
     Route::get('/', [ReservationSettingsController::class, 'room_reservation'])->name('room_reservation_settings');
     Route::patch('/update', [ReservationSettingsController::class, 'room_reservation_update'])->name('room_reservation_settings.store');
 });
+
+Route::get('get_ledger/{id}' , [ProposalController::class , 'get_ledger'])->name('get_ledger');

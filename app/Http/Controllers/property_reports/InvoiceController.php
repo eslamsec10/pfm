@@ -2,30 +2,29 @@
 
 namespace App\Http\Controllers\property_reports;
 
-use Mpdf\Mpdf;
-use Carbon\Carbon;
-use App\Models\Tenant;
-use App\Models\Company;
-use App\Models\Invoice;
-use App\Models\Schedule;
-use App\Models\Agreement;
-use Illuminate\Support\Str;
-use App\Models\InvoiceItems;
-use Illuminate\Http\Request;
-use App\Models\ServiceMaster;
-use App\Models\AgreementUnits;
-use App\Models\UnitManagement;
-use App\Models\CompanySettings;
-use App\Models\AgreementDetails;
-use App\Models\PropertyManagement;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use App\Models\hierarchy\MainLedger;
-use Brian2694\Toastr\Facades\Toastr;
+use App\Models\Agreement;
+use App\Models\AgreementDetails;
+use App\Models\AgreementUnits;
 use App\Models\collections\InvoiceSettings;
+use App\Models\Company;
+use App\Models\CompanySettings;
+use App\Models\hierarchy\MainLedger;
+use App\Models\Invoice;
+use App\Models\InvoiceItems;
+use App\Models\PropertyManagement;
+use App\Models\Schedule;
+use App\Models\ServiceMaster;
+use App\Models\Tenant;
+use App\Models\UnitManagement;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Support\Facades\Storage;
+use Brian2694\Toastr\Facades\Toastr;
+use Carbon\Carbon;
+use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Mpdf\Mpdf;
 
 class InvoiceController extends Controller
 {
@@ -61,7 +60,7 @@ class InvoiceController extends Controller
             $endDate   = Carbon::createFromFormat('d/m/Y', $request->end_date)->format('Y-m-d');
             $invoices_query->whereBetween('created_at', [$startDate, $endDate]);
         }
-        $invoices = $invoices_query->paginate();
+        $invoices = $invoices_query->paginate(100);
         // dd($invoices);
         $all_building    = (new PropertyManagement())->setConnection('tenant')->forUser()->get();
         $tenants         = (new Tenant())->setConnection('tenant')->get();
@@ -141,9 +140,7 @@ class InvoiceController extends Controller
                         $tenant_debit = 0;
                         $tenant_credit = 0;
                         if (isset($invoice)) {
-
                             foreach ($schedules as $schedule) {
-
                                 $invoice_item = InvoiceItems::create([
                                     'invoice_id'     => $invoice->id,
                                     'agreement_id'   => $schedule->agreement_id,
@@ -172,27 +169,27 @@ class InvoiceController extends Controller
                                         'credit'         => $invoice_item->total,
                                     ]);
                                 }
-                                $options['to'] = $tenant_invoice->whatsapp_no ?? "+201150099801";
-                                // $options['to'] = $tenant->whatsapp_no ?? $tenant->contact_no;
-                                $options['message'] = "Hello Dear " . ($tenant_invoice->name ?? $tenant_invoice->company_name) . " this your invoice";
-                                $pdf = Pdf::loadView('admin-views.invoices-formats.format-1', [
-                                    'invoice' => $invoice->load('items', 'tenant')
-                                ]);
+                                // $options['to'] = $tenant_invoice->whatsapp_no ?? "+201150099801";
+                                // // $options['to'] = $tenant->whatsapp_no ?? $tenant->contact_no;
+                                // $options['message'] = "Hello Dear " . ($tenant_invoice->name ?? $tenant_invoice->company_name) . " this your invoice";
+                                // $pdf = Pdf::loadView('admin-views.invoices-formats.format-1', [
+                                //     'invoice' => $invoice->load('items', 'tenant')
+                                // ]);
 
-                                $fileName = 'invoice_' . $invoice->id . '.pdf';
+                                // $fileName = 'invoice_' . $invoice->id . '.pdf';
 
-                                $path = public_path('invoices/' . $fileName);
+                                // $path = public_path('invoices/' . $fileName);
 
-                                if (!file_exists(public_path('invoices'))) {
-                                    mkdir(public_path('invoices'), 0777, true);
-                                }
-                                file_put_contents($path, $pdf->output());
+                                // if (!file_exists(public_path('invoices'))) {
+                                //     mkdir(public_path('invoices'), 0777, true);
+                                // }
+                                // file_put_contents($path, $pdf->output());
 
-                                $pdfUrl = url('invoices/' . $fileName);
+                                // $pdfUrl = url('invoices/' . $fileName);
 
-                                $options['file'] = $pdfUrl;
+                                // $options['file'] = $pdfUrl;
 
-                                sendWhatsApp($options);
+                                // sendWhatsApp($options);
                                 $grand_total += $invoice_item->total;
                                 $tenant_credit += $invoice_item->total;
                                 $schedule->update([
@@ -211,10 +208,7 @@ class InvoiceController extends Controller
                         ]);
                     }
                 }
-                if (count($all_master_invoices) == 0) {
-                    Toastr::error('you_dont_have_invoices_in_this_month');
-                    return back()->with('error', ui_change('you_dont_have_invoices_in_this_month'));
-                }
+                DB::commit();
                 return redirect()->route('invoices.all_invoices')->with('success', 'Invoice All Added Successfully');
             } else {
                 $tenant = $request->tenant_id != 0 ? (new Tenant())->setConnection('tenant')->find($request->tenant_id) : null;
@@ -309,13 +303,11 @@ class InvoiceController extends Controller
                     Toastr::error('you_dont_have_invoices_in_this_month');
                     return back()->with('error', ui_change('you_dont_have_invoices_in_this_month'));
                 }
+                DB::commit();
+
                 return redirect()->route('invoices.all_invoices')->with('success', 'Invoice Added Successfully');
             }
-            DB::commit();
-
-            return redirect()->route('invoices.all_invoices')
-                ->with('success', 'Invoice Added Successfully');
-        } catch (\Throwable $e) {
+        } catch (Exception $e) {
 
             DB::rollBack();
             return back()->with('error', 'Something went wrong');
@@ -644,6 +636,7 @@ class InvoiceController extends Controller
 
     public function create(Request $request)
     {
+
         $request->validate([
             'tenant_id'     => "required",
             'invoice_date'  => "required",

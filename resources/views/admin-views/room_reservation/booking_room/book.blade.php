@@ -12,17 +12,17 @@
 
  @push('css_or_js')
      <style>
-         .unit-box {
-             width: 70px;
-             height: 50px;
-             border: 1px solid #333;
-             display: flex;
-             align-items: center;
-             justify-content: center;
-             font-weight: 600;
-             cursor: pointer;
-             user-select: none;
-         }
+         /* .unit-box {
+                 width: 70px;
+                 height: 50px;
+                 border: 1px solid #333;
+                 display: flex;
+                 align-items: center;
+                 justify-content: center;
+                 font-weight: 600;
+                 cursor: pointer;
+                 user-select: none;
+             } */
 
          .unit-box input {
              display: none;
@@ -49,11 +49,11 @@
              margin-bottom: 0.5rem;
          }
 
-         .units-container {
-             display: flex;
-             flex-wrap: wrap;
-             gap: 0.5rem;
-         }
+         /* .units-container {
+                     display: flex;
+                     flex-wrap: wrap;
+                     gap: 0.5rem;
+                 } */
 
          .context-menu {
              position: absolute;
@@ -105,6 +105,8 @@
              min-width: 100px;
          }
 
+
+
          .units-container {
              display: flex;
              flex-wrap: wrap;
@@ -112,13 +114,25 @@
          }
 
          .unit-box {
-             display: flex;
-             align-items: center;
-             padding: 5px 8px;
-             border: 1px solid #007bff;
+             width: 140px;
+             min-height: 55px;
+
+             border: 1px solid #333;
              border-radius: 4px;
+
+             display: flex;
+             flex-direction: column;
+             justify-content: center;
+             align-items: center;
+
+             padding: 6px;
+             font-weight: 600;
              cursor: pointer;
+             user-select: none;
              position: relative;
+
+             text-align: center;
+             word-break: break-word;
          }
 
          .unit-box input[type="checkbox"] {
@@ -152,21 +166,6 @@
 
          .dot-info {
              background-color: #f44336;
-         }
-
-         .unit-box {
-             width: 70px;
-             height: 55px;
-             border: 1px solid #333;
-             display: flex;
-             flex-direction: column;
-             align-items: center;
-             justify-content: space-between;
-             font-weight: 600;
-             cursor: pointer;
-             user-select: none;
-             padding: 4px;
-             position: relative;
          }
 
          .unit-name {
@@ -494,7 +493,15 @@
                                                                      <input type="checkbox" class="bulk-checkbox"
                                                                          name="bulk_ids[]" value="{{ $unit->id }}"
                                                                          @if ($unit->booking_status != 'empty') disabled @endif>
-                                                                     {{ $unit->unit_management_main->name }}
+                                                                     {{ $unit->property_unit_management?->name .
+                                                                         '-' .
+                                                                         $unit->block_unit_management?->block?->name .
+                                                                         '-' .
+                                                                         $unit->floor_unit_management?->floor_management_main?->name .
+                                                                         '-' .
+                                                                         $unit->unit_management_main?->name .
+                                                                         '-' .
+                                                                         $unit?->unit_description?->name }}
                                                                      <div class="unit-dots">
                                                                          <span class="dot dot-booking"></span>
                                                                          <span class="dot dot-checkin"></span>

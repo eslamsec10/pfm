@@ -261,7 +261,15 @@
                                                         class="unit  hover-info   p-1 border border-gray-300"
                                                         @if ($enquiry_selected) style="background-color:#fff; position:relative; display:inline-block; margin:2px; cursor:pointer; min-width:80px; text-align:center;"
                                                         data-unit-id="{{ $unit->id }}" @endif>
-                                                        {{ $unit->unit_management_main?->name }}
+                                                        {{ $unit->property_unit_management?->name .
+                                                            '-' .
+                                                            $unit->block_unit_management?->block?->name .
+                                                            '-' .
+                                                            $unit->floor_unit_management?->floor_management_main?->name .
+                                                            '-' .
+                                                            $unit->unit_management_main?->name .
+                                                            '-' .
+                                                            $unit?->unit_description?->name }}
                                                         <div class="unit-hover-box dark">
                                                             <div class="title">
                                                                 {{ ui_change('Unit_Info') }}
@@ -310,16 +318,6 @@
                                                         </div>
 
 
-                                                        {{-- <div class="info-box">
-                                                        {{ optional(optional(optional($unit->enquiry)->main_enquiry)->tenant)->name ?? optional(optional(optional($unit->enquiry)->main_enquiry)->tenant)->company_name }}
-                                                        <br>
-                                                        {{ optional(optional($unit->enquiry)->main_enquiry)->enquiry_no }}
-                                                        <br>
-                                                        {{ optional($unit->rent_schedules->first())->rent_amount ?? optional($unit->main_enquiry)->rent_amount }}
-                                                        <br>
-                                                        {{ optional(optional(optional($unit->enquiry)->main_enquiry)->tenant)->contact_no }}
-
-                                                    </div> --}}
                                                     </div>
                                                 @elseif($unit->booking_status == 'proposal')
                                                     @php
@@ -335,10 +333,28 @@
                                                         @endphp
                                                     @endif
                                                     <div class="unit  hover-info    p-1 border border-gray-300"
-                                                        style="background-color: {{ $settings['proposal_color']->value ?? '#ffeb3b' }};color:white"
+                                                        style="background-color: {{ $settings['proposal_color']->value ?? '#ffeb3b' }};color:white; 
+                                                            position:relative;
+                                                            display:inline-flex;
+                                                            flex-direction:column;
+                                                            justify-content:center;
+                                                            margin:2px;
+                                                            cursor:pointer;
+                                                            width:80px;
+                                                            min-height:60px;
+                                                            text-align:center;
+                                                            word-break:break-word;"
                                                         @if ($proposal_selected) style="background-color:#fff; position:relative; display:inline-block; margin:2px; cursor:pointer; min-width:80px; text-align:center;"
                                                         data-unit-id="{{ $unit->id }}" @endif>
-                                                        {{ $unit->unit_management_main->name }}
+                                                        {{ $unit->property_unit_management?->name .
+                                                            '-' .
+                                                            $unit->block_unit_management?->block?->name .
+                                                            '-' .
+                                                            $unit->floor_unit_management?->floor_management_main?->name .
+                                                            '-' .
+                                                            $unit->unit_management_main?->name .
+                                                            '-' .
+                                                            $unit?->unit_description?->name }}
                                                         <div class="unit-hover-box dark">
                                                             <div class="title">
                                                                 {{ ui_change('Unit_Info') }}
@@ -384,16 +400,6 @@
 
                                                             </div>
                                                         </div>
-{{-- 
-                                                        <div class="info-box">
-                                                            {{ optional(optional(optional($unit->proposal_main)->proposal)->tenant)->name ?? optional(optional(optional($unit->proposal_main)->proposal)->tenant)->company_name }}
-                                                            <br>
-                                                            {{ optional(optional($unit->proposal_main)->proposal)->proposal_no }}
-                                                            <br>
-                                                            {{ optional($unit->rent_schedules->first())->rent_amount ?? optional($unit->proposal_main)->rent_amount }}
-                                                            <br>
-                                                            {{ optional(optional(optional($unit->proposal_main)->proposal)->tenant)->contact_no }}
-                                                        </div> --}}
                                                     </div>
                                                 @elseif($unit->booking_status == 'booking')
                                                     @php
@@ -409,11 +415,29 @@
                                                         @endphp
                                                     @endif
                                                     <div class="unit  hover-info  p-1 border border-gray-300"
-                                                        style="background-color: {{ $settings['booking_color']->value ?? '#d500f9' }};color:white"
+                                                        style="background-color: {{ $settings['booking_color']->value ?? '#d500f9' }};color:white;
+                                                            position:relative;
+                                                            display:inline-flex;
+                                                            flex-direction:column;
+                                                            justify-content:center;
+                                                            margin:2px;
+                                                            cursor:pointer;
+                                                            width:80px;
+                                                            min-height:60px;
+                                                            text-align:center;
+                                                            word-break:break-word;"
                                                         @if ($booking_selected) style="background-color:#fff; position:relative; display:inline-block; margin:2px; cursor:pointer; min-width:80px; text-align:center;"
                                                         data-unit-id="{{ $unit->id }}" @endif>
 
-                                                        {{ $unit->unit_management_main->name }}
+                                                        {{ $unit->property_unit_management?->name .
+                                                            '-' .
+                                                            $unit->block_unit_management?->block?->name .
+                                                            '-' .
+                                                            $unit->floor_unit_management?->floor_management_main?->name .
+                                                            '-' .
+                                                            $unit->unit_management_main?->name .
+                                                            '-' .
+                                                            $unit?->unit_description?->name }}
                                                         <div class="unit-hover-box dark">
                                                             <div class="title">
                                                                 {{ ui_change('Unit_Info') }}
@@ -459,15 +483,6 @@
 
                                                             </div>
                                                         </div>
-                                                        {{-- <div class="info-box">
-                                                            {{ optional(optional(optional($unit->booking_main)->booking)->tenant)->name ?? optional(optional(optional($unit->booking_main)->booking)->tenant)->company_name }}
-                                                            <br>
-                                                            {{ optional(optional($unit->booking_main)->booking)->booking_no }}
-                                                            <br>
-                                                            {{ optional($unit->rent_schedules->first())->rent_amount ?? optional($unit->booking_main)->rent_amount }}
-                                                            <br>
-                                                            {{ optional(optional(optional($unit->booking_main)->booking)->tenant)->contact_no }}
-                                                        </div> --}}
                                                     </div>
                                                 @elseif($unit->booking_status == 'agreement')
                                                     @php
@@ -484,10 +499,28 @@
                                                         @endphp
                                                     @endif
                                                     <div class="unit  hover-info  p-1 border border-gray-300"
-                                                        style="background-color: {{ $settings['agreement_color']->value ?? '#f44336' }};color:white"
+                                                        style="background-color: {{ $settings['agreement_color']->value ?? '#f44336' }};color:white;
+                                                            position:relative;
+                                                            display:inline-flex;
+                                                            flex-direction:column;
+                                                            justify-content:center;
+                                                            margin:2px;
+                                                            cursor:pointer;
+                                                            width:80px;
+                                                            min-height:60px;
+                                                            text-align:center;
+                                                            word-break:break-word;"
                                                         @if ($agreement_selected) style="background-color:#fff; position:relative; display:inline-block; margin:2px; cursor:pointer; min-width:80px; text-align:center;"
                                                         data-unit-id="{{ $unit->id }}" @endif>
-                                                        {{ $unit->unit_management_main->name }}
+                                                        {{ $unit->property_unit_management?->name .
+                                                            '-' .
+                                                            $unit->block_unit_management?->block?->name .
+                                                            '-' .
+                                                            $unit->floor_unit_management?->floor_management_main?->name .
+                                                            '-' .
+                                                            $unit->unit_management_main?->name .
+                                                            '-' .
+                                                            $unit?->unit_description?->name }}
                                                         <div class="unit-hover-box dark">
                                                             <div class="title">
                                                                 {{ ui_change('Unit_Info') }}
@@ -533,24 +566,35 @@
 
                                                             </div>
                                                         </div>
-                                                        {{-- <div class="info-box">
-                                                            {{ optional(optional(optional($unit->agreement_main)->agreement)->tenant)->name ?? optional(optional(optional($unit->agreement_main)->agreement)->tenant)->company_name }}
-                                                            <br>
-                                                            {{ optional(optional($unit->agreement_main)->agreement)->agreement_no }}
-                                                            <br>
-                                                            {{ optional($unit->rent_schedules->first())->rent_amount ?? optional($unit->agreement_main)->rent_amount }}
-                                                            <br>
-                                                            {{ optional(optional(optional($unit->agreement_main)->agreement)->tenant)->contact_no }}
-                                                        </div> --}}
                                                     </div>
                                                 @elseif($unit->booking_status == 'empty')
                                                     <div class="unit hover-info empty p-1 border border-gray-300"
-                                                        style="background-color:#fff; position:relative; display:inline-block; margin:2px; cursor:pointer; min-width:80px; text-align:center;"
+                                                        style="
+                                                            background-color:#fff;
+                                                            position:relative;
+                                                            display:inline-flex;
+                                                            flex-direction:column;
+                                                            justify-content:center;
+                                                            margin:2px;
+                                                            cursor:pointer;
+                                                            width:80px;
+                                                            min-height:60px;
+                                                            text-align:center;
+                                                            word-break:break-word;
+                                                            "
                                                         data-unit-id="{{ $unit->id }}">
                                                         <input type="checkbox" name="bulk_ids[]"
                                                             value="{{ $unit->id }}" style="display:none;"
                                                             class="unit-checkbox check_bulk_item check_bulk_item">
-                                                        {{ $unit->unit_management_main->name }}
+                                                        {{ $unit->property_unit_management?->name .
+                                                            '-' .
+                                                            $unit->block_unit_management?->block?->name .
+                                                            '-' .
+                                                            $unit->floor_unit_management?->floor_management_main?->name .
+                                                            '-' .
+                                                            $unit->unit_management_main?->name .
+                                                            '-' .
+                                                            $unit?->unit_description?->name }}
                                                         <div class="info-box">
                                                             {{ optional($unit->rent_schedules->first())->rent_amount }}
                                                         </div>

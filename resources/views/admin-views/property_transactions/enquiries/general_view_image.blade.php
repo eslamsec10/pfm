@@ -60,20 +60,34 @@
 
         .grid .unit-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, 100px);
+            grid-template-columns: repeat(auto-fill, minmax(100px, max-content));
             gap: 5px;
         }
 
         .grid .unit {
-            width: 100px;
-            height: 40px;
-            background-color: #fff;
+            min-width: 100px;
+            padding: 5px;
             text-align: center;
-            line-height: 40px;
             border: 1px solid #000;
-            cursor: pointer;
-            position: relative;
+            word-break: break-word;
         }
+
+        /* .grid .unit-container {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, 100px);
+                    gap: 5px;
+                }
+
+                .grid .unit {
+                    width: 100px;
+                    height: 40px;
+                    background-color: #fff;
+                    text-align: center;
+                    line-height: 40px;
+                    border: 1px solid #000;
+                    cursor: pointer;
+                    position: relative;
+                } */
 
 
         .unit.empty {
@@ -251,49 +265,51 @@
                 class="btn btn--primary createButton">
                 <i class="tio-add"></i> {{ ui_change('create_agreement', 'property_transaction') }}
             </button>
-        </div>
+    </div>
 
-        @foreach ($property_items as $property_item)
-            <div class="row mt-5 @if ($lang == 'ar') rtl text-start @else ltr @endif">
-                <div class="col-md-12">
-                    <div class="card">
-                        <div class="px-3 py-4">
-                            <div class="legend">
-                                <div><span style="background-color: teal;"></span>
-                                    {{ ui_change('Floors', 'property_transaction') }}</div>
-                                <div><span style="background-color: #fff;"></span>
-                                    {{ ui_change('Empty_Units', 'property_transaction') }}</div>
-                                <div><span
-                                        style="background-color: {{ $settings['proposal_color']->value ?? '#ffeb3b' }}"></span>
-                                    {{ ui_change('Proposed_Units', 'property_transaction') }}</div>
-                                <div><span
-                                        style="background-color: {{ $settings['booking_color']->value ?? '#d500f9' }}"></span>
-                                    {{ ui_change('Booked_Units', 'property_transaction') }}</div>
-                                <div><span
-                                        style="background-color: {{ $settings['agreement_color']->value ?? '#f44336' }}"></span>
-                                    {{ ui_change('Agreement_Units', 'property_transaction') }}</div>
-                                <div><span
-                                        style="background-color: {{ $settings['enquiry_color']->value ?? '#372be2' }}"></span>
-                                    {{ ui_change('Proposal_Pending', 'property_transaction') }}</div>
-                            </div>
+    @foreach ($property_items as $property_item)
+        <div class="row mt-5 @if ($lang == 'ar') rtl text-start @else ltr @endif">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="px-3 py-4">
+                        <div class="legend">
+                            <div><span style="background-color: teal;"></span>
+                                {{ ui_change('Floors', 'property_transaction') }}</div>
+                            <div><span style="background-color: #fff;"></span>
+                                {{ ui_change('Empty_Units', 'property_transaction') }}</div>
+                            <div><span
+                                    style="background-color: {{ $settings['proposal_color']->value ?? '#ffeb3b' }}"></span>
+                                {{ ui_change('Proposed_Units', 'property_transaction') }}</div>
+                            <div><span
+                                    style="background-color: {{ $settings['booking_color']->value ?? '#d500f9' }}"></span>
+                                {{ ui_change('Booked_Units', 'property_transaction') }}</div>
+                            <div><span
+                                    style="background-color: {{ $settings['agreement_color']->value ?? '#f44336' }}"></span>
+                                {{ ui_change('Agreement_Units', 'property_transaction') }}</div>
+                            <div><span
+                                    style="background-color: {{ $settings['enquiry_color']->value ?? '#372be2' }}"></span>
+                                {{ ui_change('Proposal_Pending', 'property_transaction') }}</div>
+                        </div>
 
-                            <div class="grid-title">
-                                <h3 style="color: var(--primary)">{{ $property_item->name }}</h3>
-                            </div>
-                            <div class="grid-container">
-                                @foreach ($property_item->blocks_management_child as $block_item)
-                                    <div class="grid-title">{{ $block_item->block->name }}</div>
+                        <div class="grid-title">
+                            <h3 style="color: var(--primary)">{{ $property_item->name }}</h3>
+                        </div>
+                        <div class="grid-container">
+                            @foreach ($property_item->blocks_management_child as $block_item)
+                                <div class="grid-title">{{ $block_item->block->name }}</div>
 
-                                    @foreach ($block_item->floors_management_child as $floor_item)
-                                        <div class="grid">
-                                            <div class="floor">{{ $floor_item->floor_management_main?->name }}</div>
-                                            <div class="unit-container">
-                                                @foreach ($floor_item->unit_management_child->sortBy('position') as $unit_item)
-                                                   
-                                                    <div class="unit hover-info {{ $unit_item->booking_status ?? 'empty' }}"
-                                                        data-id="{{ $unit_item->id }}">
-                                                        {{ $unit_item->unit_management_main?->name . '-' . $unit_item->unit_management_main?->unit_description?->name }}
-                                                             @if ($unit_item->booking_status == 'enquiry')
+                                @foreach ($block_item->floors_management_child as $floor_item)
+                                    <div class="grid">
+                                        <div class="floor">{{ $floor_item->floor_management_main?->name }}</div>
+                                        <div class="unit-container">
+                                            @foreach ($floor_item->unit_management_child->sortBy('position') as $unit_item)
+                                                <div class="unit hover-info {{ $unit_item->booking_status ?? 'empty' }}"
+                                                    data-id="{{ $unit_item->id }}">
+                                                    {{ $unit_item->property_unit_management?->name
+                                                        .'-'.$unit_item->block_unit_management?->block?->name.'-'.
+                                                         $unit_item->floor_unit_management?->floor_management_main?->name
+                                                    .'-'.$unit_item->unit_management_main?->name . '-' . $unit_item?->unit_description?->name }}
+                                                    @if ($unit_item->booking_status == 'enquiry')
                                                         @php
                                                             $periodFrom = optional($unit_item->enquiry)->period_from;
                                                         @endphp
@@ -338,44 +354,44 @@
                                                                 class="unit-checkbox check_bulk_item check_bulk_item"
                                                                 style="position:absolute; top:5px; left:5px; z-index:10;">
                                                         @endif
-                                                    @else 
+                                                    @else
                                                         <input type="checkbox" name="bulk_ids[]"
                                                             value="{{ $unit_item->id }}"
                                                             class="unit-checkbox check_bulk_item check_bulk_item"
                                                             style="position:absolute; top:5px; left:5px; z-index:10;">
                                                     @endif
-                                                        <div class="unit-hover-box dark">
-                                                            <div class="title">
-                                                                {{ ui_change('unit_Info') }}</div>
+                                                    <div class="unit-hover-box dark">
+                                                        <div class="title">
+                                                            {{ ui_change('unit_Info') }}</div>
 
-                                                            <div class="info">
-                                                                <div>{{ ui_change('Tenant') }} :
-                                                                    <span>
+                                                        <div class="info">
+                                                            <div>{{ ui_change('Tenant') }} :
+                                                                <span>
 
-                                                                        @if ($unit_item->booking_status == 'enquiry')
-                                                                            {{ optional(optional(optional($unit_item->enquiry)->main_enquiry)->tenant)->name ?? optional(optional(optional($unit_item->enquiry)->main_enquiry)->tenant)->company_name }}
-                                                                        @elseif($unit_item->booking_status == 'proposal')
-                                                                            {{ optional(optional(optional($unit_item->proposal_main)->proposal)->tenant)->name ?? optional(optional(optional($unit_item->proposal_main)->proposal)->tenant)->company_name }}
-                                                                        @elseif($unit_item->booking_status == 'booking')
-                                                                            {{ optional(optional(optional($unit_item->booking_main)->booking)->tenant)->name ?? optional(optional(optional($unit_item->booking_main)->booking)->tenant)->company_name }}
-                                                                        @elseif($unit_item->booking_status == 'agreement')
-                                                                            {{ optional(optional(optional($unit_item->agreement_main)->agreement)->tenant)->name ?? optional(optional(optional($unit_item->agreement_main)->agreement)->tenant)->company_name }}
-                                                                        @endif
-                                                                    </span>
-                                                                </div>
-                                                                <div>{{ ui_change('unit_description') }} :
-                                                                    <span>{{ $unit_item->unit_description?->name }}</span>
-                                                                </div>
-                                                                <div>{{ ui_change('unit_type') }} :
-                                                                    <span>{{ $unit_item->unit_type?->name }}</span>
-                                                                </div>
-                                                                <div>{{ ui_change('unit_condition') }} :
-                                                                    <span>{{ $unit_item->unit_condition?->name }}</span>
-                                                                </div>
-
+                                                                    @if ($unit_item->booking_status == 'enquiry')
+                                                                        {{ optional(optional(optional($unit_item->enquiry)->main_enquiry)->tenant)->name ?? optional(optional(optional($unit_item->enquiry)->main_enquiry)->tenant)->company_name }}
+                                                                    @elseif($unit_item->booking_status == 'proposal')
+                                                                        {{ optional(optional(optional($unit_item->proposal_main)->proposal)->tenant)->name ?? optional(optional(optional($unit_item->proposal_main)->proposal)->tenant)->company_name }}
+                                                                    @elseif($unit_item->booking_status == 'booking')
+                                                                        {{ optional(optional(optional($unit_item->booking_main)->booking)->tenant)->name ?? optional(optional(optional($unit_item->booking_main)->booking)->tenant)->company_name }}
+                                                                    @elseif($unit_item->booking_status == 'agreement')
+                                                                        {{ optional(optional(optional($unit_item->agreement_main)->agreement)->tenant)->name ?? optional(optional(optional($unit_item->agreement_main)->agreement)->tenant)->company_name }}
+                                                                    @endif
+                                                                </span>
+                                                            </div>
+                                                            <div>{{ ui_change('unit_description') }} :
+                                                                <span>{{ $unit_item->unit_description?->name }}</span>
+                                                            </div>
+                                                            <div>{{ ui_change('unit_type') }} :
+                                                                <span>{{ $unit_item->unit_type?->name }}</span>
+                                                            </div>
+                                                            <div>{{ ui_change('unit_condition') }} :
+                                                                <span>{{ $unit_item->unit_condition?->name }}</span>
                                                             </div>
 
-                                                            {{-- <div class="options-title">
+                                                        </div>
+
+                                                        {{-- <div class="options-title">
                                                                 {{ ui_change('room_facilities') }}</div>
 
                                                             <ul class="options">
@@ -389,8 +405,8 @@
                                                                 @endforelse
 
                                                             </ul> --}}
-                                                        </div>
-                                                        {{-- <div class="info-box">
+                                                    </div>
+                                                    {{-- <div class="info-box">
                                                             @if ($unit_item->booking_status == 'enquiry')
                                                                 {{ optional(optional(optional($unit_item->enquiry)->main_enquiry)->tenant)->name ?? optional(optional(optional($unit_item->enquiry)->main_enquiry)->tenant)->company_name }}
                                                             @elseif($unit_item->booking_status == 'proposal')
@@ -401,12 +417,12 @@
                                                                 {{ optional(optional(optional($unit_item->agreement_main)->agreement)->tenant)->name ?? optional(optional(optional($unit_item->agreement_main)->agreement)->tenant)->company_name }}
                                                             @endif
                                                         </div> --}}
-                                                    </div>
-                                                @endforeach
-                                            </div>
+                                                </div>
+                                            @endforeach
                                         </div>
+                                    </div>
 
-                                        {{-- <div class="grid">
+                                    {{-- <div class="grid">
                                             <!-- Floor column -->
                                             <div class="floor">{{ $floor_item->floor_management_main->name }}</div>
 
@@ -428,17 +444,17 @@
                                                 </div>
                                             @endforeach
                                         </div> --}}
-                                        <hr>
-                                    @endforeach
+                                    <hr>
                                 @endforeach
-                            </div>
-                            <hr>
+                            @endforeach
                         </div>
+                        <hr>
                     </div>
                 </div>
             </div>
-        @endforeach
-        
+        </div>
+    @endforeach
+
     </div>
 @endsection
 

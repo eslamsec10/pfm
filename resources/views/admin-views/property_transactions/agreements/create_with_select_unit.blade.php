@@ -884,6 +884,23 @@
 
 @push('script')
     <script>
+         $(".type_link_create").click(function(e) {
+            e.preventDefault();
+            $(".type_link_create").removeClass('active');
+            $(".tenant_form_create").addClass('d-none');
+            $(this).addClass('active');
+
+            let form_id = this.id;
+            console.log(form_id)
+            if (form_id === 'personal-link_create') {
+                $("#personal-form_create").removeClass('d-none').addClass('active');
+                $("#company-form_create").removeClass('active').addClass('d-none');
+            } else if (form_id === 'company-link_create') {
+                $("#company-form_create").removeClass('d-none').addClass('active');
+                $("#personal-form_create").removeClass('active').addClass('d-none');
+            }
+
+        });
           function unit_change_main_date() {
             var form_unit_date = $(`input[name=period_from]`).val();
             if (form_unit_date) {

@@ -46,7 +46,7 @@
                                     <!-- End Search -->
                                 </div>
                                 <div class="col-lg-8 mt-3 mt-lg-0 d-flex flex-wrap gap-3 justify-content-lg-end">
- 
+
                                     <a href="{{ route('agreement.create') }}" class="btn btn--primary">
                                         <i class="tio-add"></i>
                                         <span
@@ -58,7 +58,8 @@
                                     </a>
                                     <a href="{{ route('export_units') }}" class="btn btn--primary">
                                         <i class="tio-add"></i>
-                                        <span class="text">{{ ui_change('export_template_excel', 'property_transaction') }}</span>
+                                        <span
+                                            class="text">{{ ui_change('export_template_excel', 'property_transaction') }}</span>
                                     </a>
                                     <button type="button" data-target="#filter" data-filter="" data-toggle="modal"
                                         class="btn btn--primary btn-sm">
@@ -67,7 +68,7 @@
                                     <button type="submit" name="bulk_action_btn" value="sign"
                                         class="btn btn--primary btn-sm">{{ ui_change('sign', 'property_transaction') }}
                                         <i class="fas fa-save"></i>
-                                    </button> 
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -197,7 +198,8 @@
                                             </td>
                                             <td>
                                                 <div class="dropdown">
-                                                    <button type="button" class="btn btn-outline--primary"
+                                                    <button type="button" class="btn btn-sm btn-light dropdown-toggle"
+                                                        data-toggle="dropdown" data-boundary="viewport"
                                                         data-toggle="dropdown">
                                                         &#8942;
                                                     </button>
@@ -206,20 +208,20 @@
 
 
                                                         <li>
-                                                            <a class="btn btn-outline--primary dropdown-item"
+                                                            <a class="btn btn-outline--primary dropdown-item text-black"
                                                                 href="{{ route('agreement.check_property', [$agreement_item->id]) }}">
                                                                 {{ ui_change('check_property', 'property_transaction') }}
                                                             </a>
                                                         </li>
                                                         <li>
-                                                            <a class="btn btn-outline--primary dropdown-item"
+                                                            <a class="btn btn-outline--primary dropdown-item text-black"
                                                                 href="{{ route('agreement.show_info', [$agreement_item->id]) }}">
                                                                 {{ ui_change('show_info', 'property_transaction') }}
                                                             </a>
                                                         </li>
                                                         <li>
                                                             @if ($agreement_item->booking_status != 'signed' && $agreement_item->status != 'canceled')
-                                                                <a class="btn btn-outline-warning  dropdown-item "
+                                                                <a class="btn btn-outline-warning  dropdown-item text-black "
                                                                     href="{{ route('agreement.signed', [$agreement_item->id]) }}">
                                                                     {{ ui_change('sign', 'property_transaction') }}
                                                                 </a>
@@ -227,14 +229,14 @@
                                                         </li>
                                                         <li>
                                                             @if ($agreement_item->booking_status == 'signed')
-                                                                <a class="btn btn-outline-warning  dropdown-item "
+                                                                <a class="btn btn-outline-warning  dropdown-item text-black "
                                                                     href="{{ route('agreement.schedule', [$agreement_item->id]) }}">
                                                                     {{ ui_change('Rent_List', 'property_transaction') }}
                                                                 </a>
                                                             @endif
                                                         </li>
                                                         <li>
-                                                            <a class="btn btn-outline-danger  dropdown-item"
+                                                            <a class="btn btn-outline-danger  dropdown-item text-black"
                                                                 title="{{ ui_change('termination', 'property_transaction') }}"
                                                                 href="{{ route('termination.add', [$agreement_item->id]) }}">
                                                                 {{ ui_change('termination', 'property_transaction') }}
@@ -243,7 +245,7 @@
 
                                                         @if ($agreement_item->booking_status == 'signed')
                                                             <li>
-                                                                <a class="btn btn-outline--primary  dropdown-item"
+                                                                <a class="btn btn-outline--primary  dropdown-item text-black"
                                                                     title="{{ ui_change('renewal', 'property_transaction') }}"
                                                                     href="{{ route('renewal.create', [$agreement_item->id]) }}">
                                                                     {{ ui_change('renewal', 'property_transaction') }}
@@ -251,14 +253,14 @@
                                                             </li>
                                                         @endif
                                                         <li>
-                                                            <a class="btn btn-outline--primary   dropdown-item"
+                                                            <a class="btn btn-outline--primary   dropdown-item text-black"
                                                                 title="{{ ui_change('edit', 'property_transaction') }}"
                                                                 href="{{ route('agreement.edit', [$agreement_item->id]) }}">
                                                                 {{ ui_change('edit', 'property_transaction') }}
                                                             </a>
                                                         </li>
                                                         <li>
-                                                            <a class="btn btn-outline--primary   dropdown-item"
+                                                            <a class="btn btn-outline--primary   dropdown-item text-black"
                                                                 title="{{ ui_change('review', 'property_transaction') }}"
                                                                 href="{{ route('agreement.review', [$agreement_item->id]) }}">
                                                                 {{ translate('review_Rent') }}
@@ -266,7 +268,7 @@
                                                         </li>
                                                         <li>
                                                             @if ($agreement_item->status == 'pending')
-                                                                <a class="btn btn-outline-danger   delete   dropdown-item"
+                                                                <a class="btn btn-outline-danger   delete   dropdown-item text-black"
                                                                     title="{{ ui_change('delete', 'property_transaction') }}"
                                                                     id="{{ $agreement_item->id }}">
                                                                     {{ ui_change('Delete', 'property_transaction') }}

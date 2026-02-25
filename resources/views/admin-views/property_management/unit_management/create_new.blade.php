@@ -213,6 +213,148 @@
                                     min="0">
                             </div>
                         </div>
+                        <div class="col-md-3 col-lg-4 col-xl-3">
+                            <div class="form-group">
+                                <label>Area{{ ui_change('', 'property_transaction') }}</label>
+                                <input type="number" step="0.01" name="area" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 col-lg-4 col-xl-3">
+                            <div class="form-group">
+                                <label>Area Unit{{ ui_change('', 'property_transaction') }}</label>
+                                <select name="area_unit" class="js-select2-custom form-control">
+                                    <option value="">{{ ui_change('Select_Unit_Type', 'property_transaction') }}
+                                    </option>
+                                    <option value="1">{{ ui_change('Sq. Mtr.', 'property_transaction') }}</option>
+                                    <option value="2">{{ ui_change('Sq. Ft.', 'property_transaction') }}</option>
+                                </select>
+                            </div>
+                        </div>
+                        {{-- Area Inside --}}
+                        <div class="col-md-3 col-lg-4 col-xl-3">
+                            <div class="form-group">
+                                <label>Area Inside{{ ui_change('', 'property_transaction') }}</label>
+                                <input type="number" step="0.01" name="area_inside" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 col-lg-4 col-xl-3">
+                            <div class="form-group">
+                                <label>{{ ui_change('Area Inside Unit', 'property_transaction') }}</label>
+                                <select name="area_inside_unit" class="js-select2-custom form-control">
+                                    <option value="">{{ ui_change('Select_Unit_Type', 'property_transaction') }}
+                                    </option>
+                                    <option value="1">{{ ui_change('Sq. Mtr.', 'property_transaction') }}</option>
+                                    <option value="2">{{ ui_change('Sq. Ft.', 'property_transaction') }}</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {{-- Area Terrace --}}
+                        <div class="col-md-3 col-lg-4 col-xl-3">
+                            <div class="form-group">
+                                <label>{{ ui_change('Area Terrace', 'property_transaction') }}</label>
+                                <input type="number" step="0.01" name="area_terrace" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 col-lg-4 col-xl-3">
+                            <div class="form-group">
+                                <label>{{ ui_change('Area Terrace Unit', 'property_transaction') }}</label>
+                                <select name="area_terrace_unit" class="js-select2-custom form-control">
+                                    <option value="">{{ ui_change('Select_Unit_Type', 'property_transaction') }}
+                                    </option>
+                                    <option value="1">{{ ui_change('Sq. Mtr.', 'property_transaction') }}</option>
+                                    <option value="2">{{ ui_change('Sq. Ft.', 'property_transaction') }}</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {{-- Rate --}}
+                        <div class="col-md-3 col-lg-4 col-xl-3">
+                            <div class="form-group">
+                                <label>{{ ui_change('Rate', 'property_transaction') }}</label>
+                                <input type="number" step="0.01" name="rate" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 col-lg-4 col-xl-3">
+                            <div class="form-group">
+                                <label>{{ ui_change('Rate Unit', 'property_transaction') }}</label>
+                                <select name="rate_unit" class="js-select2-custom form-control">
+                                    <option value="">{{ ui_change('Select_Unit_Type', 'property_transaction') }}
+                                    </option>
+                                    <option value="1">{{ ui_change('Sq. Mtr.', 'property_transaction') }}</option>
+                                    <option value="2">{{ ui_change('Sq. Ft.', 'property_transaction') }}</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {{-- Security Deposit --}}
+                        <div class="col-md-3 col-lg-4 col-xl-3">
+                            <div class="form-group">
+                                <label>{{ ui_change('Security Deposit Amount', 'property_transaction') }}</label>
+                                <input type="number" step="0.01" name="security_deposit_amount"
+                                    class="form-control">
+                            </div>
+                        </div>
+
+                        {{-- Municipality Nos --}}
+                        <div class="col-md-3 col-lg-4 col-xl-3">
+                            <div class="form-group">
+                                <label>{{ ui_change('Municipality Nos', 'property_transaction') }}</label>
+                                <input type="text" name="municipality_nos" class="form-control">
+                            </div>
+                        </div>
+
+                        {{-- Installation Date --}}
+                        <div class="col-md-3 col-lg-4 col-xl-3">
+                            <div class="form-group">
+                                <label>{{ ui_change('Installation Date', 'property_transaction') }}</label>
+                                <input type="date" name="installation_date" class="form-control">
+                            </div>
+                        </div>
+
+                        {{-- Electricity Meter No --}}
+                        <div class="col-md-3 col-lg-4 col-xl-3">
+                            <div class="form-group">
+                                <label>{{ ui_change('Electricity Meter No', 'property_transaction') }}</label>
+                                <input type="text" name="electricity_meter_no" class="form-control">
+                            </div>
+                        </div>
+
+                        {{-- Installation Date 2 --}}
+                        <div class="col-md-3 col-lg-4 col-xl-3">
+                            <div class="form-group">
+                                <label>{{ ui_change('Installation Date 2', 'property_transaction') }}</label>
+                                <input type="date" name="installation_date_1" class="form-control">
+                            </div>
+                        </div>
+
+                        {{-- Water Meter No --}}
+                        <div class="col-md-3 col-lg-4 col-xl-3">
+                            <div class="form-group">
+                                <label>{{ ui_change('Water Meter No', 'property_transaction') }}</label>
+                                <input type="text" name="water_meter_no" class="form-control">
+                            </div>
+                        </div>
+
+                        {{-- Electricity AC No --}}
+                        <div class="col-md-3 col-lg-4 col-xl-3">
+                            <div class="form-group">
+                                <label>{{ ui_change('Electricity A/C No', 'property_transaction') }}</label>
+                                <input type="text" name="electricity_ac_no" class="form-control">
+                            </div>
+                        </div>
+
+                        {{-- Rent Applicable Date --}}
+                        <div class="col-md-3 col-lg-4 col-xl-3">
+                            <div class="form-group">
+                                <label>{{ ui_change('Rent Applicable Date', 'property_transaction') }}</label>
+                                <input type="date" name="rent_applicable_date" class="form-control">
+                            </div>
+                        </div>
                     </div>
 
                     <div class="col-md-12 col-lg-12 col-xl-12 units mt-3">

@@ -1,12 +1,8 @@
  @extends('layouts.back-end.app')
 
- @section('title', ui_change('property_reports','property_report') )
+ @section('title', ui_change('property_reports', 'property_report'))
  @php
-     if (auth()->check()) {
-         $company = App\Models\Company::where('id', auth()->user()->company_id)->first() ?? App\Models\User::first();
-     } else {
-         $company = App\Models\User::first();
-     }     $lang = session()->get('locale');
+     $lang = session()->get('locale');
  @endphp
  @push('css_or_js')
      <style>
@@ -46,54 +42,77 @@
      <div class="container list-container  ">
          <div class="row">
              <div class="col-md-6">
-                 <div class="accordion" id="accordionExample"> 
+                 <div class="accordion" id="accordionExample">
                      <div class="accordion-item ">
-                         <h2 class="accordion-header list-group-item" >
-                             <a class="accordion-button"  href="{{ route('schedules.index') }}"   >{{ ui_change('pre_bill_checking','property_report')  }}</a> {{-- <span class="arrow">&rsaquo;</span> --}}
-                         </h2>  
+                         <h2 class="accordion-header list-group-item">
+                             <a class="accordion-button"
+                                 href="{{ route('schedules.index') }}">{{ ui_change('pre_bill_checking', 'property_report') }}</a>
+                             {{-- <span class="arrow">&rsaquo;</span> --}}
+                         </h2>
                      </div>
                      <div class="accordion-item ">
-                         <h2 class="accordion-header list-group-item" >
-                             <a class="accordion-button"   href="{{ route('invoices.all_invoices') }}"  >{{ ui_change('invoice_register','property_report')  }}</a> {{-- <span class="arrow">&rsaquo;</span> --}}
-                         </h2>  
+                         <h2 class="accordion-header list-group-item">
+                             <a class="accordion-button"
+                                 href="{{ route('contract_details') }}">{{ ui_change('contract_details', 'property_report') }}</a>
+                             {{-- <span class="arrow">&rsaquo;</span> --}}
+                         </h2>
                      </div>
                      <div class="accordion-item ">
-                         <h2 class="accordion-header list-group-item" >
-                             <a class="accordion-button"   href="{{ route('invoices_return.all_invoices') }}"  >{{ ui_change('invoices_return_register','property_report')  }}</a> {{-- <span class="arrow">&rsaquo;</span> --}}
-                         </h2>  
+                         <h2 class="accordion-header list-group-item">
+                             <a class="accordion-button"
+                                 href="{{ route('invoices.all_invoices') }}">{{ ui_change('invoice_register', 'property_report') }}</a>
+                             {{-- <span class="arrow">&rsaquo;</span> --}}
+                         </h2>
                      </div>
                      <div class="accordion-item ">
-                         <h2 class="accordion-header list-group-item" >
-                             <a class="accordion-button"   href="{{ route('tenant_contact_details') }}"  >{{ ui_change('tenant_contact_details','property_report') }}</a> {{-- <span class="arrow">&rsaquo;</span> --}}
-                         </h2>  
+                         <h2 class="accordion-header list-group-item">
+                             <a class="accordion-button"
+                                 href="{{ route('invoices_return.all_invoices') }}">{{ ui_change('invoices_return_register', 'property_report') }}</a>
+                             {{-- <span class="arrow">&rsaquo;</span> --}}
+                         </h2>
                      </div>
                      <div class="accordion-item ">
-                         <h2 class="accordion-header list-group-item" >
-                             <a class="accordion-button"   href="{{ route('occupancy_details') }}"  >{{ ui_change('occupancy_details','property_report')  }}</a> {{-- <span class="arrow">&rsaquo;</span> --}}
-                         </h2>  
+                         <h2 class="accordion-header list-group-item">
+                             <a class="accordion-button"
+                                 href="{{ route('tenant_contact_details') }}">{{ ui_change('tenant_contact_details', 'property_report') }}</a>
+                             {{-- <span class="arrow">&rsaquo;</span> --}}
+                         </h2>
                      </div>
                      <div class="accordion-item ">
-                         <h2 class="accordion-header list-group-item" >
-                             <a class="accordion-button"   href="{{ route('leased_expired_details') }}"  >{{ ui_change('leased_expired_details','property_report') }}</a> {{-- <span class="arrow">&rsaquo;</span> --}}
-                         </h2>  
+                         <h2 class="accordion-header list-group-item">
+                             <a class="accordion-button"
+                                 href="{{ route('occupancy_details') }}">{{ ui_change('occupancy_details', 'property_report') }}</a>
+                             {{-- <span class="arrow">&rsaquo;</span> --}}
+                         </h2>
                      </div>
                      <div class="accordion-item ">
-                         <h2 class="accordion-header list-group-item" >
-                             <a class="accordion-button"   href="{{ route('tenant_age_analysis') }}"  >{{ ui_change('tenant_age_analysis','property_report')  }}</a> {{-- <span class="arrow">&rsaquo;</span> --}}
-                         </h2>  
+                         <h2 class="accordion-header list-group-item">
+                             <a class="accordion-button"
+                                 href="{{ route('leased_expired_details') }}">{{ ui_change('leased_expired_details', 'property_report') }}</a>
+                             {{-- <span class="arrow">&rsaquo;</span> --}}
+                         </h2>
                      </div>
-                    
                      <div class="accordion-item ">
-                         <h2 class="accordion-header list-group-item" >
-                             <a class="accordion-button"   href="{{ route('tenant_financial_summary') }}"  >{{ ui_change('tenant_financial_summary','property_report')  }}</a> {{-- <span class="arrow">&rsaquo;</span> --}}
-                         </h2>  
+                         <h2 class="accordion-header list-group-item">
+                             <a class="accordion-button"
+                                 href="{{ route('tenant_age_analysis') }}">{{ ui_change('tenant_age_analysis', 'property_report') }}</a>
+                             {{-- <span class="arrow">&rsaquo;</span> --}}
+                         </h2>
                      </div>
-                    
+
+                     <div class="accordion-item ">
+                         <h2 class="accordion-header list-group-item">
+                             <a class="accordion-button"
+                                 href="{{ route('tenant_financial_summary') }}">{{ ui_change('tenant_financial_summary', 'property_report') }}</a>
+                             {{-- <span class="arrow">&rsaquo;</span> --}}
+                         </h2>
+                     </div>
+
 
 
                  </div>
 
-             </div> 
+             </div>
          </div>
      </div>
 
@@ -103,4 +122,3 @@
      <!-- Bootstrap JavaScript -->
      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
  @endpush
-  

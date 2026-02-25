@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\property_transactions;
 
 use Throwable;
@@ -81,9 +82,15 @@ class AgreementController extends Controller
                     });
             }
         }) //->where('status', 'pending')
-        ->with('agreement_units:id,agreement_id,property_id,unit_id,commencement_date,expiry_date' , 'agreement_units.agreement_unit_main:id,property_management_id,block_management_id,floor_management_id,unit_id',
-            'agreement_units.agreement_unit_main.property_unit_management:id,name' ,'agreement_units.agreement_unit_main.block_unit_management:id,block_id',
-            'agreement_units.agreement_unit_main.floor_unit_management:id,floor_id','agreement_units.agreement_unit_main.floor_unit_management.floor_management_main:id,name','agreement_units.agreement_unit_main.block_unit_management.block:id,name' )
+            ->with(
+                'agreement_units:id,agreement_id,property_id,unit_id,commencement_date,expiry_date',
+                'agreement_units.agreement_unit_main:id,property_management_id,block_management_id,floor_management_id,unit_id',
+                'agreement_units.agreement_unit_main.property_unit_management:id,name',
+                'agreement_units.agreement_unit_main.block_unit_management:id,block_id',
+                'agreement_units.agreement_unit_main.floor_unit_management:id,floor_id',
+                'agreement_units.agreement_unit_main.floor_unit_management.floor_management_main:id,name',
+                'agreement_units.agreement_unit_main.block_unit_management.block:id,name'
+            )
             ->latest()->orderBy('created_at', 'asc')->paginate()->appends($query_param);
         if ($request->bulk_action_btn === 'filter') {
             $data         = ['status' => 1];
@@ -104,18 +111,24 @@ class AgreementController extends Controller
             //     $report_query->whereRelation('tenant', 'id', $request->tenant_id);
             // }
 
-            if ($request->tenant_id && $request->tenant_id != -1  ) {
-                $report_query->where('tenant_id',$request->tenant_id);
-            } 
+            if ($request->tenant_id && $request->tenant_id != -1) {
+                $report_query->where('tenant_id', $request->tenant_id);
+            }
             if ($request->from && $request->to) {
                 $startDate = Carbon::createFromFormat('d/m/Y', $request->from)->startOfDay();
                 $endDate   = Carbon::createFromFormat('d/m/Y', $request->to)->endOfDay();
                 $report_query->whereBetween('created_at', [$startDate, $endDate]);
             }
             $agreements = $report_query->orderBy('created_at', 'desc')
-            ->with('agreement_units:id,agreement_id,property_id,unit_id,commencement_date,expiry_date' , 'agreement_units.agreement_unit_main:id,property_management_id,block_management_id,floor_management_id,unit_id',
-            'agreement_units.agreement_unit_main.property_unit_management:id,name' ,'agreement_units.agreement_unit_main.block_unit_management:id,block_id',
-            'agreement_units.agreement_unit_main.floor_unit_management:id,floor_id','agreement_units.agreement_unit_main.floor_unit_management.floor_management_main:id,name','agreement_units.agreement_unit_main.block_unit_management.block:id,name' )->paginate();
+                ->with(
+                    'agreement_units:id,agreement_id,property_id,unit_id,commencement_date,expiry_date',
+                    'agreement_units.agreement_unit_main:id,property_management_id,block_management_id,floor_management_id,unit_id',
+                    'agreement_units.agreement_unit_main.property_unit_management:id,name',
+                    'agreement_units.agreement_unit_main.block_unit_management:id,block_id',
+                    'agreement_units.agreement_unit_main.floor_unit_management:id,floor_id',
+                    'agreement_units.agreement_unit_main.floor_unit_management.floor_management_main:id,name',
+                    'agreement_units.agreement_unit_main.block_unit_management.block:id,name'
+                )->paginate();
         }
         $tenants = (new Tenant())->setConnection('tenant')->select('id', 'name', 'company_name')->get();
         $data    = [
@@ -146,7 +159,7 @@ class AgreementController extends Controller
         $property_types           = DB::connection('tenant')->table('property_types')->get();
         $services_master          = (new ServiceMaster())->setConnection('tenant')->select('id', 'name')->get();
 
-             $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
+        $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
 
         $data = [
             'dail_code_main'            => $dail_code_main,
@@ -179,7 +192,7 @@ class AgreementController extends Controller
         $property_type       = $request->input('property_type');
 
         $units = (new UnitManagement())->setConnection('tenant')->with('unit_management_main:id,name')
-        // $units = (new UnitManagement())->setConnection('tenant')->where('booking_status', 'empty')->with('unit_management_main:id,name')
+            // $units = (new UnitManagement())->setConnection('tenant')->where('booking_status', 'empty')->with('unit_management_main:id,name')
             ->when($property_id, function ($query, $property_id) {
                 return $query->where('property_management_id', $property_id);
             })
@@ -194,12 +207,17 @@ class AgreementController extends Controller
             })
             ->when($view_id, function ($query, $view_id) {
                 return $query->where('view_id', $view_id);
-            })->with('property_unit_management', 'block_unit_management', 'block_unit_management.block',
-            'floor_unit_management.floor_management_main', 'floor_unit_management', 'unit_management_main')
+            })->with(
+                'property_unit_management',
+                'block_unit_management',
+                'block_unit_management.block',
+                'floor_unit_management.floor_management_main',
+                'floor_unit_management',
+                'unit_management_main'
+            )
 
             ->get();
         return response()->json($units);
-
     }
 
     public function store(Request $request)
@@ -297,8 +315,12 @@ class AgreementController extends Controller
                     $unitConditionId   = $request->input("unit_condition_id-$i");
                     $viewId            = $request->input("view_id-$i");
                     $propertyType      = $request->input("property_type-$i");
-                    if ($request->input("period_from-$i")) {$periodFrom = Carbon::createFromFormat('d/m/Y', $request->input("period_from-$i"))->format('Y-m-d');}
-                    if ($request->input("period_to-$i")) {$periodTo = Carbon::createFromFormat('d/m/Y', $request->input("period_to-$i"))->format('Y-m-d');}
+                    if ($request->input("period_from-$i")) {
+                        $periodFrom = Carbon::createFromFormat('d/m/Y', $request->input("period_from-$i"))->format('Y-m-d');
+                    }
+                    if ($request->input("period_to-$i")) {
+                        $periodTo = Carbon::createFromFormat('d/m/Y', $request->input("period_to-$i"))->format('Y-m-d');
+                    }
                     $city            = $request->input("city-$i");
                     $totalArea       = $request->input("total_area-$i");
                     $areaMeasurement = $request->input("area_measurement-$i");
@@ -311,7 +333,9 @@ class AgreementController extends Controller
                     $rentAmount      = $request->input("rent_amount-$i");
                     $rentMode        = $request->input("rent_mode-$i");
                     $rentalGl        = $request->input("rental_gl-$i");
-                    if ($request->input("lease_break_date-$i")) {$lease_break_date = Carbon::createFromFormat('d/m/Y', $request->input("lease_break_date-$i"))->format('Y-m-d');}
+                    if ($request->input("lease_break_date-$i")) {
+                        $lease_break_date = Carbon::createFromFormat('d/m/Y', $request->input("lease_break_date-$i"))->format('Y-m-d');
+                    }
                     $lease_break_comment      = $request->input("lease_break_comment-$i");
                     $total_net_rent_amount    = $request->input("total_net_rent_amount-$i");
                     $vat_percentage           = $request->input("vat_percentage-$i");
@@ -323,16 +347,16 @@ class AgreementController extends Controller
                     $ewa_limit                = $request->input("ewa_limit-$i");
                     $notice_period            = $request->input("notice_period-$i");
                     // $total =
-                     $baseAmount  = (float)$request->input("rent_amount-$i");
+                    $baseAmount  = (float)$request->input("rent_amount-$i");
 
-                if ($rentMode === $paymentMode) {
+                    if ($rentMode === $paymentMode) {
 
-                    $rentAmount = $baseAmount;
-                } else {
-                    $rentAmount = calc_rent_amount($rentMode, $paymentMode, $baseAmount, $rentAmount);
-                    $total_net_rent_amount = ($rentAmount * ($vat_percentage / 100 )) + $rentAmount;
-                    $security_deposit_amount = $rentAmount * $security_deposit;
-                }
+                        $rentAmount = $baseAmount;
+                    } else {
+                        $rentAmount = calc_rent_amount($rentMode, $paymentMode, $baseAmount, $rentAmount);
+                        $total_net_rent_amount = ($rentAmount * ($vat_percentage / 100)) + $rentAmount;
+                        $security_deposit_amount = $rentAmount * $security_deposit;
+                    }
                     $agreement_units = (new AgreementUnits())->setConnection('tenant')->create([
                         'agreement_id'             => $agreement->id,
                         'property_id'              => $propertyId,
@@ -359,7 +383,7 @@ class AgreementController extends Controller
                         'total'                    => 0,
                     ]);
                     $unit_management = (new UnitManagement())->setConnection('tenant')->where('id', $unit)->first();
-                    $unit_management->update(['booking_status' => 'agreement','tenant_id' => $request->tenant_id]);
+                    $unit_management->update(['booking_status' => 'agreement', 'tenant_id' => $request->tenant_id]);
                     if (isset($request->service_counter[$i])) {
                         for ($ind = 1, $inde = $request->service_counter[$i]; $ind <= $inde; $ind++) {
                             $chargeMode       = $request->input("charge_mode-{$i}-{$ind}")[0] ?? null;
@@ -383,7 +407,6 @@ class AgreementController extends Controller
                             ]);
                         }
                     }
-
                 }
             }
 
@@ -393,7 +416,6 @@ class AgreementController extends Controller
         } catch (Throwable $e) {
             DB::rollBack();
             return redirect()->back()->with("error", $e->getMessage());
-
         }
     }
 
@@ -419,7 +441,7 @@ class AgreementController extends Controller
         $unit_types               = DB::connection('tenant')->table('unit_types')->get();
         $views                    = DB::connection('tenant')->table('views')->get();
         $property_types           = DB::connection('tenant')->table('property_types')->get();
-             $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
+        $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
 
         $data = [
             'dail_code_main'            => $dail_code_main,
@@ -460,7 +482,7 @@ class AgreementController extends Controller
         }
     }
     public function update(Request $request, $id)
-    {  
+    {
         $agreement         = (new Agreement())->setConnection('tenant')->findOrFail($id);
         $agreement_details = (new AgreementDetails())->setConnection('tenant')->where('agreement_id', $id)->first();
         $agreement_units   = (new AgreementUnits())->setConnection('tenant')->where('agreement_id', $id)->get();
@@ -567,7 +589,9 @@ class AgreementController extends Controller
                     $rentAmount      = $request->input("rent_amount-$key");
                     $rentMode        = $request->input("rent_mode-$key");
                     $rentalGl        = $request->input("rental_gl-$key");
-                    if ($request->input("lease_break_date-$key")) {$lease_break_date = Carbon::createFromFormat('d/m/Y', $request->input("lease_break_date-$key"))->format('Y-m-d');}
+                    if ($request->input("lease_break_date-$key")) {
+                        $lease_break_date = Carbon::createFromFormat('d/m/Y', $request->input("lease_break_date-$key"))->format('Y-m-d');
+                    }
                     $lease_break_comment      = $request->input("lease_break_comment-$key");
                     $total_net_rent_amount    = $request->input("total_net_rent_amount-$key") ?? 0;
                     $vat_percentage           = $request->input("vat_percentage-$key");
@@ -613,8 +637,12 @@ class AgreementController extends Controller
                             $amountCharge     = (isset($request->input("amount_charge-{$key}-{$ind}")[0])) ? $request->input("amount_charge-{$key}-{$ind}")[0] : null;
                             $percentageCharge = (isset($request->input("percentage_amount_charge-{$key}-{$ind}")[0])) ? $request->input("percentage_amount_charge-{$key}-{$ind}")[0] : null;
                             $calculateAmount  = (isset($request->input("calculate_amount-{$key}-{$ind}")[0])) ? $request->input("calculate_amount-{$key}-{$ind}")[0] : null;
-                            if (isset($request->input("start_date-{$key}-{$ind}")[0])) {$start = Carbon::createFromFormat('d/m/Y', $request->input("start_date-{$key}-{$ind}")[0])->format('Y-m-d');}
-                            if (isset($request->input("expiry_date-{$key}-{$ind}")[0])) {$expiry = Carbon::createFromFormat('d/m/Y', $request->input("expiry_date-{$key}-{$ind}")[0])->format('Y-m-d');}
+                            if (isset($request->input("start_date-{$key}-{$ind}")[0])) {
+                                $start = Carbon::createFromFormat('d/m/Y', $request->input("start_date-{$key}-{$ind}")[0])->format('Y-m-d');
+                            }
+                            if (isset($request->input("expiry_date-{$key}-{$ind}")[0])) {
+                                $expiry = Carbon::createFromFormat('d/m/Y', $request->input("expiry_date-{$key}-{$ind}")[0])->format('Y-m-d');
+                            }
                             $startDate     = $start ?? null;
                             $expiryDate    = $expiry ?? null;
                             $vatPercentage = (isset($request->input("vat_percentage-{$key}-{$ind}")[0])) ? $request->input("vat_percentage-{$key}-{$ind}")[0] : null;
@@ -631,7 +659,6 @@ class AgreementController extends Controller
                                 ]);
                             }
                         }
-
                     }
                     if (! isset($request->service_counter[$key]) && isset($request->old_service_counter[$key])) {
                         for ($ind = 1, $inde = $request->old_service_counter[$key]; $ind <= $inde; $ind++) {
@@ -640,8 +667,12 @@ class AgreementController extends Controller
                             $amountCharge     = (isset($request->input("amount_charge-{$key}-{$ind}")[0])) ? $request->input("amount_charge-{$key}-{$ind}")[0] : null;
                             $percentageCharge = (isset($request->input("percentage_amount_charge-{$key}-{$ind}")[0])) ? $request->input("percentage_amount_charge-{$key}-{$ind}")[0] : null;
                             $calculateAmount  = (isset($request->input("calculate_amount-{$key}-{$ind}")[0])) ? $request->input("calculate_amount-{$key}-{$ind}")[0] : null;
-                            if (isset($request->input("start_date-{$key}-{$ind}")[0])) {$start = Carbon::createFromFormat('d/m/Y', $request->input("start_date-{$key}-{$ind}")[0])->format('Y-m-d');}
-                            if (isset($request->input("expiry_date-{$key}-{$ind}")[0])) {$expiry = Carbon::createFromFormat('d/m/Y', $request->input("expiry_date-{$key}-{$ind}")[0])->format('Y-m-d');}
+                            if (isset($request->input("start_date-{$key}-{$ind}")[0])) {
+                                $start = Carbon::createFromFormat('d/m/Y', $request->input("start_date-{$key}-{$ind}")[0])->format('Y-m-d');
+                            }
+                            if (isset($request->input("expiry_date-{$key}-{$ind}")[0])) {
+                                $expiry = Carbon::createFromFormat('d/m/Y', $request->input("expiry_date-{$key}-{$ind}")[0])->format('Y-m-d');
+                            }
                             $startDate     = $start ?? null;
                             $expiryDate    = $expiry ?? null;
                             $vatPercentage = (isset($request->input("vat_percentage-{$key}-{$ind}")[0])) ? $request->input("vat_percentage-{$key}-{$ind}")[0] : null;
@@ -657,12 +688,9 @@ class AgreementController extends Controller
                                     'total'             => $totalAmount,
                                 ]);
                             }
-
                         }
                     }
-
                 }
-
             }
             DB::commit();
             return to_route('agreement.index')->with('success', __('general.updated_successfully'));
@@ -759,9 +787,13 @@ class AgreementController extends Controller
     }
     public function view_image($id)
     {
-        $property = (new PropertyManagement())->setConnection('tenant')->with('blocks_management_child', 'blocks_management_child.block'
-            , 'blocks_management_child.floors_management_child', 'blocks_management_child.floors_management_child.floor_management_main',
-            'blocks_management_child.floors_management_child.unit_management_child', 'blocks_management_child.floors_management_child.unit_management_child.unit_management_main'
+        $property = (new PropertyManagement())->setConnection('tenant')->with(
+            'blocks_management_child',
+            'blocks_management_child.block',
+            'blocks_management_child.floors_management_child',
+            'blocks_management_child.floors_management_child.floor_management_main',
+            'blocks_management_child.floors_management_child.unit_management_child',
+            'blocks_management_child.floors_management_child.unit_management_child.unit_management_main'
         )->findOrFail($id);
         // $property = PropertyManagement::findOrFail($id);
         $data = [
@@ -771,9 +803,13 @@ class AgreementController extends Controller
     }
     public function list_view($id)
     {
-        $property = (new PropertyManagement())->setConnection('tenant')->with('blocks_management_child', 'blocks_management_child.block'
-            , 'blocks_management_child.floors_management_child', 'blocks_management_child.floors_management_child.floor_management_main',
-            'blocks_management_child.floors_management_child.unit_management_child', 'blocks_management_child.floors_management_child.unit_management_child.unit_management_main'
+        $property = (new PropertyManagement())->setConnection('tenant')->with(
+            'blocks_management_child',
+            'blocks_management_child.block',
+            'blocks_management_child.floors_management_child',
+            'blocks_management_child.floors_management_child.floor_management_main',
+            'blocks_management_child.floors_management_child.unit_management_child',
+            'blocks_management_child.floors_management_child.unit_management_child.unit_management_main'
         )->findOrFail($id);
         $data = [
             'property_item' => $property,
@@ -788,7 +824,7 @@ class AgreementController extends Controller
         $agreement            = Agreement::findOrFail($id);
         $units                = AgreementUnits::where('agreement_id', $id)->get();
         $rent_intervals       = [];
-        $total_service_amount = 0; 
+        $total_service_amount = 0;
         try {
             foreach ($units as $unit) {
 
@@ -798,8 +834,8 @@ class AgreementController extends Controller
                 $company              = auth()->user() ?? User::first();
                 $total_service_amount = AgreementUnitsService::where('agreement_unit_id', $unit->id ?? 0)->sum('amount') ?? 0;
                 $total_services       = AgreementUnitsService::where('agreement_unit_id', $unit->id)->with('service_master:id,vat')->get();
-                
-                $original_start_date = $start_date->copy(); 
+
+                $original_start_date = $start_date->copy();
                 if (isset($total_services)) {
                     if ($unit->rent_mode == null) {
                         $unit->rent_mode = 2;
@@ -824,8 +860,8 @@ class AgreementController extends Controller
                                     'service'              => 'yes',
                                     'category'             => 'service',
                                     'service_id'           => $total_service_item->other_charge_type,
-                                    'invoice_status'       => null,  
-                                    'branch_id'            =>  1, 
+                                    'invoice_status'       => null,
+                                    'branch_id'            =>  1,
                                     'created_at'           => now(),
                                 ];
                                 $start_date->addMonth();
@@ -845,8 +881,8 @@ class AgreementController extends Controller
                                     'billing_month_year'   => $start_date->format('Y-m'),
                                     'service'              => 'yes',
                                     'category'             => 'service',
-                                    'invoice_status'       => null,  
-                                    'branch_id'            =>  1, 
+                                    'invoice_status'       => null,
+                                    'branch_id'            =>  1,
                                     'service_id'           => $total_service_item->other_charge_type,
                                     'created_at'           => now(),
 
@@ -868,8 +904,8 @@ class AgreementController extends Controller
                                     'billing_month_year'   => $start_date->format('Y-m'),
                                     'service'              => 'yes',
                                     'category'             => 'service',
-                                    'invoice_status'       => null,  
-                                    'branch_id'            =>  1, 
+                                    'invoice_status'       => null,
+                                    'branch_id'            =>  1,
                                     'service_id'           => $total_service_item->other_charge_type,
                                     'created_at'           => now(),
 
@@ -892,8 +928,8 @@ class AgreementController extends Controller
                                     'service'              => 'yes',
                                     'category'             => 'service',
                                     'service_id'           => $total_service_item->other_charge_type,
-                                    'invoice_status'       => null,  
-                                    'branch_id'            =>  1, 
+                                    'invoice_status'       => null,
+                                    'branch_id'            =>  1,
                                     'created_at'           => now(),
 
                                 ];
@@ -939,8 +975,8 @@ class AgreementController extends Controller
                                 'billing_month_year'   => $start_date->format('Y-m'),
                                 'service'              => 'yes',
                                 'category'             => 'service',
-                                'invoice_status'       => null,  
-                                'branch_id'            =>  1, 
+                                'invoice_status'       => null,
+                                'branch_id'            =>  1,
                                 'service_id'           => $total_service_item->other_charge_type,
                                 'created_at'           => now(),
 
@@ -966,8 +1002,8 @@ class AgreementController extends Controller
                             'service'              => 'no',
                             'category'             => 'rent',
                             'service_id'           => null,
-                            'invoice_status'       => null,  
-                            'branch_id'            =>  1, 
+                            'invoice_status'       => null,
+                            'branch_id'            =>  1,
                             'created_at'           => now(),
 
                         ];
@@ -989,8 +1025,8 @@ class AgreementController extends Controller
                             'service'              => 'no',
                             'category'             => 'rent',
                             'service_id'           => null,
-                            'invoice_status'       => null,  
-                            'branch_id'            =>  1, 
+                            'invoice_status'       => null,
+                            'branch_id'            =>  1,
                             'created_at'           => now(),
 
                         ];
@@ -1012,8 +1048,8 @@ class AgreementController extends Controller
                             'service'              => 'no',
                             'category'             => 'rent',
                             'service_id'           => null,
-                            'invoice_status'       => null,  
-                            'branch_id'            =>  1, 
+                            'invoice_status'       => null,
+                            'branch_id'            =>  1,
                             'created_at'           => now(),
 
                         ];
@@ -1035,8 +1071,8 @@ class AgreementController extends Controller
                             'service'              => 'no',
                             'category'             => 'rent',
                             'service_id'           => null,
-                            'invoice_status'       => null,  
-                            'branch_id'            =>  1, 
+                            'invoice_status'       => null,
+                            'branch_id'            =>  1,
                             'created_at'           => now(),
 
                         ];
@@ -1059,8 +1095,8 @@ class AgreementController extends Controller
                             'service'              => 'no',
                             'category'             => 'rent',
                             'service_id'           => null,
-                            'invoice_status'       => null,  
-                            'branch_id'            =>  1, 
+                            'invoice_status'       => null,
+                            'branch_id'            =>  1,
                             'created_at'           => now(),
 
                         ];
@@ -1087,13 +1123,13 @@ class AgreementController extends Controller
                         'service'              => 'no',
                         'category'             => 'rent',
                         'service_id'           => null,
-                        'invoice_status'       => null,  
-                        'branch_id'            =>  1, 
+                        'invoice_status'       => null,
+                        'branch_id'            =>  1,
                         'created_at'           => now(),
 
                     ];
                 }
-            }  
+            }
             DB::connection('tenant')->table('schedules')->insert($rent_intervals);
             $agreement->update([
                 'booking_status' => 'signed',
@@ -1147,8 +1183,18 @@ class AgreementController extends Controller
         $employees                = (new Employee())->setConnection('tenant')->select('id', 'name')->lazy();
         $country_master           = (new CountryMaster())->setConnection('tenant')->select('id', 'country_id')->with('country')->lazy();
         $all_units                = (new UnitManagement())->setConnection('tenant')->select('id', 'property_management_id', 'booking_status', 'view_id', 'unit_type_id', 'unit_condition_id', 'unit_description_id', 'unit_id', 'block_management_id', 'floor_management_id')->whereIn('id', $ids)
-            ->with('block_unit_management', 'property_unit_management', 'block_unit_management.block', 'floor_unit_management.floor_management_main'
-                , 'floor_unit_management', 'unit_management_main', 'unit_description', 'unit_type', 'view', 'unit_condition')->lazy();
+            ->with(
+                'block_unit_management',
+                'property_unit_management',
+                'block_unit_management.block',
+                'floor_unit_management.floor_management_main',
+                'floor_unit_management',
+                'unit_management_main',
+                'unit_description',
+                'unit_type',
+                'view',
+                'unit_condition'
+            )->lazy();
         $live_withs          = (new LiveWith())->setConnection('tenant')->select('id', 'name')->lazy();
         $business_activities = (new BusinessActivity())->setConnection('tenant')->select('id', 'name')->lazy();
         $buildings           = (new PropertyManagement())->setConnection('tenant')->forUser()->select('id', 'name')->lazy();
@@ -1158,7 +1204,7 @@ class AgreementController extends Controller
         $views               = (new View())->setConnection('tenant')->select('id', 'name')->lazy();
         $property_types      = (new PropertyType())->setConnection('tenant')->select('id', 'name')->lazy();
         $services_master     = (new ServiceMaster())->setConnection('tenant')->select('id', 'name')->lazy();
-             $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
+        $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
 
         $data = [
             'dail_code_main'            => $dail_code_main,
@@ -1182,7 +1228,6 @@ class AgreementController extends Controller
             'tenants'                  => $allTenants,
         ];
         return view('admin-views.property_transactions.agreements.create_with_select_unit', $data);
-
     }
     public function empty_unit_from_service_agreement($id)
     {
@@ -1250,7 +1295,6 @@ class AgreementController extends Controller
                     'rent_amount' => $request->input('rent_amount-' . $unit_id),
 
                 ]);
-
             }
         }
         Toastr::success(translate('rent_amount_updated_successfully!'));

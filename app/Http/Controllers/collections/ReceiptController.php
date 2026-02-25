@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\collections;
 
 use Mpdf\Mpdf;
@@ -110,14 +111,14 @@ class ReceiptController extends Controller
 
     public function store(Request $request)
     {
-        
+
         $request->validate([
             'tenant_id'        => 'required',
             'balance_due'      => 'required',
             'receipt_amount'   => 'required',
             'receipt_date'     => 'required',
             'payment_method'   => ['required', 'array', 'min:1'],
-           'payment_method.*' => ['required', 'exists:main_ledgers,id'],
+            'payment_method.*' => ['required', 'exists:main_ledgers,id'],
             'payment_amount.*' => ['required', 'numeric', 'min:0.01'],
         ]);
         DB::beginTransaction();
@@ -137,9 +138,17 @@ class ReceiptController extends Controller
             ]);
             if (! isset($request->isAdvance)) {
                 foreach ($request->receipt_item_id as $receipt_item) {
-                    $invoice_item = (new InvoiceItems())->setConnection('tenant')->where('id', $receipt_item)->with('unit_management', 'invoice', 'building'
-                        , 'unit_management.block_unit_management', 'unit_management.property_unit_management', 'unit_management.block_unit_management.block',
-                        'unit_management.floor_unit_management', 'unit_management.floor_unit_management.floor_management_main', 'unit_management.unit_management_main')->first();
+                    $invoice_item = (new InvoiceItems())->setConnection('tenant')->where('id', $receipt_item)->with(
+                        'unit_management',
+                        'invoice',
+                        'building',
+                        'unit_management.block_unit_management',
+                        'unit_management.property_unit_management',
+                        'unit_management.block_unit_management.block',
+                        'unit_management.floor_unit_management',
+                        'unit_management.floor_unit_management.floor_management_main',
+                        'unit_management.unit_management_main'
+                    )->first();
                     $invoice = (new Invoice())->setConnection('tenant')->where('id', $invoice_item->invoice_id)->first();
                     if (isset($request->pay_amount[$receipt_item])) {
                         $paid_amount = $request->pay_amount[$receipt_item];
@@ -156,16 +165,15 @@ class ReceiptController extends Controller
                             'paid_amount'     => $request->pay_amount[$receipt_item] ?? 0,
                             'type'            => $invoice_item->category,
                             'unit_name'       => $invoice_item->unit_management->property_unit_management->name .
-                            '-' .
-                            $invoice_item->unit_management->unit_management_main->name .
-                            '-' .
-                            $invoice_item->unit_management->block_unit_management->block->name .
-                            '-' .
-                            $invoice_item->unit_management->floor_unit_management->floor_management_main->name,
+                                '-' .
+                                $invoice_item->unit_management->unit_management_main->name .
+                                '-' .
+                                $invoice_item->unit_management->block_unit_management->block->name .
+                                '-' .
+                                $invoice_item->unit_management->floor_unit_management->floor_management_main->name,
 
                         ]);
                     }
-
                 }
             }
             foreach ($request->payment_method as $payment_method_item) {
@@ -217,9 +225,17 @@ class ReceiptController extends Controller
                 (new ReceiptItems())->setConnection('tenant')->where('receipt_id', $receipt->id)->delete();
 
                 foreach ($request->receipt_item_id as $receipt_item) {
-                    $invoice_item = (new InvoiceItems())->setConnection('tenant')->where('id', $receipt_item)->with('unit_management', 'invoice', 'building'
-                        , 'unit_management.block_unit_management', 'unit_management.property_unit_management', 'unit_management.block_unit_management.block',
-                        'unit_management.floor_unit_management', 'unit_management.floor_unit_management.floor_management_main', 'unit_management.unit_management_main')->first();
+                    $invoice_item = (new InvoiceItems())->setConnection('tenant')->where('id', $receipt_item)->with(
+                        'unit_management',
+                        'invoice',
+                        'building',
+                        'unit_management.block_unit_management',
+                        'unit_management.property_unit_management',
+                        'unit_management.block_unit_management.block',
+                        'unit_management.floor_unit_management',
+                        'unit_management.floor_unit_management.floor_management_main',
+                        'unit_management.unit_management_main'
+                    )->first();
                     $invoice = (new Invoice())->setConnection('tenant')->where('id', $invoice_item->invoice_id)->first();
                     // $invoice_item->update([
                     //     'paid_amount'       => $request->pay_amount[$receipt_item],
@@ -233,12 +249,12 @@ class ReceiptController extends Controller
                             'type'            => $invoice_item->category,
                             'paid_amount'     => $request->pay_amount[$receipt_item] ?? 0,
                             'unit_name'       => $invoice_item->unit_management->property_unit_management->name .
-                            '-' .
-                            $invoice_item->unit_management->unit_management_main->name .
-                            '-' .
-                            $invoice_item->unit_management->block_unit_management->block->name .
-                            '-' .
-                            $invoice_item->unit_management->floor_unit_management->floor_management_main->name,
+                                '-' .
+                                $invoice_item->unit_management->unit_management_main->name .
+                                '-' .
+                                $invoice_item->unit_management->block_unit_management->block->name .
+                                '-' .
+                                $invoice_item->unit_management->floor_unit_management->floor_management_main->name,
                         ]);
                     }
                 }
@@ -256,7 +272,6 @@ class ReceiptController extends Controller
 
             DB::commit();
             return redirect()->route("receipts.list")->with("success", __('general.updated_successfully'));
-
         } catch (\Throwable $th) {
             DB::rollback();
             return redirect()->back()->with("error", $th->getMessage());
@@ -290,9 +305,17 @@ class ReceiptController extends Controller
         $receipt          = (new Receipt())->setConnection('tenant')->findOrFail($id);
         $receipt_items    = (new ReceiptItems())->setConnection('tenant')->where('receipt_id', $receipt->id)->get();
         $invoice_item_ids = $receipt_items->pluck('invoice_item_id')->toArray();
-        $invoice_items    = (new InvoiceItems())->setConnection('tenant')->whereIn('id', $invoice_item_ids)->with('unit_management', 'invoice', 'building'
-            , 'unit_management.block_unit_management', 'unit_management.property_unit_management', 'unit_management.block_unit_management.block',
-            'unit_management.floor_unit_management', 'unit_management.floor_unit_management.floor_management_main', 'unit_management.unit_management_main')->get();
+        $invoice_items    = (new InvoiceItems())->setConnection('tenant')->whereIn('id', $invoice_item_ids)->with(
+            'unit_management',
+            'invoice',
+            'building',
+            'unit_management.block_unit_management',
+            'unit_management.property_unit_management',
+            'unit_management.block_unit_management.block',
+            'unit_management.floor_unit_management',
+            'unit_management.floor_unit_management.floor_management_main',
+            'unit_management.unit_management_main'
+        )->get();
         $receipts_payment_method = DB::connection('tenant')->table('receipts_payment_method')->where('receipt_id', $receipt->id)->get();
         $tenant                  = (new Tenant())->setConnection('tenant')->where('id', $receipt->tenant_id)->first();
         $total                   = (new InvoiceItems())->setConnection('tenant')->whereHas('invoice', function ($query) use ($tenant) {
@@ -348,50 +371,58 @@ class ReceiptController extends Controller
             'balance_due'      => 'required',
             'receipt_amount'   => 'required',
             'receipt_date'     => 'required',
-            'payment_method'   => ['required', 'array' ],
+            'payment_method'   => ['required', 'array'],
             // 'payment_method.*' => ['required', 'exists:main_ledgers,id'],
             'payment_amount.*' => ['required', 'numeric', 'min:0.01'],
         ]);
         // DB::beginTransaction();
         // try {
-            $receipt_date = $request->receipt_date
-                ? Carbon::createFromFormat('d/m/Y', $request->receipt_date)->format('Y-m-d')
-                : null;
-            $receipt = (new Receipt())->setConnection('tenant')->create([
-                'tenant_id'      => $request->tenant_id,
-                'invoice_id'      => $request->invoice_id,
-                'balance_due'    => str_replace(',', '', $request->balance_due),
-                'voucher_type'   => $request->voucher_type,
-                'receipt_ref'    => $request->receipt_ref,
-                'receipt_date'   => $receipt_date,
-                'receipt_amount' => $request->receipt_amount,
-                'is_advance'     => $request->has('isAdvance') ? 1 : 0,
-                'advance_ref'    => $request->advance_ref ?? null,
-            ]);
-            $total_paid_amount = 0;
-            if (! isset($request->isAdvance)) {
-                foreach ($request->receipt_item_id as $receipt_item) {
-                    $invoice_item = (new InvoiceItems())->setConnection('tenant')->where('id', $receipt_item)->with('unit_management', 'invoice', 'building'
-                        , 'unit_management.block_unit_management', 'unit_management.property_unit_management', 'unit_management.block_unit_management.block',
-                        'unit_management.floor_unit_management', 'unit_management.floor_unit_management.floor_management_main', 'unit_management.unit_management_main')->first();
-                    $invoice = (new Invoice())->setConnection('tenant')->where('id', $invoice_item->invoice_id)->first();
-                    $paid_amount=0;
-                    if (isset($request->pay_amount[$receipt_item])) {
-                        $paid_amount = $request->pay_amount[$receipt_item];
-                    }
-                    $invoice_item->update([
-                        'paid_amount' => ($paid_amount != 0) ? ($paid_amount + $invoice_item->paid_amount) : $invoice_item->paid_amount,
-                    ]);
-                    $total_paid_amount +=$paid_amount;
-                    if ($request->pay_amount[$receipt_item] != null) {
-                        $receipt_items = (new ReceiptItems())->setConnection('tenant')->create([
-                            'date'            => $receipt_date,
-                            'receipt_id'      => $receipt->id,
-                            'ref'             => $invoice->invoice_number,
-                            'invoice_item_id' => $invoice_item->id,
-                            'paid_amount'     => $request->pay_amount[$receipt_item] ?? 0,
-                            'type'            => $invoice_item->category,
-                            'unit_name'       => $invoice_item->unit_management->property_unit_management->name .
+        $receipt_date = $request->receipt_date
+            ? Carbon::createFromFormat('d/m/Y', $request->receipt_date)->format('Y-m-d')
+            : null;
+        $receipt = (new Receipt())->setConnection('tenant')->create([
+            'tenant_id'      => $request->tenant_id,
+            'invoice_id'      => $request->invoice_id,
+            'balance_due'    => str_replace(',', '', $request->balance_due),
+            'voucher_type'   => $request->voucher_type,
+            'receipt_ref'    => $request->receipt_ref,
+            'receipt_date'   => $receipt_date,
+            'receipt_amount' => $request->receipt_amount,
+            'is_advance'     => $request->has('isAdvance') ? 1 : 0,
+            'advance_ref'    => $request->advance_ref ?? null,
+        ]);
+        $total_paid_amount = 0;
+        if (! isset($request->isAdvance)) {
+            foreach ($request->receipt_item_id as $receipt_item) {
+                $invoice_item = (new InvoiceItems())->setConnection('tenant')->where('id', $receipt_item)->with(
+                    'unit_management',
+                    'invoice',
+                    'building',
+                    'unit_management.block_unit_management',
+                    'unit_management.property_unit_management',
+                    'unit_management.block_unit_management.block',
+                    'unit_management.floor_unit_management',
+                    'unit_management.floor_unit_management.floor_management_main',
+                    'unit_management.unit_management_main'
+                )->first();
+                $invoice = (new Invoice())->setConnection('tenant')->where('id', $invoice_item->invoice_id)->first();
+                $paid_amount = 0;
+                if (isset($request->pay_amount[$receipt_item])) {
+                    $paid_amount = $request->pay_amount[$receipt_item];
+                }
+                $invoice_item->update([
+                    'paid_amount' => ($paid_amount != 0) ? ($paid_amount + $invoice_item->paid_amount) : $invoice_item->paid_amount,
+                ]);
+                $total_paid_amount += $paid_amount;
+                if ($request->pay_amount[$receipt_item] != null) {
+                    $receipt_items = (new ReceiptItems())->setConnection('tenant')->create([
+                        'date'            => $receipt_date,
+                        'receipt_id'      => $receipt->id,
+                        'ref'             => $invoice->invoice_number,
+                        'invoice_item_id' => $invoice_item->id,
+                        'paid_amount'     => $request->pay_amount[$receipt_item] ?? 0,
+                        'type'            => $invoice_item->category,
+                        'unit_name'       => $invoice_item->unit_management->property_unit_management->name .
                             '-' .
                             $invoice_item->unit_management->unit_management_main->name .
                             '-' .
@@ -399,37 +430,45 @@ class ReceiptController extends Controller
                             '-' .
                             $invoice_item->unit_management->floor_unit_management->floor_management_main->name,
 
-                        ]);
-                    }
-
+                    ]);
                 }
             }
-            foreach ($request->payment_method as $payment_method_item) {
-                $cheque_date = (isset($request->cheque_date[$payment_method_item])) ? Carbon::createFromFormat('d/m/Y', $request->cheque_date[$payment_method_item])->format('Y-m-d') : null;
-                DB::connection('tenant')->table('receipts_payment_method')->insert([
-                    'receipt_id'     => $receipt->id,
-                    'main_ledger_id' => $payment_method_item,
-                    'amount'         => $request->payment_amount[$payment_method_item],
-                    'bank_name'      => $request->bank_name[$payment_method_item] ?? null,
-                    'cheque_no'      => $request->cheque_no[$payment_method_item] ?? null,
-                    'cheque_date'    => $cheque_date ?? null,
-                ]);
-            }
-            DB::commit();
-            return redirect()->route("receipts.list")->with("success", __('general.updated_successfully'));
+        }
+        foreach ($request->payment_method as $payment_method_item) {
+            $cheque_date = (isset($request->cheque_date[$payment_method_item])) ? Carbon::createFromFormat('d/m/Y', $request->cheque_date[$payment_method_item])->format('Y-m-d') : null;
+            DB::connection('tenant')->table('receipts_payment_method')->insert([
+                'receipt_id'     => $receipt->id,
+                'main_ledger_id' => $payment_method_item,
+                'amount'         => $request->payment_amount[$payment_method_item],
+                'bank_name'      => $request->bank_name[$payment_method_item] ?? null,
+                'cheque_no'      => $request->cheque_no[$payment_method_item] ?? null,
+                'cheque_date'    => $cheque_date ?? null,
+            ]);
+        }
+        DB::commit();
+        return redirect()->route("receipts.list")->with("success", __('general.updated_successfully'));
         // } catch (\Throwable $th) {
         //     DB::rollback();
         //     return redirect()->back()->with("error", $th->getMessage());
         // }
     }
 
-      public function generate_receipt($id){
-           $receipt          = Receipt::findOrFail($id);
+    public function generate_receipt($id)
+    {
+        $receipt          = Receipt::findOrFail($id);
         $receipt_items    = ReceiptItems::where('receipt_id', $receipt->id)->get();
         $invoice_item_ids = $receipt_items->pluck('invoice_item_id')->toArray();
-        $invoice_items    = InvoiceItems::whereIn('id', $invoice_item_ids)->with('unit_management', 'invoice', 'building'
-            , 'unit_management.block_unit_management', 'unit_management.property_unit_management', 'unit_management.block_unit_management.block',
-            'unit_management.floor_unit_management', 'unit_management.floor_unit_management.floor_management_main', 'unit_management.unit_management_main')->get();
+        $invoice_items    = InvoiceItems::whereIn('id', $invoice_item_ids)->with(
+            'unit_management',
+            'invoice',
+            'building',
+            'unit_management.block_unit_management',
+            'unit_management.property_unit_management',
+            'unit_management.block_unit_management.block',
+            'unit_management.floor_unit_management',
+            'unit_management.floor_unit_management.floor_management_main',
+            'unit_management.unit_management_main'
+        )->get();
         $receipts_payment_method = DB::connection('tenant')->table('receipts_payment_method')->where('receipt_id', $receipt->id)->get();
         $tenant                  = Tenant::where('id', $receipt->tenant_id)->first();
         $total                   = InvoiceItems::whereHas('invoice', function ($query) use ($tenant) {
@@ -453,21 +492,20 @@ class ReceiptController extends Controller
             'receipts_payment_method' => $receipts_payment_method,
             'company_settings'        => $company_settings,
             'company'                 => $company,
-        ]; 
-        
+        ];
+
         $html = view('receipts.format-1', $data)->render();
- 
+
         $mpdf = new Mpdf([
             'margin_top' => 10,
             'margin_bottom' => 10,
             'margin_left' => 10,
             'margin_right' => 10,
-            'default_font' => 'dejavusans'  
+            'default_font' => 'dejavusans'
         ]);
- 
+
         $mpdf->WriteHTML($html);
- 
+
         return $mpdf->Output("{$receipt->receipt_ref}.pdf", 'I');
     }
-
 }

@@ -1,11 +1,7 @@
  @extends('layouts.back-end.app')
 
  @php
-     if (auth()->check()) {
-         $company = App\Models\Company::where('id', auth()->user()->company_id)->first() ?? App\Models\User::first();
-     } else {
-         $company = App\Models\User::first();
-     }
+      
      $lang = session()->get('locale');
  @endphp
  @section('title', ui_change('room_reservation', 'room_reservation'))

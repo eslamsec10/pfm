@@ -946,6 +946,7 @@ Route::group(['prefix' => 'sales-return', 'middleware' => 'auth:web'], function 
 });
 // reports
 Route::group(['prefix' => 'property_reports', 'middleware' => 'auth:web'], function () {
+    Route::get('/contract_details', [ReportController::class, 'contract_details'])->name('contract_details');
     Route::get('/tenant_contact_details', [ReportController::class, 'tenant_report'])->name('tenant_contact_details');
     Route::get('/occupancy_details', [ReportController::class, 'occupancy_details'])->name('occupancy_details');
     Route::get('/leased_expired_details', [ReportController::class, 'leased_expired_details'])->name('leased_expired_details');

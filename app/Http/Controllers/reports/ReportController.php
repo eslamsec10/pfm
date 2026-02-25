@@ -8,7 +8,7 @@ use App\Models\PropertyManagement;
 use App\Models\Tenant;
 use App\Models\UnitManagement;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
+use Illuminate\Http\Request; 
 
 class ReportController extends Controller
 {
@@ -316,5 +316,91 @@ class ReportController extends Controller
             // 'groupedSummaries' => $groupedSummaries,
         ];
         return view('admin-views.reports.tenant_financial_summary', $data);
+    }
+
+    public function contract_details(Request $request){
+         $ids     = $request->bulk_ids;
+        
+        if ($request->bulk_action_btn === 'update_status' && is_array($ids) && count($ids)) {
+            $data = ['status' => 1];
+            (new Agreement())->setConnection('tenant')->whereIn('id', $ids)->update($data);
+            return back()->with('success', ui_change('updated_successfully'));
+        }
+        if ($request->bulk_action_btn === 'sign' && is_array($ids) && count($ids)) {
+            foreach ($ids as $id) {
+                $agreement = (new Agreement())->setConnection('tenant')->findOrFail($id);
+                if ($agreement->booking_status == 'signed') {
+                    continue;
+                } else {
+
+                    $this->signed($id);
+                }
+            }
+            return back()->with('success', ui_change('signed_successfully'));
+        }
+        $search      = $request['search'];
+        $query_param = $search ? ['search' => $request['search']] : '';
+        $agreements  = (new Agreement())->setConnection('tenant')->when($request['search'], function ($q) use ($request) {
+            $key = explode(' ', $request['search']);
+            foreach ($key as $value) {
+                $q->Where('agreement_no', 'like', "%{$value}%")
+
+                    ->orWhereHas('tenant', function ($query) use ($value) {
+                        $query->where('name', 'like', "%{$value}%")->orWhere('company_name', 'like', "%{$value}%");
+                    });
+            }
+        }) //->where('status', 'pending')
+            ->with(
+                'agreement_units:id,agreement_id,property_id,unit_id,commencement_date,expiry_date',
+                'agreement_units.agreement_unit_main:id,property_management_id,block_management_id,floor_management_id,unit_id',
+                'agreement_units.agreement_unit_main.property_unit_management:id,name',
+                'agreement_units.agreement_unit_main.block_unit_management:id,block_id',
+                'agreement_units.agreement_unit_main.floor_unit_management:id,floor_id',
+                'agreement_units.agreement_unit_main.floor_unit_management.floor_management_main:id,name',
+                'agreement_units.agreement_unit_main.block_unit_management.block:id,name'
+            )
+            ->latest()->orderBy('created_at', 'asc')->paginate()->appends($query_param);
+        if ($request->bulk_action_btn === 'filter') {
+            $data         = ['status' => 1];
+            $report_query = (new Agreement())->setConnection('tenant')->query();
+            if ($request->booking_status && $request->booking_status != -1 && ($request->booking_status == 'signed')) {
+                $report_query->where('booking_status', $request->booking_status);
+            }
+            if ($request->status && $request->status != -1) {
+                $report_query->where('status', $request->status);
+            }
+            if ($request->booking_status && $request->booking_status != -1 && ($request->booking_status == 'unsigned')) {
+                $report_query->where('booking_status', '!=', 'signed');
+            }
+            if ($request->sign_status && $request->sign_status != -1 && ($request->sign_status == 'unsigned')) {
+                $report_query->where('booking_status', '!=', 'signed');
+            } 
+            if ($request->tenant_id && $request->tenant_id != -1) {
+                $report_query->where('tenant_id', $request->tenant_id);
+            }
+            if ($request->from && $request->to) {
+                $startDate = Carbon::createFromFormat('d/m/Y', $request->from)->startOfDay();
+                $endDate   = Carbon::createFromFormat('d/m/Y', $request->to)->endOfDay();
+                $report_query->whereBetween('created_at', [$startDate, $endDate]);
+            }
+            $agreements = $report_query->orderBy('created_at', 'desc')
+                ->with(
+                    'agreement_units:id,agreement_id,property_id,unit_id,commencement_date,expiry_date',
+                    'agreement_units.agreement_unit_main:id,property_management_id,block_management_id,floor_management_id,unit_id',
+                    'agreement_units.agreement_unit_main.property_unit_management:id,name',
+                    'agreement_units.agreement_unit_main.block_unit_management:id,block_id',
+                    'agreement_units.agreement_unit_main.floor_unit_management:id,floor_id',
+                    'agreement_units.agreement_unit_main.floor_unit_management.floor_management_main:id,name',
+                    'agreement_units.agreement_unit_main.block_unit_management.block:id,name'
+                )->paginate();
+        }
+        $tenants = (new Tenant())->setConnection('tenant')->select('id', 'name', 'company_name')->get();
+        $data    = [
+            'agreements' => $agreements,
+            'search'     => $search,
+            'tenants'    => $tenants,
+
+        ];
+        return view("admin-views.reports.contract_details", $data);
     }
 }

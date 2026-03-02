@@ -23,6 +23,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Mpdf\Mpdf;
 
@@ -103,215 +104,219 @@ class InvoiceController extends Controller
             'invoice_date'  => "required",
             'invoice_month' => "required",
         ]);
-        DB::beginTransaction();
+        // DB::beginTransaction();
 
-        try {
-            $formattedDate = Carbon::createFromFormat('d/m/Y', $request->invoice_date)->format('Y-m-d');
-            $date          = explode('-', $request->invoice_month);
-            $month         = $date[0];
-            $year          = $date[1];
-            $tenant        = $request->tenant_id != 0 ? Tenant::find($request->tenant_id) : null;
+        // try {
+        $formattedDate = Carbon::createFromFormat('d/m/Y', $request->invoice_date)->format('Y-m-d');
+        $date          = explode('-', $request->invoice_month);
+        $month         = $date[0];
+        $year          = $date[1];
+        $tenant        = $request->tenant_id != 0 ? Tenant::find($request->tenant_id) : null;
 
-            if ($request->tenant_id == 0) {
-                $all_tenant          = Tenant::get();
-                $all_master_invoices = [];
-                foreach ($all_tenant as $tenant_invoice) {
-                    // get schedules
-                    $schedulesQuery = Schedule::where('billing_month_year', $request->invoice_month);
-                    $schedulesQuery->where('tenant_id', $tenant_invoice->id);
-                    $schedules = $schedulesQuery->where(function ($query) {
-                        $query->where('invoice_status', 'pending')
-                            ->orWhereNull('invoice_status');
-                    })->get();
-                    if (! $schedules->isEmpty()) {
+        if ($request->tenant_id == 0) {
+            $data['invoice_month'] = $request->invoice_month;
+            $data['formattedDate'] = $formattedDate;
+            $data['building_id']   = $request->building_id;
+            $this->all_tenants($data);
+            // $all_tenant          = Tenant::get();
+            // $all_master_invoices = [];
+            // foreach ($all_tenant as $tenant_invoice) {
+            //     // get schedules
+            //     $schedulesQuery = Schedule::where('billing_month_year', $request->invoice_month);
+            //     $schedulesQuery->where('tenant_id', $tenant_invoice->id);
+            //     $schedules = $schedulesQuery->where(function ($query) {
+            //         $query->where('invoice_status', 'pending')
+            //             ->orWhereNull('invoice_status');
+            //     })->get();
+            //     if (! $schedules->isEmpty()) {
 
-                        $invoice = Invoice::create([
-                            'invoice_number'     => InvoiceNumber(),
-                            // 'invoice_number'     => invoiceNo($request->invoice_type) ?? $invoice_number,
-                            'invoice_type'       => $request->invoice_type,
-                            'tenant_id'          => $tenant_invoice->id,
-                            'invoice_date'       => $formattedDate,
-                            'invoice_month_year' => $request->invoice_month,
-                            'status'             => "unpaid",
-                            'total'              => 0,
-                        ]);
-                        $all_master_invoices[] = $invoice;
-                        $grand_total           = 0;
-                        $tenant_debit = 0;
-                        $tenant_credit = 0;
-                        if (isset($invoice)) {
-                            foreach ($schedules as $schedule) {
-                                $invoice_item = InvoiceItems::create([
-                                    'invoice_id'     => $invoice->id,
-                                    'agreement_id'   => $schedule->agreement_id,
-                                    'vat'            => $schedule->vat_amount,
-                                    'unit_id'        => $schedule->unit_id,
-                                    'building_id'    => $schedule->building_id ?? $schedule->main_unit->property_management_id,
-                                    'tenant_id'      => $schedule->tenant_id,
-                                    'rent_amount'    => ($schedule->rent_amount),
-                                    'service'        => $schedule->category,
-                                    'vat_percentage' => $schedule->vat,
-                                    'total'          => ($schedule->rent_amount + ((isset($schedule->vat_amount)) ? $schedule->vat_amount : 0)),
-                                    // 'building_id'  => $schedule->main_unit->property_management_id,
-                                    'service_id'     => $schedule->service_id,
-                                    'category'       => $schedule->category ?? 'rent',
-                                    'balance_due'    => ($schedule->rent_amount + ((isset($schedule->vat_amount)) ? $schedule->vat_amount : 0)),
+            //         $invoice = Invoice::create([
+            //             'invoice_number'     => InvoiceNumber(),
+            //             // 'invoice_number'     => invoiceNo($request->invoice_type) ?? $invoice_number,
+            //             'invoice_type'       => $request->invoice_type,
+            //             'tenant_id'          => $tenant_invoice->id,
+            //             'invoice_date'       => $formattedDate,
+            //             'invoice_month_year' => $request->invoice_month,
+            //             'status'             => "unpaid",
+            //             'total'              => 0,
+            //         ]);
+            //         $all_master_invoices[] = $invoice;
+            //         $grand_total           = 0;
+            //         $tenant_debit = 0;
+            //         $tenant_credit = 0;
+            //         if (isset($invoice)) {
+            //             foreach ($schedules as $schedule) {
+            //                 $invoice_item = InvoiceItems::create([
+            //                     'invoice_id'     => $invoice->id,
+            //                     'agreement_id'   => $schedule->agreement_id,
+            //                     'vat'            => $schedule->vat_amount,
+            //                     'unit_id'        => $schedule->unit_id,
+            //                     'building_id'    => $schedule->building_id ?? $schedule->main_unit->property_management_id,
+            //                     'tenant_id'      => $schedule->tenant_id,
+            //                     'rent_amount'    => ($schedule->rent_amount),
+            //                     'service'        => $schedule->category,
+            //                     'vat_percentage' => $schedule->vat,
+            //                     'total'          => ($schedule->rent_amount + ((isset($schedule->vat_amount)) ? $schedule->vat_amount : 0)),
+            //                     // 'building_id'  => $schedule->main_unit->property_management_id,
+            //                     'service_id'     => $schedule->service_id,
+            //                     'category'       => $schedule->category ?? 'rent',
+            //                     'balance_due'    => ($schedule->rent_amount + ((isset($schedule->vat_amount)) ? $schedule->vat_amount : 0)),
 
-                                ]);
-                                if ($schedule->category == 'service') {
-                                    $service = ServiceMaster::find($schedule->service_id);
-                                    $service->service_ledger?->update([
-                                        'credit'         => $invoice_item->total,
-                                    ]);
-                                } elseif ($schedule->category == 'rent') {
-                                    $unit_management = UnitManagement::find($schedule->unit_id);
-                                    $unit_management->unit_ledger?->update([
-                                        'credit'         => $invoice_item->total,
-                                    ]);
-                                }
-                                // $options['to'] = $tenant_invoice->whatsapp_no ?? "+201150099801";
-                                // // $options['to'] = $tenant->whatsapp_no ?? $tenant->contact_no;
-                                // $options['message'] = "Hello Dear " . ($tenant_invoice->name ?? $tenant_invoice->company_name) . " this your invoice";
-                                // $pdf = Pdf::loadView('admin-views.invoices-formats.format-1', [
-                                //     'invoice' => $invoice->load('items', 'tenant')
-                                // ]);
+            //                 ]);
+            //                 if ($schedule->category == 'service') {
+            //                     $service = ServiceMaster::find($schedule->service_id);
+            //                     $service->service_ledger?->update([
+            //                         'credit'         => $invoice_item->total,
+            //                     ]);
+            //                 } elseif ($schedule->category == 'rent') {
+            //                     $unit_management = UnitManagement::find($schedule->unit_id);
+            //                     $unit_management->unit_ledger?->update([
+            //                         'credit'         => $invoice_item->total,
+            //                     ]);
+            //                 }
+            //                 // $options['to'] = $tenant_invoice->whatsapp_no ?? "+201150099801";
+            //                 // // $options['to'] = $tenant->whatsapp_no ?? $tenant->contact_no;
+            //                 // $options['message'] = "Hello Dear " . ($tenant_invoice->name ?? $tenant_invoice->company_name) . " this your invoice";
+            //                 // $pdf = Pdf::loadView('admin-views.invoices-formats.format-1', [
+            //                 //     'invoice' => $invoice->load('items', 'tenant')
+            //                 // ]);
 
-                                // $fileName = 'invoice_' . $invoice->id . '.pdf';
+            //                 // $fileName = 'invoice_' . $invoice->id . '.pdf';
 
-                                // $path = public_path('invoices/' . $fileName);
+            //                 // $path = public_path('invoices/' . $fileName);
 
-                                // if (!file_exists(public_path('invoices'))) {
-                                //     mkdir(public_path('invoices'), 0777, true);
-                                // }
-                                // file_put_contents($path, $pdf->output());
+            //                 // if (!file_exists(public_path('invoices'))) {
+            //                 //     mkdir(public_path('invoices'), 0777, true);
+            //                 // }
+            //                 // file_put_contents($path, $pdf->output());
 
-                                // $pdfUrl = url('invoices/' . $fileName);
+            //                 // $pdfUrl = url('invoices/' . $fileName);
 
-                                // $options['file'] = $pdfUrl;
+            //                 // $options['file'] = $pdfUrl;
 
-                                // sendWhatsApp($options);
-                                $grand_total += $invoice_item->total;
-                                $tenant_credit += $invoice_item->total;
-                                $schedule->update([
-                                    'invoice_status' => 'invoiced',
-                                ]);
-                            }
-                        }
-                        $ledger = MainLedger::where('name', 'LIKE', '%Tenants%')->where('main_id', $tenant_invoice->id)->first();
-                        if ($ledger) {
-                            $ledger->update([
-                                'debit' => $tenant_debit,
-                            ]);
-                        }
-                        $invoice->update([
-                            'total' => $grand_total,
-                        ]);
-                    }
-                }
-                DB::commit();
-                return redirect()->route('invoices.all_invoices')->with('success', 'Invoice All Added Successfully');
-            } else {
-                $tenant = $request->tenant_id != 0 ? (new Tenant())->setConnection('tenant')->find($request->tenant_id) : null;
+            //                 // sendWhatsApp($options);
+            //                 $grand_total += $invoice_item->total;
+            //                 $tenant_credit += $invoice_item->total;
+            //                 $schedule->update([
+            //                     'invoice_status' => 'invoiced',
+            //                 ]);
+            //             }
+            //         }
+            //         $ledger = MainLedger::where('name', 'LIKE', '%Tenants%')->where('main_id', $tenant_invoice->id)->first();
+            //         if ($ledger) {
+            //             $ledger->update([
+            //                 'debit' => $tenant_debit,
+            //             ]);
+            //         }
+            //         $invoice->update([
+            //             'total' => $grand_total,
+            //         ]);
+            //     }
+            // }
+            DB::commit();
+            return redirect()->route('invoices.all_invoices')->with('success', 'Invoice All Added Successfully');
+        } else {
+            $tenant = $request->tenant_id != 0 ? (new Tenant())->setConnection('tenant')->find($request->tenant_id) : null;
 
-                $invoiceMonth   = date('Y-m', strtotime($request->invoice_month . '-01'));
-                $schedulesQuery = (new Schedule())->setConnection('tenant')->where('billing_month_year', $invoiceMonth);
-                if ($tenant) {
-                    $schedulesQuery->where('tenant_id', $request->tenant_id);
-                }
-                $schedules = $schedulesQuery->where(function ($query) {
-                    $query->where('invoice_status', 'pending')
-                        ->orWhereNull('invoice_status');
-                })->get();
-                $lastInvoiceNumber = (new Invoice())->setConnection('tenant')->orderBy('invoice_number', 'desc')->first();
-                $invoice_number    = $lastInvoiceNumber
-                    ? 'INV-' . sprintf('%05d', (int) str_replace('INV-', '', $lastInvoiceNumber->invoice_number) + 1)
-                    : 'INV-00001';
-                if ($schedules) {
-                    $invoice = (new Invoice())->setConnection('tenant')->create([
-                        'invoice_number'     => InvoiceNumber(),
-                        'tenant_id'          => $request->tenant_id ?? 0,
-                        'invoice_type'       => $request->invoice_type,
-                        'invoice_date'       => $formattedDate,
-                        'invoice_month_year' => $request->invoice_month,
-                        'status'             => "unpaid",
-                        'total'              => 0,
+            $invoiceMonth   = date('Y-m', strtotime($request->invoice_month . '-01'));
+            $schedulesQuery = (new Schedule())->setConnection('tenant')->where('billing_month_year', $invoiceMonth);
+            if ($tenant) {
+                $schedulesQuery->where('tenant_id', $request->tenant_id);
+            }
+            $schedules = $schedulesQuery->where(function ($query) {
+                $query->where('invoice_status', 'pending')
+                    ->orWhereNull('invoice_status');
+            })->get();
+            $lastInvoiceNumber = (new Invoice())->setConnection('tenant')->orderBy('invoice_number', 'desc')->first();
+            $invoice_number    = $lastInvoiceNumber
+                ? 'INV-' . sprintf('%05d', (int) str_replace('INV-', '', $lastInvoiceNumber->invoice_number) + 1)
+                : 'INV-00001';
+            if ($schedules) {
+                $invoice = (new Invoice())->setConnection('tenant')->create([
+                    'invoice_number'     => InvoiceNumber(),
+                    'tenant_id'          => $request->tenant_id ?? 0,
+                    'invoice_type'       => $request->invoice_type,
+                    'invoice_date'       => $formattedDate,
+                    'invoice_month_year' => $request->invoice_month,
+                    'status'             => "unpaid",
+                    'total'              => 0,
+                ]);
+
+                // create invoice items if there is tenant
+                $grand_total = 0;
+                if (isset($invoice)) {
+                    $options['to'] = $tenant->whatsapp_no ?? "+201150099801";
+                    // $options['to'] = $tenant->whatsapp_no ?? $tenant->contact_no;
+                    $options['message'] = "Hello Dear " . ($tenant->name ?? $tenant->company_name) . " this your invoice";
+                    $pdf = Pdf::loadView('admin-views.invoices-formats.format-1', [
+                        'invoice' => $invoice->load('items', 'tenant')
                     ]);
 
-                    // create invoice items if there is tenant
-                    $grand_total = 0;
-                    if (isset($invoice)) {
-                        $options['to'] = $tenant->whatsapp_no ?? "+201150099801";
-                        // $options['to'] = $tenant->whatsapp_no ?? $tenant->contact_no;
-                        $options['message'] = "Hello Dear " . ($tenant->name ?? $tenant->company_name) . " this your invoice";
-                        $pdf = Pdf::loadView('admin-views.invoices-formats.format-1', [
-                            'invoice' => $invoice->load('items', 'tenant')
-                        ]);
+                    $fileName = 'invoice_' . $invoice->id . '.pdf';
 
-                        $fileName = 'invoice_' . $invoice->id . '.pdf';
+                    $path = public_path('invoices/' . $fileName);
 
-                        $path = public_path('invoices/' . $fileName);
-
-                        if (!file_exists(public_path('invoices'))) {
-                            mkdir(public_path('invoices'), 0777, true);
-                        }
-                        file_put_contents($path, $pdf->output());
-
-                        $pdfUrl = url('invoices/' . $fileName);
-
-                        $options['file'] = $pdfUrl;
-
-                        sendWhatsApp($options);
-
-                        foreach ($schedules as $schedule) {
-                            $schedule->update([
-                                'invoice_status' => 'invoiced',
-                            ]);
-                            $rent = (float) ($schedule->rent_amount ?? 0);
-                            $vat  = (float) ($schedule->vat_amount ?? 0);
-
-
-                            $invoice_item = (new InvoiceItems())->setConnection('tenant')->create([
-                                'invoice_id'     => $invoice->id,
-                                'agreement_id'   => $schedule->agreement_id,
-                                'vat'            => $schedule->vat_amount,
-                                'unit_id'        => $schedule->unit_id,
-                                'building_id'    => $schedule->building_id ?? $schedule->main_unit->property_management_id,
-                                'tenant_id'      => $schedule->tenant_id,
-                                'rent_amount'    => ($schedule->rent_amount),
-                                'service'        => $schedule->total_service_amount,
-                                'vat_percentage' => $schedule->vat,
-                                // 'total'          => number_format($schedule->rent_amount ?? 0) + number_format($schedule->vat_amount ?? 0),
-                                // 'building_id'  => $schedule->main_unit->property_management_id,
-                                'total' => $rent + $vat,
-                                'category'       => $schedule->category ?? 'rent',
-                                'balance_due'    => ($schedule->rent_amount + ((isset($schedule->vat_amount)) ? $schedule->vat_amount : 0)),
-
-                            ]);
-                            $grand_total += $invoice_item->total;
-                        }
-                    } else {
-                        Toastr::error('you_dont_have_invoices_in_this_month');
-                        return back()->with('error', ui_change('you_dont_have_invoices_in_this_month'));
+                    if (!file_exists(public_path('invoices'))) {
+                        mkdir(public_path('invoices'), 0777, true);
                     }
-                    $invoice->update([
-                        'total' => $grand_total,
-                    ]);
-                    // $tenant->update([
-                    //     'debit' => $grand_total,
-                    // ]);
+                    file_put_contents($path, $pdf->output());
+
+                    $pdfUrl = url('invoices/' . $fileName);
+
+                    $options['file'] = $pdfUrl;
+
+                    sendWhatsApp($options);
+
+                    foreach ($schedules as $schedule) {
+                        $schedule->update([
+                            'invoice_status' => 'invoiced',
+                        ]);
+                        $rent = (float) ($schedule->rent_amount ?? 0);
+                        $vat  = (float) ($schedule->vat_amount ?? 0);
+
+
+                        $invoice_item = (new InvoiceItems())->setConnection('tenant')->create([
+                            'invoice_id'     => $invoice->id,
+                            'agreement_id'   => $schedule->agreement_id,
+                            'vat'            => $schedule->vat_amount,
+                            'unit_id'        => $schedule->unit_id,
+                            'building_id'    => $schedule->building_id ?? $schedule->main_unit->property_management_id,
+                            'tenant_id'      => $schedule->tenant_id,
+                            'rent_amount'    => ($schedule->rent_amount),
+                            'service'        => $schedule->total_service_amount,
+                            'vat_percentage' => $schedule->vat,
+                            // 'total'          => number_format($schedule->rent_amount ?? 0) + number_format($schedule->vat_amount ?? 0),
+                            // 'building_id'  => $schedule->main_unit->property_management_id,
+                            'total' => $rent + $vat,
+                            'category'       => $schedule->category ?? 'rent',
+                            'balance_due'    => ($schedule->rent_amount + ((isset($schedule->vat_amount)) ? $schedule->vat_amount : 0)),
+
+                        ]);
+                        $grand_total += $invoice_item->total;
+                    }
                 } else {
                     Toastr::error('you_dont_have_invoices_in_this_month');
                     return back()->with('error', ui_change('you_dont_have_invoices_in_this_month'));
                 }
-                DB::commit();
-
-                return redirect()->route('invoices.all_invoices')->with('success', 'Invoice Added Successfully');
+                $invoice->update([
+                    'total' => $grand_total,
+                ]);
+                // $tenant->update([
+                //     'debit' => $grand_total,
+                // ]);
+            } else {
+                Toastr::error('you_dont_have_invoices_in_this_month');
+                return back()->with('error', ui_change('you_dont_have_invoices_in_this_month'));
             }
-        } catch (Exception $e) {
+            DB::commit();
 
-            DB::rollBack();
-            return back()->with('error', 'Something went wrong');
+            return redirect()->route('invoices.all_invoices')->with('success', 'Invoice Added Successfully');
         }
+        // } catch (Exception $e) {
+
+        //     DB::rollBack();
+        //     return back()->with('error', 'Something went wrong');
+        // }
     }
     public function paid(Request $request)
     {
@@ -690,5 +695,94 @@ class InvoiceController extends Controller
         $mpdf->WriteHTML($html);
 
         return $mpdf->Output("invoice-{$invoice->id}.pdf", 'I');
+    }
+
+
+    public function all_tenants($data)
+    {
+        if ($data['building_id'] != 0) {
+            $schedules = Schedule::where('billing_month_year', $data['invoice_month'])
+                ->where(function ($q) {
+                    $q->where('invoice_status', 'pending')
+                        ->orWhereNull('invoice_status');
+                })
+                ->whereHas('main_unit', function ($q) use ($data) {
+                    $q->where('building_id', $data['building_id']);
+                })
+                ->get()
+                ->groupBy('tenant_id');
+        } else {
+            $schedules = Schedule::where('billing_month_year', $data['invoice_month'])
+                ->where(function ($q) {
+                    $q->where('invoice_status', 'pending')
+                        ->orWhereNull('invoice_status');
+                })
+                ->get()
+                ->groupBy('tenant_id');
+        }
+
+
+        foreach ($schedules as $tenant_id => $tenantSchedules) {
+            $tenant = Tenant::where('id', $tenant_id)->select('id', 'ledger_id')->first();
+            $invoice = Invoice::create([
+                'invoice_number'     => InvoiceNumber(),
+                'tenant_id'          => $tenant_id,
+                'invoice_date'       => $data['formattedDate'],
+                'invoice_month_year' => $data['invoice_month'],
+                'status'             => "unpaid",
+                'total'              => 0,
+            ]);
+
+            $invoiceTotal = 0;
+            $tenantDebit  = 0;
+
+            foreach ($tenantSchedules as $schedule_item) {
+
+                $lineTotal = $schedule_item->rent_amount +
+                    ($schedule_item->vat_amount ?? 0);
+
+                $invoice_item = InvoiceItems::create([
+                    'invoice_id'     => $invoice->id,
+                    'agreement_id'   => $schedule_item->agreement_id,
+                    'vat'            => $schedule_item->vat_amount,
+                    'unit_id'        => $schedule_item->unit_id,
+                    'building_id'    => $schedule_item->building_id
+                        ?? $schedule_item->main_unit->property_management_id,
+                    'tenant_id'      => $schedule_item->tenant_id,
+                    'rent_amount'    => $schedule_item->rent_amount,
+                    'service'        => $schedule_item->category,
+                    'vat_percentage' => $schedule_item->vat,
+                    'total'          => $lineTotal,
+                    'service_id'     => $schedule_item->service_id,
+                    'category'       => $schedule_item->category ?? 'rent',
+                    'balance_due'    => $lineTotal,
+                ]);
+
+                $invoiceTotal += $lineTotal;
+                $tenantDebit  += $lineTotal;
+                if ($schedule_item->category == 'service') {
+
+                    $service = ServiceMaster::find($schedule_item->service_id);
+                    $service->service_ledger?->increment('credit', $lineTotal);
+                } elseif ($schedule_item->category == 'rent') {
+
+                    $unit_management = UnitManagement::find($schedule_item->unit_id);
+                    $unit_management->unit_ledger?->increment('credit', $lineTotal);
+                }
+
+                $schedule_item->update([
+                    'invoice_status' => 'invoiced',
+                ]);
+            }
+            $invoice->update([
+                'total' => $invoiceTotal
+            ]);
+            $ledger = MainLedger::where('id', $tenant->ledger_id)
+                ->first();
+            if ($ledger) {
+                $ledger->debit = $ledger->debit + $tenantDebit;
+                $ledger->save();
+            }
+        }
     }
 }

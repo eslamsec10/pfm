@@ -64,10 +64,10 @@
                                 <label for="name"
                                     class="title-color">{{ ui_change('tenant', 'property_transaction') }}<span
                                         class="text-danger"> *</span>
-                                         <button type="button" data-target="#add_tenant" data-add_tenant="" data-toggle="modal"
-                                    class="btn btn--primary btn-sm">
-                                    <i class="fa fa-plus-square"></i>
-                                </button>
+                                    <button type="button" data-target="#add_tenant" data-add_tenant="" data-toggle="modal"
+                                        class="btn btn--primary btn-sm">
+                                        <i class="fa fa-plus-square"></i>
+                                    </button>
                                 </label>
                                 <select class="js-select2-custom form-control" id="tenant_id" name="tenant_id" required>
                                     <option selected>{{ ui_change('select', 'property_transaction') }}</option>
@@ -168,7 +168,7 @@
 
     </div>
 
-        <div class="modal fade" id="add_tenant" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    <div class="modal fade" id="add_tenant" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
         aria-hidden="true">
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">

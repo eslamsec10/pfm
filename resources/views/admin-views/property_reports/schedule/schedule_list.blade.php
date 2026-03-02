@@ -100,11 +100,12 @@
                                             </div>
                                             <div class="form-group">
                                                 <label
-                                                    for="">{{ ui_change('Voucher_Type', 'property_report') }}</label>
-                                                <select name="invoice_type" class="form-control" id="">
-                                                    @foreach ($invoice_types as $invoice_type_item)
-                                                        <option value="{{ $invoice_type_item->invoice_type }}">
-                                                            {{ $invoice_type_item->invoice_type }}</option>
+                                                    for="">{{ ui_change('building', 'property_report') }}</label>
+                                                <select name="building_id" class="form-control" id="">
+                                                    <option value="0">{{ ui_change('all') }}</option>
+                                                    @foreach ($all_building as $building_item)
+                                                        <option value="{{ $building_item->id }}">
+                                                            {{ $building_item->name }}</option>
                                                     @endforeach
                                                 </select>
                                             </div>

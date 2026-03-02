@@ -303,8 +303,8 @@ if (! function_exists('get_settings')) {
 if (! function_exists('main_path')) {
     function main_path()
     {
-        return '/';
-        // return 'assets/';
+        // return '/';
+        return 'assets/';
     }
 }
 

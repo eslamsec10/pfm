@@ -38,7 +38,7 @@ class TenantObserver
         ) {
             return;
         }
-        MainLedger::on('tenant')->create([
+        $ledger = MainLedger::on('tenant')->create([
             'code'                => $tenant->type === 'individual'
                 ? $tenant->nick_name
                 : $tenant->company_name,
@@ -58,6 +58,9 @@ class TenantObserver
             'tax_applicable'      => $group->tax_applicable ?? 0,
 
             'status'              => 'active',
+        ]);
+        $tenant->update([
+            'ledger_id' => $ledger->id,
         ]);
     }
 }

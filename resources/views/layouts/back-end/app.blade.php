@@ -68,7 +68,10 @@
 </head>
 
 <body class="footer-offset">
-    
+    @php
+            $company = (new App\Models\Company())->setConnection('tenant')->select('id' , 'logo_image')->first();
+
+    @endphp
     <!-- Builder -->
     @include('layouts.back-end.partials._front-settings')
     <!-- End Builder -->

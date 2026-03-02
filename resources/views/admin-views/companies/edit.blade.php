@@ -755,7 +755,7 @@
                         {{ ui_change('signature_seal', 'hierarchy') }}
                     </h5>
                     <div class="row align-items-center">
-                        @if ($company_settings->value == 'digital')
+                        @if (isset($company_settings) && $company_settings->value == 'digital')
                             <div class="col-lg-6 mb-4 mb-lg-0">
 
 

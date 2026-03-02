@@ -139,7 +139,7 @@ class TenantController extends Controller
 
             $tenant = (new Tenant())->setConnection('tenant')->storeTenant($validatedData);
             // $company = auth()->user() ?? (new User())->setConnection()->first();
-
+            
 
             DB::commit();
             return redirect()->route('tenant.index')->with('success', __('property_master.added_successfully'));

@@ -6,7 +6,7 @@
     $lang = Session::get('locale');
 
 @endphp
-@section('title', __('roles.invoice_settings'))
+@section('title', ui_change('invoice_settings'))
 
 @push('css_or_js')
     <link href="{{ asset('assets/select2/css/select2.min.css') }}" rel="stylesheet">
@@ -20,7 +20,7 @@
 
         <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
-                {{ __('roles.invoice_settings') }}
+                {{ ui_change('invoice_settings') }}
             </h2>
 
         </div>
@@ -36,17 +36,17 @@
                         <div class="mb-3 d-flex align-items-center justify-content-between">
                             <h2 class="h1 mb-0 d-flex gap-2 align-items-center">
 
-                                {{ __('roles.invoice_settings') }}
+                                {{ ui_change('invoice_settings') }}
                             </h2>
                             <button class="btn btn--primary mr-2" data-add_new_ledger="" data-toggle="modal"
-                                data-target="#add_new_ledger">{{ __('collections.add_new_settings') }}</button>
+                                data-target="#add_new_ledger">{{ ui_change('add_new_settings') }}</button>
                         </div>
                     </div>
                     <div class="px-3 py-4">
                         <div class="row align-items-center">
                             <div class="col-sm-4 col-md-6 col-lg-8 mb-2 mb-sm-0">
                                 <h5 class="mb-0 d-flex align-items-center gap-2">
-                                    {{ __('roles.invoice_settings') }}
+                                    {{ ui_change('invoice_settings') }}
                                     <span class="badge badge-soft-dark radius-50 fz-12"> </span>
                                 </h5>
                             </div>
@@ -60,9 +60,9 @@
                                             </div>
                                         </div>
                                         <input id="datatableSearch_" type="search" name="search" class="form-control"
-                                            placeholder="{{ __('collections.search_by_settings_name') }}"
+                                            placeholder="{{ ui_change('search_by_settings_name') }}"
                                             aria-label="Search" value="{{ $search }}" required>
-                                        <button type="submit" class="btn btn--primary">{{ __('general.search') }}</button>
+                                        <button type="submit" class="btn btn--primary">{{ ui_change('search') }}</button>
                                     </div>
                                 </form>
                                 <!-- End Search -->
@@ -75,18 +75,18 @@
                                 class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table w-100">
                                 <thead class="thead-light thead-50 text-capitalize">
                                     <tr>
-                                        <th>{{ __('general.sl') }}</th>
-                                        <th class="text-center">{{ __('property_master.name') }} </th>
-                                        <th class="text-center">{{ __('collections.applicable_from') }} </th>
-                                        <th class="text-center">{{ __('collections.total_digit') }}</th>
-                                        <th class="text-center">{{ __('collections.start_number') }}</th>
-                                        <th class="text-center">{{ __('property_reports.prefix') }}</th>
-                                        <th class="text-center">{{ __('collections.sufix') }}</th>
-                                        <th class="text-center">{{ __('collections.invoice_type') }}</th>
-                                        <th class="text-center">{{ __('collections.ledger') }}</th>
-                                        <th class="text-center">{{ __('collections.invoice_with_logo') }}</th>
-                                        <th class="text-center">{{ __('collections.invoice_logo_position') }}</th>
-                                        <th class="text-center">{{ __('general.actions') }}</th>
+                                        <th>{{ ui_change('sl') }}</th>
+                                        <th class="text-center">{{ ui_change('name') }} </th>
+                                        <th class="text-center">{{ ui_change('applicable_from') }} </th>
+                                        <th class="text-center">{{ ui_change('total_digit') }}</th>
+                                        <th class="text-center">{{ ui_change('start_number') }}</th>
+                                        <th class="text-center">{{ ui_change('prefix') }}</th>
+                                        <th class="text-center">{{ ui_change('sufix') }}</th>
+                                        {{-- <th class="text-center">{{ ui_change('invoice_type') }}</th> --}}
+                                        <th class="text-center">{{ ui_change('ledger') }}</th>
+                                        <th class="text-center">{{ ui_change('invoice_with_logo') }}</th>
+                                        <th class="text-center">{{ ui_change('invoice_logo_position') }}</th>
+                                        <th class="text-center">{{ ui_change('actions') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -99,24 +99,24 @@
                                             <td class="text-center">{{ $value->invoice_start_number }} </td>
                                             <td class="text-center">{{ $value->invoice_prefix }} </td>
                                             <td class="text-center">{{ $value->invoice_suffix }} </td>
-                                            <td class="text-center">{{ $value->invoice_type }} </td>
+                                            {{-- <td class="text-center">{{ $value->invoice_type }} </td> --}}
                                             <td class="text-center">
-                                                {{ $value->ledger->name ?? __('collections.not_applicable') }} </td>
+                                                {{ $value->ledger->name ?? ui_change('not_applicable') }} </td>
                                             <td class="text-center">{{ $value->invoice_with_logo }} </td>
                                             <td class="text-center">
-                                                {{ $value->invoice_with_logo == 'yes' ? $value->invoice_logo_position : __('general.not_available') }}
+                                                {{ $value->invoice_with_logo == 'yes' ? $value->invoice_logo_position : ui_change('not_available') }}
                                             </td>
                                             <td>
                                                 <div class="d-flex justify-content-center gap-2">
                                                     <a id="edit_receipt_settings_item"
                                                         class="btn btn-outline-info btn-sm square-btn"
-                                                        title="{{ __('general.edit') }}"
+                                                        title="{{ ui_change('edit') }}"
                                                         data-receipt_settings_id="{{ $value->id }}"
                                                         data-target="#edit_receipt_settings">
                                                         <i class="tio-edit"></i>
                                                     </a>
                                                     <a class="btn btn-outline-danger btn-sm delete square-btn"
-                                                        title="{{ __('general.delete') }}" id="{{ $value['id'] }}">
+                                                        title="{{ ui_change('delete') }}" id="{{ $value['id'] }}">
                                                         <i class="tio-delete"></i>
                                                     </a>
                                                 </div>
@@ -139,7 +139,7 @@
                         <div class="text-center p-4">
                             <img class="mb-3 w-160" src="{{ asset('assets/back-end') }}/svg/illustrations/sorry.svg"
                                 alt="Image Description">
-                            <p class="mb-0">{{ __('general.no_data_to_show') }}</p>
+                            <p class="mb-0">{{ ui_change('no_data_to_show') }}</p>
                         </div>
                     @endif
                 </div>
@@ -152,7 +152,7 @@
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">{{ __('collections.add_new_settings') }}</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">{{ ui_change('add_new_settings') }}</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -162,29 +162,35 @@
                     <div class="modal-body">
 
                         <div class="row">
+                              <div class="col-md-12 col-lg-4 col-xl-6">
+                                <div class="form-group">
+                                    <label for="">{{ ui_change('invoice_name') }}</label>
+                                    <input type="text" class="form-control" name="invoice_name" class="form-control">
+                                </div>
+                            </div>
                             <div class="col-md-6 col-lg-4 col-xl-6">
                                 <div class="form-group">
-                                    <label for="token" class="title-color">{{ __('property_reports.prefix') }}</label>
+                                    <label for="token" class="title-color">{{ ui_change('prefix') }}</label>
                                     <input type="text" class="form-control" name="invoice_prefix">
                                 </div>
                             </div>
                             <div class="col-md-12 col-lg-4 col-xl-6">
                                 <div class="form-group">
-                                    <label for="">{{ __('collections.sufix') }}</label>
+                                    <label for="">{{ ui_change('sufix') }}</label>
                                     <input type="text" class="form-control" name="invoice_suffix"
                                         class="form-control">
                                 </div>
                             </div>
                             <div class="col-md-6 col-lg-4 col-xl-6">
                                 <div class="form-group">
-                                    <label for="token" class="title-color">{{ __('collections.total_digit') }}</label>
+                                    <label for="token" class="title-color">{{ ui_change('total_digit') }}</label>
                                     <input type="number" class="form-control" name="invoice_width">
                                 </div>
                             </div>
 
                             <div class="col-md-12 col-lg-4 col-xl-6">
                                 <div class="form-group">
-                                    <label for="">{{ __('collections.start_number') }}</label>
+                                    <label for="">{{ ui_change('start_number') }}</label>
                                     <input type="number" class="form-control" name="invoice_start_number"
                                         class="form-control">
                                 </div>
@@ -192,22 +198,17 @@
 
                             <div class="col-md-12 col-lg-4 col-xl-6">
                                 <div class="form-group">
-                                    <label for="">{{ __('property_reports.start_date') }}</label>
+                                    <label for="">{{ ui_change('start_date') }}</label>
                                     <input type="text" class="form-control" id="invoice_start_date"
                                         name="invoice_date" class="form-control">
                                 </div>
                             </div>
+                          
                             <div class="col-md-12 col-lg-4 col-xl-6">
                                 <div class="form-group">
-                                    <label for="">{{ __('collections.invoice_name') }}</label>
-                                    <input type="text" class="form-control" name="invoice_name" class="form-control">
-                                </div>
-                            </div>
-                            <div class="col-md-12 col-lg-4 col-xl-6">
-                                <div class="form-group">
-                                    <label for="">{{ __('collections.defualt_bank_account') }}</label>
+                                    <label for="">{{ ui_change('defualt_bank_account') }}</label>
                                     <select name="ledger_id" class="js-select2-custom form-control">
-                                        <option value="0">{{ __('collections.not_applicable') }}</option>
+                                        <option value="0">{{ ui_change('not_applicable') }}</option>
                                         @foreach ($ledgers as $ledger_item)
                                             <option value="{{ $ledger_item->id }}">
                                                 {{ $ledger_item->name }}
@@ -216,60 +217,60 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-6 col-lg-4 col-xl-6">
+                            {{-- <div class="col-md-6 col-lg-4 col-xl-6">
                                 <div class="form-group">
                                     <label for="token"
-                                        class="title-color">{{ __('collections.invoice_type') }}</label>
+                                        class="title-color">{{ ui_change('invoice_type') }}</label>
                                     <input type="text" class="form-control" name="invoice_type">
                                 </div>
-                            </div>
+                            </div> --}}
                             <div class="col-md-12 col-lg-4 col-xl-6">
                                 <div class="form-group">
-                                    <label for="">{{ __('collections.invoice_with_logo') }}</label>
+                                    <label for="">{{ ui_change('invoice_with_logo') }}</label>
                                     <select name="invoice_with_logo" class="js-select2-custom form-control">
                                         <option value="yes">
-                                            {{ __('general.yes') }}
+                                            {{ ui_change('yes') }}
                                         </option>
                                         <option value="no">
-                                            {{ __('general.no') }}
+                                            {{ ui_change('no') }}
                                         </option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-12 col-lg-4 col-xl-6">
                                 <div class="form-group">
-                                    <label for="">{{ __('collections.invoice_logo_position') }}</label>
+                                    <label for="">{{ ui_change('invoice_logo_position') }}</label>
                                     <select name="invoice_logo_position" class="js-select2-custom form-control">
                                         <option value="right">
-                                            {{ __('collections.right') }}
+                                            {{ ui_change('right') }}
                                         </option>
                                         <option value="left">
-                                            {{ __('collections.left') }}
+                                            {{ ui_change('left') }}
                                         </option>
                                         <option value="middle">
-                                            {{ __('collections.middle') }}
+                                            {{ ui_change('middle') }}
                                         </option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-12 col-lg-4 col-xl-6">
                                 <div class="form-group">
-                                    <label for="">{{ __('collections.width') }}</label>
+                                    <label for="">{{ ui_change('width') }}</label>
                                     <input type="number" class="form-control" name="width" class="form-control">
                                 </div>
                             </div>
                             <div class="col-md-12 col-lg-4 col-xl-6">
                                 <div class="form-group">
-                                    <label for="">{{ __('collections.height') }}</label>
+                                    <label for="">{{ ui_change('height') }}</label>
                                     <input type="number" class="form-control" name="height" class="form-control">
                                 </div>
                             </div>
                             <div class="col-md-12 col-lg-4 col-xl-6">
                                 <div class="form-group">
-                                    <label for="">{{ __('collections.format') }}</label>
+                                    <label for="">{{ ui_change('format') }}</label>
                                     <select name="invoice_format" class="js-select2-custom form-control">
                                         <option value="format-1">
-                                            {{ __('collections.format') . ' 1' }}
+                                            {{ ui_change('format') . ' 1' }}
                                         </option>
                                     </select>
                                 </div>
@@ -310,7 +311,7 @@
                             @endphp
 
                             <div class="col-md-12 col-lg-4 col-xl-6">
-                                <h3>Company Details</h3>
+                                <h3>{{ ui_change('Company Details') }}</h3>
                                 @foreach ($firstHalf as $name => $label)
                                     <div style="margin-bottom: 10px;"> 
                                         <input type="checkbox" name="{{ $name }}" value="1"
@@ -321,7 +322,7 @@
                             </div>
 
                             <div class="col-md-12 col-lg-4 col-xl-6">
-                                <h3>Customer Details</h3>
+                                <h3>{{ ui_change('Customer Details') }}</h3>
                                 @foreach ($secondHalf as $name => $label)
                                     <div style="margin-bottom: 10px;"> 
                                         <input type="checkbox" name="{{ $name }}" value="1"
@@ -352,8 +353,8 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary"
-                            data-dismiss="modal">{{ __('general.cancel') }}</button>
-                        <button type="submit" class="btn btn--primary">{{ __('general.submit') }}</button>
+                            data-dismiss="modal">{{ ui_change('cancel') }}</button>
+                        <button type="submit" class="btn btn--primary">{{ ui_change('submit') }}</button>
                     </div>
                 </form>
             </div>
@@ -368,7 +369,7 @@
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">{{ __('collections.edit_settings') }}</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">{{ ui_change('edit_settings') }}</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -378,10 +379,16 @@
                     @method('patch')
                     <div class="modal-body">
                         <div class="row">
-
+                            <div class="col-md-12 col-lg-4 col-xl-6">
+                                <div class="form-group">
+                                    <label for="">{{ ui_change('invoice_name') }}</label>
+                                    <input type="text" class="form-control" name="invoice_name"
+                                        id="edit_invoice_name" class="form-control">
+                                </div>
+                            </div>
                             <div class="col-md-6 col-lg-4 col-xl-6">
                                 <div class="form-group">
-                                    <label for="token" class="title-color">{{ __('property_reports.prefix') }}</label>
+                                    <label for="token" class="title-color">{{ ui_change('prefix') }}</label>
                                     <input type="text" class="form-control" name="invoice_prefix" id="edit_prefix">
                                     <input type="hidden" class="form-control" name="edit_invoice_settings_id"
                                         id="edit_invoice_settings_id">
@@ -389,108 +396,102 @@
                             </div>
                             <div class="col-md-12 col-lg-4 col-xl-6">
                                 <div class="form-group">
-                                    <label for="">{{ __('collections.sufix') }}</label>
+                                    <label for="">{{ ui_change('sufix') }}</label>
                                     <input type="text" class="form-control" name="invoice_suffix" id="edit_suffix"
                                         class="form-control">
                                 </div>
                             </div>
                             <div class="col-md-6 col-lg-4 col-xl-6">
                                 <div class="form-group">
-                                    <label for="token" class="title-color">{{ __('collections.total_digit') }}</label>
+                                    <label for="token" class="title-color">{{ ui_change('total_digit') }}</label>
                                     <input type="number" class="form-control" name="invoice_width" id="edit_width">
                                 </div>
                             </div>
-                            <div class="col-md-6 col-lg-4 col-xl-6">
+                            {{-- <div class="col-md-6 col-lg-4 col-xl-6">
                                 <div class="form-group">
                                     <label for="token"
-                                        class="title-color">{{ __('collections.invoice_type') }}</label>
+                                        class="title-color">{{ ui_change('invoice_type') }}</label>
                                     <input type="text" class="form-control" name="invoice_type"
                                         id="edit_invoice_type">
                                 </div>
-                            </div>
-                            <div class="col-md-12 col-lg-4 col-xl-6">
+                            </div> --}}
+                            <div class="col-md-12 col-lg-4 col-xl-3">
                                 <div class="form-group">
-                                    <label for="">{{ __('collections.start_number') }}</label>
+                                    <label for="">{{ ui_change('start_number') }}</label>
                                     <input type="number" class="form-control" name="invoice_start_number"
                                         id="edit_start_number" class="form-control">
                                 </div>
                             </div>
 
-                            <div class="col-md-12 col-lg-4 col-xl-6">
+                            <div class="col-md-12 col-lg-4 col-xl-3">
                                 <div class="form-group">
-                                    <label for="">{{ __('property_reports.start_date') }}</label>
+                                    <label for="">{{ ui_change('start_date') }}</label>
                                     <input type="text" class="form-control" id="edit_invoice_start_date"
                                         name="invoice_date" class="form-control">
                                 </div>
                             </div>
+                            
                             <div class="col-md-12 col-lg-4 col-xl-3">
                                 <div class="form-group">
-                                    <label for="">{{ __('collections.invoice_name') }}</label>
-                                    <input type="text" class="form-control" name="invoice_name"
-                                        id="edit_invoice_name" class="form-control">
-                                </div>
-                            </div>
-                            <div class="col-md-12 col-lg-4 col-xl-3">
-                                <div class="form-group">
-                                    <label for="">{{ __('collections.invoice_with_logo') }}</label>
+                                    <label for="">{{ ui_change('invoice_with_logo') }}</label>
                                     <select name="invoice_with_logo" id="edit_invoice_with_logo"
                                         class="js-select2-custom form-control">
                                         <option value="yes">
-                                            {{ __('general.yes') }}
+                                            {{ ui_change('yes') }}
                                         </option>
                                         <option value="no">
-                                            {{ __('general.no') }}
+                                            {{ ui_change('no') }}
                                         </option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-12 col-lg-4 col-xl-3">
                                 <div class="form-group">
-                                    <label for="">{{ __('collections.invoice_logo_position') }}</label>
+                                    <label for="">{{ ui_change('invoice_logo_position') }}</label>
                                     <select name="invoice_logo_position" id="edit_invoice_logo_position"
                                         class="js-select2-custom form-control">
                                         <option value="right">
-                                            {{ __('collections.right') }}
+                                            {{ ui_change('right') }}
                                         </option>
                                         <option value="left">
-                                            {{ __('collections.left') }}
+                                            {{ ui_change('left') }}
                                         </option>
                                         <option value="middle">
-                                            {{ __('collections.middle') }}
+                                            {{ ui_change('middle') }}
                                         </option>
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-12 col-lg-4 col-xl-6">
+                            <div class="col-md-12 col-lg-4 col-xl-3">
                                 <div class="form-group">
-                                    <label for="">{{ __('collections.width') }}</label>
+                                    <label for="">{{ ui_change('width') }}</label>
                                     <input type="number" class="form-control" name="width" id="edit_logo_width"
                                         class="form-control">
                                 </div>
                             </div>
-                            <div class="col-md-12 col-lg-4 col-xl-6">
+                            <div class="col-md-12 col-lg-4 col-xl-3">
                                 <div class="form-group">
-                                    <label for="">{{ __('collections.height') }}</label>
+                                    <label for="">{{ ui_change('height') }}</label>
                                     <input type="number" class="form-control" name="height" id="edit_height"
                                         class="form-control">
                                 </div>
                             </div>
-                            <div class="col-md-12 col-lg-4 col-xl-6">
+                            <div class="col-md-12 col-lg-4 col-xl-3">
                                 <div class="form-group">
-                                    <label for="">{{ __('collections.format') }}</label>
+                                    <label for="">{{ ui_change('format') }}</label>
                                     <select name="invoice_format" class="js-select2-custom form-control"
                                         id="edit_format">
                                         <option value="format-1">
-                                            {{ __('collections.format') . ' 1' }}
+                                            {{ ui_change('format') . ' 1' }}
                                         </option>
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-12 col-lg-4 col-xl-6">
+                            <div class="col-md-12 col-lg-4 col-xl-3">
                                 <div class="form-group">
-                                    <label for="">{{ __('collections.defualt_bank_account') }}</label>
+                                    <label for="">{{ ui_change('defualt_bank_account') }}</label>
                                     <select name="ledger_id" id="edit_ledger_id" class="js-select2-custom form-control">
-                                        <option value="0">{{ __('collections.not_applicable') }}</option>
+                                        <option value="0">{{ ui_change('not_applicable') }}</option>
 
                                         @foreach ($ledgers as $ledger_item)
                                             <option value="{{ $ledger_item->id }}">
@@ -538,7 +539,7 @@
                             @endphp
 
                             <div class="col-md-12 col-lg-4 col-xl-6">
-                                <h3>Company Details</h3>
+                                <h3>{{ ui_change('Company Details') }}</h3>
                                 @foreach ($firstHalf as $name => $label)
                                     <div style="margin-bottom: 10px;">
                                         <input type="hidden" name="{{ $name }}" value="0">
@@ -550,7 +551,7 @@
                             </div>
 
                             <div class="col-md-12 col-lg-4 col-xl-6">
-                                <h3>Customer Details</h3>
+                                <h3>{{ ui_change('Customer Details') }}</h3>
                                 @foreach ($secondHalf as $name => $label)
                                     <div style="margin-bottom: 10px;">
                                         <input type="hidden" name="{{ $name }}" value="0">
@@ -578,8 +579,8 @@
 
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary"
-                            data-dismiss="modal">{{ __('general.cancel') }}</button>
-                        <button type="submit" class="btn btn--primary">{{ __('general.submit') }}</button>
+                            data-dismiss="modal">{{ ui_change('cancel') }}</button>
+                        <button type="submit" class="btn btn--primary">{{ ui_change('submit') }}</button>
                     </div>
                 </form>
             </div>
@@ -617,7 +618,7 @@
                             id: id
                         },
                         success: function() {
-                            toastr.success("{{ __('general.deleted_successfully') }}");
+                            toastr.success("{{ ui_change('deleted_successfully') }}");
                             location.reload();
                         }
                     });
@@ -666,7 +667,7 @@
                         $('#edit_suffix').val(response.invoice_settings.invoice_suffix)
                         $('#edit_start_number').val(response.invoice_settings.invoice_start_number)
                         $('#edit_width').val(response.invoice_settings.invoice_width)
-                        $('#edit_invoice_type').val(response.invoice_settings.invoice_type)
+                        // $('#edit_invoice_type').val(response.invoice_settings.invoice_type)
                         $('#edit_height').val(response.invoice_settings.height)
                         $('#edit_logo_width').val(response.invoice_settings.width)
                         $('#qr_code_height').val(response.invoice_settings.qr_code_height)

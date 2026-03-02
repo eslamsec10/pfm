@@ -43,7 +43,7 @@ class InvoiceSettingsController extends Controller
             'invoice_start_number' => 'required',
             'invoice_name'         => 'required|string|max:255',
             'ledger_id'            => 'required',
-            Rule::unique('tenant.invoice_settings', 'invoice_type'),
+            // Rule::unique('tenant.invoice_settings', 'invoice_type'),
 
         ]);
         DB::beginTransaction();
@@ -58,7 +58,7 @@ class InvoiceSettingsController extends Controller
                 'invoice_logo_position' => $request->invoice_logo_position,
                 'invoice_width'         => $request->invoice_width,
                 'ledger_id'             => ($request->ledger_id == 0) ? null : $request->ledger_id,
-                'invoice_type'          => $request->invoice_type,
+                // 'invoice_type'          => $request->invoice_type,
                 'invoice_format'        => $request->invoice_format ?? null,
                 'width'                 => $request->width ?? null,
                 'height'                => $request->height ?? null,
@@ -99,7 +99,7 @@ class InvoiceSettingsController extends Controller
             'invoice_start_number' => 'required',
             'invoice_name'         => 'required|string|max:255',
             'ledger_id'            => 'required',
-            'invoice_type'         => 'required|unique:invoice_settings,invoice_type,' . $request->edit_invoice_settings_id,
+            // 'invoice_type'         => 'required|unique:invoice_settings,invoice_type,' . $request->edit_invoice_settings_id,
 
         ]);
 
@@ -115,7 +115,7 @@ class InvoiceSettingsController extends Controller
                 'invoice_logo_position' => $request->invoice_logo_position,
                 'invoice_width'         => $request->invoice_width,
                 'ledger_id'             => ($request->ledger_id == 0) ? null : $request->ledger_id,
-                'invoice_type'          => $request->invoice_type,
+                // 'invoice_type'          => $request->invoice_type,
                 'invoice_format'        => $request->invoice_format ?? null,
                 'width'                 => $request->width ?? null,
                 'height'                => $request->height ?? null,

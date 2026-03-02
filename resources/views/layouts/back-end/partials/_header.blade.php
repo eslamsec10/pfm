@@ -1,5 +1,7 @@
 <div id="headerMain" class="d-none">
-    <?php $lang = session()->get('locale'); ?>
+    <?php $lang = session()->get('locale'); 
+    
+    ?>
 
     <header id="header"
         class="navbar navbar-expand-lg navbar-fixed navbar-height navbar-flush navbar-container shadow">
@@ -8,10 +10,10 @@
             <div class="navbar-brand-wrapper">
                 <!-- Logo -->
                 <a class="navbar-brand" href="" aria-label="">
-                    <img class="navbar-brand-logo" onerror="this.src='{{ asset('assets/finexerp_logo.png') }}'"
-                        src="{{ asset(main_path() . 'assets/finexerp_logo.png') }}" alt="Logo">
-                    <img class="navbar-brand-logo-mini" onerror="this.src='{{ asset('assets/finexerp_logo.png') }}'"
-                        src="{{ asset(main_path() . 'assets/finexerp_logo.png') }}" alt="Logo">
+                    <img class="navbar-brand-logo"  
+                        src="{{ (isset($company) && $company->logo_image) ? asset(main_path()   . $company->logo_image)  : asset(main_path()   . 'assets/finexerp_logo.png') }}" alt="Logo">
+                    <img class="navbar-brand-logo-mini"  
+                        src="{{ (isset($company) && $company->logo_image) ? asset(main_path()   . $company->logo_image)  : asset(main_path()   . 'assets/finexerp_logo.png') }}" alt="Logo">
                 </a>
                 <!-- End Logo -->
             </div>

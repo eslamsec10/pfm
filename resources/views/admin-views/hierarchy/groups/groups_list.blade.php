@@ -1,7 +1,7 @@
 @extends('layouts.back-end.app')
 @php
     $lang = Session::get('locale');
-        $company = App\Models\Company::where('id' , auth()->user()->company_id )->first() ?? App\Models\User::first();
+        // $company = App\Models\Company::where('id' , auth()->user()->company_id )->first() ?? App\Models\User::first();
 @endphp
 @section('title', __('collections.groups'))
 @push('css_or_js')

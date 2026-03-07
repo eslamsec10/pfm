@@ -26,6 +26,7 @@
                             <div class="col-lg-4">
                                 <!-- Search -->
                                 <form action="{{ url()->current() }}" method="GET">
+                                    @csrf
                                     <div class="input-group input-group-custom input-group-merge">
                                         <div class="input-group-prepend">
                                             <div class="input-group-text">
@@ -41,7 +42,23 @@
                                 </form>
                                 <!-- End Search -->
                             </div>
-                            <div class="col-lg-8 mt-3 mt-lg-0 d-flex flex-wrap gap-3 justify-content-lg-end">
+                            <div class="col-lg-8 mt-3 mt-lg-0">
+                                <form action="{{ url()->current() }}" method="GET"> 
+                                <div class="d-flex flex-wrap justify-content-lg-end align-items-center gap-2">
+
+                                    <select name="status" class="form-control w-auto">
+                                        <option value="">{{ ui_change('Set_Status', 'property_report') }}</option>
+                                        <option value="pending">{{ ui_change('pending', 'property_report') }}</option>
+                                        <option value="completed">{{ ui_change('completed', 'property_report') }}</option>
+                                        <option value="canceled">{{ ui_change('canceled', 'property_report') }}</option>
+                                         
+                                    </select>
+
+                                    <button type="submit" name="bulk_action_btn" value="update_status"
+                                        class="btn btn--primary">
+                                        <i class="la la-refresh"></i>
+                                        {{ ui_change('update', 'property_report') }}
+                                    </button>
 
                                 {{-- @can('create_proposal') --}}
                                 <a href="{{ route('proposal.create') }}" class="btn btn--primary">

@@ -46,19 +46,20 @@ class ProposalController extends Controller
     {
         // $this->authorize('proposal');
         $ids     = $request->bulk_ids;
-        $lastRun = Cache::get('last_proposal_expiry_run');
-        if (! $lastRun || now()->diffInHours($lastRun) >= 24) {
-            $proposal_settings = get_business_settings('proposal')->where('type', 'proposal_expire_date')->first();
-            $expiry_days       = $proposal_settings ? (int) $proposal_settings->value : 0;
-            if ($expiry_days > 0) {
-                expire_unit($expiry_days, 'Proposal', 'ProposalUnits');
-                Cache::put('last_proposal_expiry_run', now(), now()->addDay());
-            }
+        // $lastRun = Cache::get('last_proposal_expiry_run');
+        // if (! $lastRun || now()->diffInHours($lastRun) >= 24) {
+        $proposal_settings = get_business_settings('proposal')->where('type', 'proposal_expire_date')->first();
+        $expiry_days       = $proposal_settings ? (int) $proposal_settings->value : 0;
+        if ($expiry_days > 0) {
+            expire_unit($expiry_days, 'Proposal', 'ProposalUnits');
+            // Cache::put('last_proposal_expiry_run', now(), now()->addDay());
         }
-        if ($request->bulk_action_btn === 'update_status' && is_array($ids) && count($ids)) {
-            $data = ['status' => 1];
-            (new Proposal())->setConnection('tenant')->whereIn('id', $ids)->update($data);
-            return back()->with('success', __('general.updated_successfully'));
+        // }
+        if ($request->bulk_action_btn === 'update_status' && is_array($ids) && count($ids) && isset($request->status)) {
+            $data = ['status' => $request->status];
+
+            $this->proposal_update_status($data, $ids);
+            return back()->with('success', ui_change('updated_successfully'));
         }
         $search      = $request['search'];
         $query_param = $search ? ['search' => $request['search']] : '';
@@ -396,7 +397,7 @@ class ProposalController extends Controller
         $proposal_details = (new ProposalDetails())->setConnection('tenant')->where('proposal_id', $id)->first();
         $proposal_units   = (new ProposalUnits())->setConnection('tenant')->where('proposal_id', $id)->get();
         $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
-         
+
         $tenants                  = DB::connection('tenant')->table('tenants')->get();
         $agents                   = DB::connection('tenant')->table('agents')->get();
         $enquiry_statuses         = DB::connection('tenant')->table('enquiry_statuses')->get();
@@ -1420,10 +1421,23 @@ class ProposalController extends Controller
     }
 
     public function get_ledger($id)
-    { 
+    {
         $unit_management = UnitManagement::find($id);
         $group = Groups::where('property_id', $unit_management->property_management_id)->first();
         $ledger = MainLedger::where('group_id', $group->id)->where('main_id', $id)->first();
         return response()->json($ledger);
+    }
+
+
+    public function proposal_update_status($data, $ids)
+    {
+        if ($data['status'] == 'canceled') {
+            $units = ProposalUnits::whereIn('proposal_id', $ids)->pluck('unit_id');
+
+            UnitManagement::whereIn('id', $units)->update([
+                'booking_status' => 'empty'
+            ]);
+            Proposal::whereIn('id', $ids)->update($data);
+        }
     }
 }

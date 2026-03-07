@@ -44,14 +44,20 @@ class AgreementController extends Controller
     {
         // $this->authorize('agreement'); 
         $ids     = $request->bulk_ids;
-        $lastRun = Cache::get('last_agreement_expiry_run');
-        if (! $lastRun || now()->diffInHours($lastRun) >= 24) {
-            $agreement_settings = get_business_settings('agreement')->where('type', 'agreement_expire_date')->first();
-            $expiry_days        = $agreement_settings ? (int) $agreement_settings->value : 0;
-            if ($expiry_days > 0) {
-                expire_unit($expiry_days, 'Agreement', 'AgreementUnits');
-                Cache::put('last_agreement_expiry_run', now(), now()->addDay());
-            }
+        // $lastRun = Cache::get('last_agreement_expiry_run');
+        // if (! $lastRun || now()->diffInHours($lastRun) >= 24) {
+        $agreement_settings = get_business_settings('agreement')->where('type', 'agreement_expire_date')->first();
+        $expiry_days        = $agreement_settings ? (int) $agreement_settings->value : 0;
+        if ($expiry_days > 0) {
+            expire_unit($expiry_days, 'Agreement', 'AgreementUnits');
+            // Cache::put('last_agreement_expiry_run', now(), now()->addDay());
+        }
+        // }
+        if ($request->bulk_action_btn === 'update_status' && is_array($ids) && count($ids) && isset($request->status)) {
+            $data = ['status' => $request->status];
+
+            $this->agreement_update_status($data, $ids);
+            return back()->with('success', ui_change('updated_successfully'));
         }
         if ($request->bulk_action_btn === 'update_status' && is_array($ids) && count($ids)) {
             $data = ['status' => 1];
@@ -1305,4 +1311,30 @@ class AgreementController extends Controller
         // $services_master   = (new ServiceMaster())->setConnection('tenant')->get();
 
     }
+    public function agreement_update_status($data, $ids)
+    {
+        if ($data['status'] == 'canceled') {
+
+            $agreements = Agreement::whereIn('id', $ids)
+                ->where('booking_status', 'agreement')
+                ->pluck('id');
+            Agreement::whereIn('id', $agreements)->update($data);
+            $units = AgreementUnits::whereIn('agreement_id', $agreements)
+                ->pluck('unit_id');
+            UnitManagement::whereIn('id', $units)->update([
+                'booking_status' => 'empty'
+            ]);
+        }
+    }
+    // public function agreement_update_status($data, $ids)
+    // {
+    //     if ($data['status'] == 'canceled') {
+    //         Agreement::whereIn('id', $ids)->where('booking_status', 'agreement')->update($data);
+
+    //         $units = AgreementUnits::whereIn('agreement_id', $ids)->pluck('unit_id'); 
+    //         UnitManagement::whereIn('id', $units)->update([
+    //             'booking_status' => 'empty'
+    //         ]);
+    //     }
+    // }
 }

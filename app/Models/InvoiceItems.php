@@ -29,5 +29,8 @@ class InvoiceItems extends Model
     {
         return $this->belongsTo(PropertyManagement::class, 'building_id');
     }
-
+    public function service_master()
+    {
+        return $this->belongsTo(ServiceMaster::class, 'service_id');
+    }
 }

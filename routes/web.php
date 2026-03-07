@@ -610,6 +610,7 @@ Route::group(['prefix' => 'tenant', 'middleware' => 'auth:web'], function () {
     Route::post('store', [TenantController::class, 'store'])->name('tenant.store');
     Route::post('store_for_anything', [TenantController::class, 'store_for_anything'])->name('tenant.store_for_anything');
     Route::get('/edit/{id}', [TenantController::class, 'edit'])->name('tenant.edit');
+    Route::get('/schedule/{id}', [TenantController::class, 'schedule'])->name('tenant.schedule');
     Route::get('/show/{id}', [TenantController::class, 'show'])->name('tenant.show');
     Route::patch('/update/{id}', [TenantController::class, 'update'])->name('tenant.update');
     Route::get('delete', [TenantController::class, 'delete'])->name('tenant.delete');
@@ -952,6 +953,8 @@ Route::group(['prefix' => 'property_reports', 'middleware' => 'auth:web'], funct
     Route::get('/leased_expired_details', [ReportController::class, 'leased_expired_details'])->name('leased_expired_details');
     Route::get('/tenant_age_analysis', [ReportController::class, 'tenant_age_analysis'])->name('tenant_age_analysis');
     Route::get('/tenant_financial_summary', [ReportController::class, 'tenant_financial_summary'])->name('tenant_financial_summary');
+    Route::get('/tenant_ledger', [ReportController::class, 'tenant_ledger_report'])->name('tenant_ledger_report');
+    Route::get('/schedule', [ReportController::class, 'schedule'])->name('tenant_schedule');
 });
 // Complaint
 Route::group(['prefix' => 'facility_transactions/complaint_registration', 'middleware' => 'auth:web'], function () {
@@ -1242,7 +1245,7 @@ Route::group(['prefix' => 'room_reservation/booking', 'middleware' => 'auth:web'
         Route::post('store', [BookingRoomController::class, 'store'])->name('booking_room.store');
     });
 
-        // ------------------------ room meeting booking----------------------
+    // ------------------------ room meeting booking----------------------
     Route::group(['prefix' => 'meeting-room-booking', 'middleware' => 'auth:web'], function () {
         Route::get('/list', [MeetingRoomBookingController::class, 'index'])->name('meeting_room_booking.list');
         Route::get('/create', [MeetingRoomBookingController::class, 'create'])->name('meeting_room_booking.create');

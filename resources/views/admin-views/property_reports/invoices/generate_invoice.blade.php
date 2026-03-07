@@ -2,16 +2,12 @@
 
 @section('title', ui_change('print', 'property_report'))
 @php
-    $company =
-        (new App\Models\Company())
-            ->setConnection('tenant')
-            ->where('id', auth()->user()?->company_id)
-            ->first() ?? (new App\Models\Company())->setConnection('tenant')->first();
+ 
     $lang = session()->get('locale');
     $dir = session()->get('direction');
     $signature_mode = App\Models\CompanySettings::where('type', 'signature_mode')->first();
     $width = App\Models\CompanySettings::where('type', 'width')->first();
-    $height = App\Models\CompanySettings::where('type', 'height')->first(); 
+    $height = App\Models\CompanySettings::where('type', 'height')->first();
 @endphp
 @push('css_or_js')
     <style>
@@ -126,11 +122,11 @@
             font-size: 1rem;
             font-weight: bold;
         }
-            .bank-details p {
-        margin: 2px 0; 
-        line-height: 1.3;
-    }
 
+        .bank-details p {
+            margin: 2px 0;
+            line-height: 1.3;
+        }
     </style>
 @endpush
 
@@ -142,7 +138,7 @@
 
         <div class="row mt-20">
             <div class="col-md-12">
-                <div class="card " id="printableArea"> 
+                <div class="card " id="printableArea">
                     @if (isset($invoice_settings))
                         @if ($invoice_settings->invoice_with_logo == 'yes')
                             @if ($invoice_settings->invoice_logo_position == 'right')
@@ -181,16 +177,18 @@
                         </div>
 
                         <div class="invoice-body-two">
-                            <div class="invoice-section-two"> 
+                            <div class="invoice-section-two">
                                 <p class="bold-two">
-    @if($tenant)
-        {{ $tenant->type == 'individual' 
-            ? ($tenant->name ?: ui_change('not_available', 'property_report')) 
-            : ($tenant->company_name ?: ui_change('not_available', 'property_report')) }}
-    @else
-        {{ ui_change('not_available', 'property_report') }}
-    @endif
-</p>
+                                    @if ($tenant)
+                                        {{ $tenant->type == 'individual'
+                                            ? ($tenant->name ?:
+                                                ui_change('not_available', 'property_report'))
+                                            : ($tenant->company_name ?:
+                                                ui_change('not_available', 'property_report')) }}
+                                    @else
+                                        {{ ui_change('not_available', 'property_report') }}
+                                    @endif
+                                </p>
 
                                 @if (isset($tenant->address1))
                                     <p>{{ $tenant->address1 }}</p>
@@ -215,12 +213,14 @@
                             </div>
 
                             <div class="invoice-section-two">
-                                <p><span class="bold-two">{{ ui_change('invoice_number', 'property_report') }}:</span> <span
-                                        class="bold-two">{{ $invoice->invoice_number }}</span></p>
+                                <p><span class="bold-two">{{ ui_change('invoice_number', 'property_report') }}:</span>
+                                    <span class="bold-two">{{ $invoice->invoice_number }}</span>
+                                </p>
                                 <p><span class="bold-two">{{ ui_change('invoice_date', 'property_report') }}:</span>
                                     {{ \Carbon\Carbon::parse($invoice->invoice_date)->format('j-M-Y') }} </p>
                                 <p><span class="bold-two">{{ ui_change('invoice_for_period', 'property_report') }}:</span>
-                                    {{ \Carbon\Carbon::parse($period->commencement_date)->format('j-M-Y') }} to {{ \Carbon\Carbon::parse($start_date)->format('j-M-Y') }}</p>
+                                    {{ \Carbon\Carbon::parse($period->commencement_date)->format('j-M-Y') }} to
+                                    {{ \Carbon\Carbon::parse($start_date)->format('j-M-Y') }}</p>
                                 <p><span class="bold-two">{{ ui_change('agreement_no', 'property_report') }}:</span>
                                     {{ $agreement->agreement_no }}</p>
                                 <p><span class="bold-two">{{ ui_change('buildings', 'property_report') }}:</span>
@@ -255,10 +255,17 @@
                             <tr>
                                 <td>{{ $loop->index + 1 }}</td>
                                 {{-- <td>{{ $invoice_item_main->agreement->agreement_no }}</td> --}}
-                                <td>{{ ucfirst($invoice_item_main->category) }}</td>
+                                <td>
+                                    @if ($invoice_item_main->category == 'rent')
+                                        {{ ucfirst($invoice_item_main->category) }}
+                                    @else
+                                        {{   $invoice_item_main->service_master?->name  }}
+                                    @endif
+                                </td>
+
                                 <td>
                                     {{-- @if ($invoice_item_main->category == 'rent') --}}
-                                    {{   $invoice_item_main->unit_management->block_unit_management->block->name .
+                                    {{ $invoice_item_main->unit_management->block_unit_management->block->name .
                                         '-' .
                                         $invoice_item_main->unit_management->floor_unit_management->floor_management_main->name .
                                         '- ' .
@@ -274,11 +281,19 @@
                                         {{ optional((new App\Models\ServiceMaster())->setConnection('tenant')->where('id', $invoice_item_main->service_id)->first())->name }}
                                     @endif --}}
                                 </td>
-                                <td  @if($dir == 'rtl') style="text-align: left;" @else  style="text-align: right;"  @endif>{{ number_format($invoice_item_main->rent_amount, $company->decimals ?? 2) }}</td>
-                                <td  @if($dir == 'rtl') style="text-align: left;" @else  style="text-align: right;"  @endif>{{ number_format($invoice_item_main->vat_percentage ?? 0) }}
-                                </td> 
-                                <td  @if($dir == 'rtl') style="text-align: left;" @else  style="text-align: right;"  @endif>{{ number_format($invoice_item_main->vat , $company->decimals ?? 2) }}</td>
-                                <td  @if($dir == 'rtl') style="text-align: left;" @else  style="text-align: right;"  @endif>{{ number_format($invoice_item_main->total, $company->decimals ?? 2) }}</td>
+                                <td
+                                    @if ($dir == 'rtl') style="text-align: left;" @else  style="text-align: right;" @endif>
+                                    {{ number_format($invoice_item_main->rent_amount, $company->decimals ?? 2) }}</td>
+                                <td
+                                    @if ($dir == 'rtl') style="text-align: left;" @else  style="text-align: right;" @endif>
+                                    {{ number_format($invoice_item_main->vat_percentage ?? 0) }}
+                                </td>
+                                <td
+                                    @if ($dir == 'rtl') style="text-align: left;" @else  style="text-align: right;" @endif>
+                                    {{ number_format($invoice_item_main->vat, $company->decimals ?? 2) }}</td>
+                                <td
+                                    @if ($dir == 'rtl') style="text-align: left;" @else  style="text-align: right;" @endif>
+                                    {{ number_format($invoice_item_main->total, $company->decimals ?? 2) }}</td>
                                 @php
                                     $sub_total += $invoice_item_main->rent_amount;
                                     $total_vat += $invoice_item_main->vat;
@@ -289,18 +304,27 @@
                     <table class="invoice">
                         <tr>
                             <td class="total">{{ ui_change('Sub_Total', 'property_report') }}
-                                {{ ' ( ' . $company->currency_code . ' )' }} : {{ amount_in_words($sub_total  , $company->decimals) }}</td>
-                            <td  @if($dir == 'rtl') style="text-align: left;" @else  style="text-align: right;"  @endif>{{ number_format($sub_total, $company->decimals ?? 2) }} </td>
+                                {{ ' ( ' . $company->currency_code . ' )' }} :
+                                {{ amount_in_words($sub_total, $company->decimals) }}</td>
+                            <td
+                                @if ($dir == 'rtl') style="text-align: left;" @else  style="text-align: right;" @endif>
+                                {{ number_format($sub_total, $company->decimals ?? 2) }} </td>
                         </tr>
                         <tr>
                             <td class="total">{{ ui_change('VAT_amount', 'property_report') }}
-                                {{ ' ( ' . $company->currency_code . ' )' }} : {{ amount_in_words(  $total_vat, $company->decimals) }}</td>
-                            <td  @if($dir == 'rtl') style="text-align: left;" @else  style="text-align: right;"  @endif>{{ number_format($total_vat, $company->decimals ?? 2) }}</td>
+                                {{ ' ( ' . $company->currency_code . ' )' }} :
+                                {{ amount_in_words($total_vat, $company->decimals) }}</td>
+                            <td
+                                @if ($dir == 'rtl') style="text-align: left;" @else  style="text-align: right;" @endif>
+                                {{ number_format($total_vat, $company->decimals ?? 2) }}</td>
                         </tr>
                         <tr>
                             <td class="total">{{ ui_change('Grand_Total', 'property_report') }}
-                                {{ ' ( ' . $company->currency_code . ' )' }}  {{ amount_in_words($sub_total + $total_vat, $company->decimals) }}</td>
-                            <td  @if($dir == 'rtl') style="text-align: left;" @else  style="text-align: right;"  @endif>{{ number_format($sub_total + $total_vat, $company->decimals ?? 2) }}</td>
+                                {{ ' ( ' . $company->currency_code . ' )' }}
+                                {{ amount_in_words($sub_total + $total_vat, $company->decimals) }}</td>
+                            <td
+                                @if ($dir == 'rtl') style="text-align: left;" @else  style="text-align: right;" @endif>
+                                {{ number_format($sub_total + $total_vat, $company->decimals ?? 2) }}</td>
                         </tr>
                     </table>
                     {{-- <div class="invoice">

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\property_transactions;
 
 use App\Http\Controllers\Controller;
@@ -39,19 +40,21 @@ class BookingController extends Controller
     {
         // $this->authorize('booking');
         $ids     = $request->bulk_ids;
-        $lastRun = Cache::get('last_booking_expiry_run');
-        if (! $lastRun || now()->diffInHours($lastRun) >= 24) {
-            $booking_settings = get_business_settings('booking')->where('type', 'booking_expire_date')->first();
-            $expiry_days      = $booking_settings ? (int) $booking_settings->value : 0;
-            if ($expiry_days > 0) {
-                expire_unit($expiry_days, 'Booking', 'BookingUnits');
-                Cache::put('last_booking_expiry_run', now(), now()->addDay());
-            }
+        // $lastRun = Cache::get('last_booking_expiry_run');
+        // if (! $lastRun || now()->diffInHours($lastRun) >= 24) {
+        $booking_settings = get_business_settings('booking')->where('type', 'booking_expire_date')->first();
+        $expiry_days      = $booking_settings ? (int) $booking_settings->value : 0;
+        if ($expiry_days > 0) {
+            expire_unit($expiry_days, 'Booking', 'BookingUnits');
+            // Cache::put('last_booking_expiry_run', now(), now()->addDay());
         }
-        if ($request->bulk_action_btn === 'update_status' && is_array($ids) && count($ids)) {
-            $data = ['status' => 1];
-            (new Booking())->setConnection('tenant')->whereIn('id', $ids)->update($data);
-            return back()->with('success', __('general.updated_successfully'));
+        // }
+
+        if ($request->bulk_action_btn === 'update_status' && is_array($ids) && count($ids) && isset($request->status)) {
+            $data = ['status' => $request->status];
+
+            $this->booking_update_status($data, $ids);
+            return back()->with('success', ui_change('updated_successfully'));
         }
         $search      = $request['search'];
         $query_param = $search ? ['search' => $request['search']] : '';
@@ -106,7 +109,7 @@ class BookingController extends Controller
         $property_types           = DB::connection('tenant')->table('property_types')->get();
         $services_master          = (new ServiceMaster())->setConnection('tenant')->get();
 
-            $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
+        $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
 
         $data = [
             'dail_code_main'            => $dail_code_main,
@@ -139,7 +142,7 @@ class BookingController extends Controller
         $property_type       = $request->input('property_type');
 
         $units = (new UnitManagement())->setConnection('tenant')->with('unit_management_main:id,name')
-        // $units = (new UnitManagement())->setConnection('tenant')->where('booking_status', 'empty')->with('unit_management_main:id,name')
+            // $units = (new UnitManagement())->setConnection('tenant')->where('booking_status', 'empty')->with('unit_management_main:id,name')
             ->when($property_id, function ($query, $property_id) {
                 return $query->where('property_management_id', $property_id);
             })
@@ -154,12 +157,17 @@ class BookingController extends Controller
             })
             ->when($view_id, function ($query, $view_id) {
                 return $query->where('view_id', $view_id);
-            })->with('property_unit_management', 'block_unit_management', 'block_unit_management.block',
-            'floor_unit_management.floor_management_main', 'floor_unit_management', 'unit_management_main')
+            })->with(
+                'property_unit_management',
+                'block_unit_management',
+                'block_unit_management.block',
+                'floor_unit_management.floor_management_main',
+                'floor_unit_management',
+                'unit_management_main'
+            )
 
             ->get();
         return response()->json($units);
-
     }
 
     public function get_unit_service($id)
@@ -269,8 +277,12 @@ class BookingController extends Controller
                     $viewId            = $request->input("view_id-$i");
                     $propertyType      = $request->input("property_type-$i");
 
-                    if ($request->input("period_from-$i")) {$periodFrom = Carbon::createFromFormat('d/m/Y', $request->input("period_from-$i"))->format('Y-m-d');}
-                    if ($request->input("period_to-$i")) {$periodTo = Carbon::createFromFormat('d/m/Y', $request->input("period_to-$i"))->format('Y-m-d');}
+                    if ($request->input("period_from-$i")) {
+                        $periodFrom = Carbon::createFromFormat('d/m/Y', $request->input("period_from-$i"))->format('Y-m-d');
+                    }
+                    if ($request->input("period_to-$i")) {
+                        $periodTo = Carbon::createFromFormat('d/m/Y', $request->input("period_to-$i"))->format('Y-m-d');
+                    }
                     $city            = $request->input("city-$i");
                     $totalArea       = $request->input("total_area-$i");
                     $areaMeasurement = $request->input("area_measurement-$i");
@@ -284,7 +296,9 @@ class BookingController extends Controller
                     $rentMode        = $request->input("rent_mode-$i");
                     $rentalGl        = $request->input("rental_gl-$i");
                     // $lease_break_date         = $request->input("lease_break_date-$i");
-                    if ($request->input("lease_break_date-$i")) {$lease_break_date = Carbon::createFromFormat('d/m/Y', $request->input("lease_break_date-$i"))->format('Y-m-d');}
+                    if ($request->input("lease_break_date-$i")) {
+                        $lease_break_date = Carbon::createFromFormat('d/m/Y', $request->input("lease_break_date-$i"))->format('Y-m-d');
+                    }
 
                     $lease_break_comment      = $request->input("lease_break_comment-$i");
                     $total_net_rent_amount    = $request->input("total_net_rent_amount-$i");
@@ -297,16 +311,16 @@ class BookingController extends Controller
                     $ewa_limit                = $request->input("ewa_limit-$i");
                     $notice_period            = $request->input("notice_period-$i");
                     // $total =
-                     $baseAmount  = (float)$request->input("rent_amount-$i");
+                    $baseAmount  = (float)$request->input("rent_amount-$i");
 
-                if ($rentMode === $paymentMode) {
+                    if ($rentMode === $paymentMode) {
 
-                    $rentAmount = $baseAmount;
-                } else {
-                    $rentAmount = calc_rent_amount($rentMode, $paymentMode, $baseAmount, $rentAmount);
-                    $total_net_rent_amount = ($rentAmount * ($vat_percentage / 100 )) + $rentAmount;
-                    $security_deposit_amount = $rentAmount * $security_deposit;
-                }
+                        $rentAmount = $baseAmount;
+                    } else {
+                        $rentAmount = calc_rent_amount($rentMode, $paymentMode, $baseAmount, $rentAmount);
+                        $total_net_rent_amount = ($rentAmount * ($vat_percentage / 100)) + $rentAmount;
+                        $security_deposit_amount = $rentAmount * $security_deposit;
+                    }
                     $booking_units = (new BookingUnits())->setConnection('tenant')->create([
                         'booking_id'               => $booking->id,
                         'property_id'              => $propertyId,
@@ -333,7 +347,7 @@ class BookingController extends Controller
                         'total'                    => 0,
                     ]);
                     $unit_management = (new UnitManagement())->setConnection('tenant')->where('id', $unit)->first();
-                    $unit_management->update(['booking_status' => 'booking',  'tenant_id'=>$request->tenant_id ]);
+                    $unit_management->update(['booking_status' => 'booking',  'tenant_id' => $request->tenant_id]);
                     if (isset($request->service_counter[$i])) {
                         for ($ind = 1, $inde = $request->service_counter[$i]; $ind <= $inde; $ind++) {
                             $chargeMode       = isset($request->input("charge_mode-{$i}-{$ind}")[0]) ? $request->input("charge_mode-{$i}-{$ind}")[0] : null;
@@ -345,8 +359,12 @@ class BookingController extends Controller
                             $vatAmount        = isset($request->input("vat_amount-{$i}-{$ind}")[0]) ? $request->input("vat_amount-{$i}-{$ind}")[0] : null;
                             $totalAmount      = isset($request->input("total_amount-{$i}-{$ind}")[0]) ? $request->input("total_amount-{$i}-{$ind}")[0] : null;
 
-                            if (isset($request->input("start_date-{$i}-{$ind}")[0])) {$start = Carbon::createFromFormat('d/m/Y', $request->input("start_date-{$i}-{$ind}")[0])->format('Y-m-d');}
-                            if (isset($request->input("expiry_date-{$i}-{$ind}")[0])) {$expiry = Carbon::createFromFormat('d/m/Y', $request->input("expiry_date-{$i}-{$ind}")[0])->format('Y-m-d');}
+                            if (isset($request->input("start_date-{$i}-{$ind}")[0])) {
+                                $start = Carbon::createFromFormat('d/m/Y', $request->input("start_date-{$i}-{$ind}")[0])->format('Y-m-d');
+                            }
+                            if (isset($request->input("expiry_date-{$i}-{$ind}")[0])) {
+                                $expiry = Carbon::createFromFormat('d/m/Y', $request->input("expiry_date-{$i}-{$ind}")[0])->format('Y-m-d');
+                            }
                             $startDate  = $start ?? null;
                             $expiryDate = $expiry ?? null;
                             if ($chargeModeType) {
@@ -361,7 +379,6 @@ class BookingController extends Controller
                             }
                         }
                     }
-
                 }
             }
 
@@ -371,7 +388,6 @@ class BookingController extends Controller
         } catch (Throwable $e) {
             DB::rollBack();
             return redirect()->back()->with("error", $e->getMessage());
-
         }
     }
 
@@ -539,8 +555,12 @@ class BookingController extends Controller
                             $vatAmount        = isset($request->input("vat_amount-{$key}-{$ind}")[0]) ? $request->input("vat_amount-{$key}-{$ind}")[0] : null;
                             $totalAmount      = isset($request->input("total_amount-{$key}-{$ind}")[0]) ? $request->input("total_amount-{$key}-{$ind}")[0] : null;
 
-                            if (isset($request->input("start_date-{$key}-{$ind}")[0])) {$start = Carbon::createFromFormat('d/m/Y', $request->input("start_date-{$key}-{$ind}")[0])->format('Y-m-d');}
-                            if (isset($request->input("expiry_date-{$key}-{$ind}")[0])) {$expiry = Carbon::createFromFormat('d/m/Y', $request->input("expiry_date-{$key}-{$ind}")[0])->format('Y-m-d');}
+                            if (isset($request->input("start_date-{$key}-{$ind}")[0])) {
+                                $start = Carbon::createFromFormat('d/m/Y', $request->input("start_date-{$key}-{$ind}")[0])->format('Y-m-d');
+                            }
+                            if (isset($request->input("expiry_date-{$key}-{$ind}")[0])) {
+                                $expiry = Carbon::createFromFormat('d/m/Y', $request->input("expiry_date-{$key}-{$ind}")[0])->format('Y-m-d');
+                            }
                             $startDate  = $start ?? null;
                             $expiryDate = $expiry ?? null;
                             if ($chargeModeType) {
@@ -555,7 +575,6 @@ class BookingController extends Controller
                                 ]);
                             }
                         }
-
                     }
                     if (! isset($request->service_counter[$key]) && isset($request->old_service_counter[$key])) {
                         for ($ind = 1, $inde = $request->old_service_counter[$key]; $ind <= $inde; $ind++) {
@@ -568,8 +587,12 @@ class BookingController extends Controller
                             $vatPercentage = isset($request->input("vat_percentage-{$key}-{$ind}")[0]) ? $request->input("vat_percentage-{$key}-{$ind}")[0] : null;
                             $vatAmount     = isset($request->input("vat_amount-{$key}-{$ind}")[0]) ? $request->input("vat_amount-{$key}-{$ind}")[0] : null;
                             $totalAmount   = isset($request->input("total_amount-{$key}-{$ind}")[0]) ? $request->input("total_amount-{$key}-{$ind}")[0] : null;
-                            if (isset($request->input("start_date-{$key}-{$ind}")[0])) {$start = Carbon::createFromFormat('d/m/Y', $request->input("start_date-{$key}-{$ind}")[0])->format('Y-m-d');}
-                            if (isset($request->input("expiry_date-{$key}-{$ind}")[0])) {$expiry = Carbon::createFromFormat('d/m/Y', $request->input("expiry_date-{$key}-{$ind}")[0])->format('Y-m-d');}
+                            if (isset($request->input("start_date-{$key}-{$ind}")[0])) {
+                                $start = Carbon::createFromFormat('d/m/Y', $request->input("start_date-{$key}-{$ind}")[0])->format('Y-m-d');
+                            }
+                            if (isset($request->input("expiry_date-{$key}-{$ind}")[0])) {
+                                $expiry = Carbon::createFromFormat('d/m/Y', $request->input("expiry_date-{$key}-{$ind}")[0])->format('Y-m-d');
+                            }
                             $startDate  = $start ?? null;
                             $expiryDate = $expiry ?? null;
                             if ($chargeModeType != null) {
@@ -582,12 +605,9 @@ class BookingController extends Controller
                                     'total'             => $totalAmount,
                                 ]);
                             }
-
                         }
                     }
-
                 }
-
             }
             DB::commit();
             return to_route('booking.index')->with('success', __('general.updated_successfully'));
@@ -617,7 +637,7 @@ class BookingController extends Controller
         $views                    = DB::connection('tenant')->table('views')->get();
         $property_types           = DB::connection('tenant')->table('property_types')->get();
         $services_master          = (new ServiceMaster())->setConnection('tenant')->get();
-            $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
+        $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
 
         $data = [
             'dail_code_main'            => $dail_code_main,
@@ -691,7 +711,7 @@ class BookingController extends Controller
         $property_types           = DB::connection('tenant')->table('property_types')->get();
         $services_master          = (new ServiceMaster())->setConnection('tenant')->select('id', 'name')->get();
 
-             $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
+        $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
 
         $data = [
             'dail_code_main'            => $dail_code_main,
@@ -718,7 +738,7 @@ class BookingController extends Controller
     }
     public function check_property($id = 0)
     {
-        $booking  = (new Booking())->setConnection('tenant')->findOrFail($id); 
+        $booking  = (new Booking())->setConnection('tenant')->findOrFail($id);
         $unit_ids = (new BookingUnits())->setConnection('tenant')->where('booking_id', $id)
             ->pluck('unit_id')
             ->toArray();
@@ -733,14 +753,18 @@ class BookingController extends Controller
         ];
         return view('admin-views.property_transactions.bookings.check_property', $data);
     }
-    public function view_image($id , $booking_id)
+    public function view_image($id, $booking_id)
     {
         $booking_unit = BookingUnits::where('booking_id', $booking_id)->pluck('id', 'unit_id')->toArray();
 
-        $property = (new PropertyManagement())->setConnection('tenant')->with('blocks_management_child', 'blocks_management_child.block'
-            , 'blocks_management_child.floors_management_child', 'blocks_management_child.floors_management_child.floor_management_main',
-            'blocks_management_child.floors_management_child.unit_management_child', 'blocks_management_child.floors_management_child.unit_management_child.unit_management_main'
-        )->findOrFail($id); 
+        $property = (new PropertyManagement())->setConnection('tenant')->with(
+            'blocks_management_child',
+            'blocks_management_child.block',
+            'blocks_management_child.floors_management_child',
+            'blocks_management_child.floors_management_child.floor_management_main',
+            'blocks_management_child.floors_management_child.unit_management_child',
+            'blocks_management_child.floors_management_child.unit_management_child.unit_management_main'
+        )->findOrFail($id);
         $data = [
             'property_item' => $property,
             'booking_unit'  => $booking_unit,
@@ -749,9 +773,13 @@ class BookingController extends Controller
     }
     public function list_view($id)
     {
-        $property = (new PropertyManagement())->setConnection('tenant')->with('blocks_management_child', 'blocks_management_child.block'
-            , 'blocks_management_child.floors_management_child', 'blocks_management_child.floors_management_child.floor_management_main',
-            'blocks_management_child.floors_management_child.unit_management_child', 'blocks_management_child.floors_management_child.unit_management_child.unit_management_main'
+        $property = (new PropertyManagement())->setConnection('tenant')->with(
+            'blocks_management_child',
+            'blocks_management_child.block',
+            'blocks_management_child.floors_management_child',
+            'blocks_management_child.floors_management_child.floor_management_main',
+            'blocks_management_child.floors_management_child.unit_management_child',
+            'blocks_management_child.floors_management_child.unit_management_child.unit_management_main'
         )->findOrFail($id);
         // $property = PropertyManagement::findOrFail($id);
         $data = [
@@ -836,8 +864,12 @@ class BookingController extends Controller
                         $viewId            = $request->input("view_id-$i");
                         $propertyType      = $request->input("property_type-$i");
 
-                        if ($request->input("period_from-$i")) {$periodFrom = Carbon::createFromFormat('d/m/Y', $request->input("period_from-$i"))->format('Y-m-d');}
-                        if ($request->input("period_to-$i")) {$periodTo = Carbon::createFromFormat('d/m/Y', $request->input("period_to-$i"))->format('Y-m-d');}
+                        if ($request->input("period_from-$i")) {
+                            $periodFrom = Carbon::createFromFormat('d/m/Y', $request->input("period_from-$i"))->format('Y-m-d');
+                        }
+                        if ($request->input("period_to-$i")) {
+                            $periodTo = Carbon::createFromFormat('d/m/Y', $request->input("period_to-$i"))->format('Y-m-d');
+                        }
                         $city                     = $request->input("city-$i");
                         $totalArea                = $request->input("total_area-$i");
                         $areaMeasurement          = $request->input("area_measurement-$i");
@@ -850,8 +882,10 @@ class BookingController extends Controller
                         $rentAmount               = $request->input("rent_amount-$i");
                         $rentMode                 = $request->input("rent_mode-$i");
                         $rentalGl                 = $request->input("rental_gl-$i");
-                        if($request->input("lease_break_date-$i")) {$lease_break_date_format = Carbon::createFromFormat('d/m/Y', $request->input("lease_break_date-$i"))->format('Y-m-d');}
-                        $lease_break_date         = $lease_break_date_format ?? null; 
+                        if ($request->input("lease_break_date-$i")) {
+                            $lease_break_date_format = Carbon::createFromFormat('d/m/Y', $request->input("lease_break_date-$i"))->format('Y-m-d');
+                        }
+                        $lease_break_date         = $lease_break_date_format ?? null;
                         // $lease_break_date         = $request->input("lease_break_date-$i") ? Carbon::createFromFormat('d/m/Y', $request->input("lease_break_date-$i"))->format('Y-m-d') : null;
                         $lease_break_comment      = $request->input("lease_break_comment-$i");
                         $total_net_rent_amount    = $request->input("total_net_rent_amount-$i");
@@ -889,7 +923,7 @@ class BookingController extends Controller
                             'total'                    => 0,
                         ]);
                         $unit_management = (new UnitManagement())->setConnection('tenant')->where('id', $unit)->first();
-                        $unit_management->update(['booking_status' => 'agreement',  'tenant_id'=>$request->tenant_id ]);
+                        $unit_management->update(['booking_status' => 'agreement',  'tenant_id' => $request->tenant_id]);
                         if (isset($request->service_counter[$i])) {
                             for ($ind = 1, $inde = $request->service_counter[$i]; $ind <= $inde; $ind++) {
                                 $chargeMode       = isset($request->input("charge_mode-{$i}-{$ind}")[0]) ? $request->input("charge_mode-{$i}-{$ind}")[0] : null;
@@ -900,8 +934,12 @@ class BookingController extends Controller
                                 $vatPercentage    = isset($request->input("vat_percentage-{$i}-{$ind}")[0]) ? $request->input("vat_percentage-{$i}-{$ind}")[0] : null;
                                 $vatAmount        = isset($request->input("vat_amount-{$i}-{$ind}")[0]) ? $request->input("vat_amount-{$i}-{$ind}")[0] : null;
                                 $totalAmount      = isset($request->input("total_amount-{$i}-{$ind}")[0]) ? $request->input("total_amount-{$i}-{$ind}")[0] : null;
-                                if (isset($request->input("start_date-{$i}-{$ind}")[0])) {$start = Carbon::createFromFormat('d/m/Y', $request->input("start_date-{$i}-{$ind}")[0])->format('Y-m-d');}
-                                if (isset($request->input("expiry_date-{$i}-{$ind}")[0])) {$expiry = Carbon::createFromFormat('d/m/Y', $request->input("expiry_date-{$i}-{$ind}")[0])->format('Y-m-d');}
+                                if (isset($request->input("start_date-{$i}-{$ind}")[0])) {
+                                    $start = Carbon::createFromFormat('d/m/Y', $request->input("start_date-{$i}-{$ind}")[0])->format('Y-m-d');
+                                }
+                                if (isset($request->input("expiry_date-{$i}-{$ind}")[0])) {
+                                    $expiry = Carbon::createFromFormat('d/m/Y', $request->input("expiry_date-{$i}-{$ind}")[0])->format('Y-m-d');
+                                }
                                 $startDate  = $start ?? null;
                                 $expiryDate = $expiry ?? null;
 
@@ -924,8 +962,12 @@ class BookingController extends Controller
                                 $amountCharge     = isset($request->input("amount_charge-{$i}-{$ind}")[0]) ? $request->input("amount_charge-{$i}-{$ind}")[0] : null;
                                 $percentageCharge = isset($request->input("percentage_amount_charge-{$i}-{$ind}")[0]) ? $request->input("percentage_amount_charge-{$i}-{$ind}")[0] : null;
                                 $calculateAmount  = isset($request->input("calculate_amount-{$i}-{$ind}")[0]) ? $request->input("calculate_amount-{$i}-{$ind}")[0] : null;
-                                if (isset($request->input("start_date-{$i}-{$ind}")[0])) {$start = Carbon::createFromFormat('d/m/Y', $request->input("start_date-{$i}-{$ind}")[0])->format('Y-m-d');}
-                                if (isset($request->input("expiry_date-{$i}-{$ind}")[0])) {$expiry = Carbon::createFromFormat('d/m/Y', $request->input("expiry_date-{$i}-{$ind}")[0])->format('Y-m-d');}
+                                if (isset($request->input("start_date-{$i}-{$ind}")[0])) {
+                                    $start = Carbon::createFromFormat('d/m/Y', $request->input("start_date-{$i}-{$ind}")[0])->format('Y-m-d');
+                                }
+                                if (isset($request->input("expiry_date-{$i}-{$ind}")[0])) {
+                                    $expiry = Carbon::createFromFormat('d/m/Y', $request->input("expiry_date-{$i}-{$ind}")[0])->format('Y-m-d');
+                                }
                                 $startDate     = $start ?? null;
                                 $expiryDate    = $expiry ?? null;
                                 $vatPercentage = isset($request->input("vat_percentage-{$i}-{$ind}")[0]) ? $request->input("vat_percentage-{$i}-{$ind}")[0] : null;
@@ -944,7 +986,6 @@ class BookingController extends Controller
                                 }
                             }
                         }
-
                     }
                 }
             }
@@ -1011,8 +1052,18 @@ class BookingController extends Controller
         $employees                = (new Employee())->setConnection('tenant')->select('id', 'name')->lazy();
         $country_master           = (new CountryMaster())->setConnection('tenant')->select('id', 'country_id')->with('country')->lazy();
         $all_units                = (new UnitManagement())->setConnection('tenant')->select('id', 'property_management_id', 'booking_status', 'view_id', 'unit_type_id', 'unit_condition_id', 'unit_description_id', 'unit_id', 'block_management_id', 'floor_management_id')->whereIn('id', $ids)
-            ->with('block_unit_management', 'property_unit_management', 'block_unit_management.block', 'floor_unit_management.floor_management_main'
-                , 'floor_unit_management', 'unit_management_main', 'unit_description', 'unit_type', 'view', 'unit_condition')->lazy();
+            ->with(
+                'block_unit_management',
+                'property_unit_management',
+                'block_unit_management.block',
+                'floor_unit_management.floor_management_main',
+                'floor_unit_management',
+                'unit_management_main',
+                'unit_description',
+                'unit_type',
+                'view',
+                'unit_condition'
+            )->lazy();
         $live_withs          = (new LiveWith())->setConnection('tenant')->select('id', 'name')->lazy();
         $business_activities = (new BusinessActivity())->setConnection('tenant')->select('id', 'name')->lazy();
         $buildings           = (new PropertyManagement())->setConnection('tenant')->forUser()->select('id', 'name')->lazy();
@@ -1022,7 +1073,7 @@ class BookingController extends Controller
         $views               = (new View())->setConnection('tenant')->select('id', 'name')->lazy();
         $property_types      = (new PropertyType())->setConnection('tenant')->select('id', 'name')->lazy();
         $services_master     = (new ServiceMaster())->setConnection('tenant')->select('id', 'name')->lazy();
-             $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
+        $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
 
         $data = [
             'dail_code_main'            => $dail_code_main,
@@ -1046,7 +1097,6 @@ class BookingController extends Controller
             'tenants'                  => $allTenants,
         ];
         return view('admin-views.property_transactions.bookings.create_with_select_unit', $data);
-
     }
 
     public function empty_unit_from_service_booking($id)
@@ -1057,5 +1107,17 @@ class BookingController extends Controller
             'status'  => 200,
             'success' => $deleted > 0,
         ]);
+    }
+
+    public function booking_update_status($data, $ids)
+    {
+        if ($data['status'] == 'canceled') {
+            $units = BookingUnits::whereIn('booking_id', $ids)->pluck('unit_id');
+
+            UnitManagement::whereIn('id', $units)->update([
+                'booking_status' => 'empty'
+            ]);
+            Booking::whereIn('id', $ids)->update($data);
+        }
     }
 }

@@ -3,7 +3,7 @@
     $lang = session()->get('locale');
     $currentUrl = url()->current();
     $segments = explode('/', $currentUrl);
-    $last = end($segments);
+    $last = end($segments); 
 @endphp
 
 @section('title')
@@ -106,12 +106,12 @@
                         <div class="row align-items-center">
                             <div class="col-12 d-flex align-items-center flex-wrap gap-2">
 
-                                @if ($last == 'general_check_property')
+                                {{-- @if ($last == 'general_check_property') --}}
                                     <button type="button" data-target="#filter" data-filter="" data-toggle="modal"
                                         class="btn btn--primary btn-sm me-2">
                                         <i class="fas fa-filter"></i>
                                     </button>
-                                @endif
+                                {{-- @endif --}}
 
                                 <a href="{{ route('general_property_list') }}" class="btn btn-secondary px-5 me-2">
                                     {{ ui_change('check_property', 'property_transaction') }}
@@ -263,7 +263,7 @@
                                         @foreach ($units as $unit)
                                             <tr class="unit-row"
                                                 @if ($unit->booking_status == 'enquiry') style="background-color: #372be2;color:white"
-                                                 
+                                                
                                             @elseif ($unit->booking_status == 'proposal')
                                             style="background-color: #ffeb3b;color:black"
                                              
@@ -275,7 +275,7 @@
 
                                                 <td width="50" style="position: relative;">
                                                     <label>
-                                                        @if ($unit->booking_status == 'empty')
+                                                        @if ($unit->booking_status == 'empty') 
                                                             <input class="check_bulk_item" name="bulk_ids[]" type="checkbox"
                                                                 value="{{ $unit->id }}" />
                                                         @elseif($unit->booking_status == 'enquiry')
@@ -606,7 +606,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="card-body">
-                        @if ($last == 'general_check_property')
+                        {{-- @if ($last == 'general_check_property') --}}
                             <div class="col-lg-12">
                                 <!-- Search -->
                                 <form action="{{ url()->current() }}" method="GET">
@@ -801,7 +801,7 @@
                                     </div>
                                 </form>
                             </div>
-                        @endif
+                        {{-- @endif --}}
                     </div>
                 </div>
             </div>

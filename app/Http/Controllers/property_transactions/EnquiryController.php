@@ -44,16 +44,22 @@ class EnquiryController extends Controller
     {
         // $this->authorize('unit_management');
         $ids     = $request->bulk_ids;
-        $lastRun = Cache::get('last_enquiry_expiry_run');
-        if (! $lastRun || now()->diffInHours($lastRun) >= 24) {
-            $enquiry_settings = get_business_settings('enquiry')->where('type', 'enquiry_expire_date')->first();
-            $expiry_days      = $enquiry_settings ? (int) $enquiry_settings->value : 0;
+        if ($request->bulk_action_btn === 'update_status' && is_array($ids) && count($ids) && isset($request->status)) {
+            $data = ['enquiry_request_status_id' => $request->status];
 
-            if ($expiry_days > 0) {
-                $this->expire_unit($expiry_days);
-                Cache::put('last_enquiry_expiry_run', now(), now()->addDay());
-            }
+            $this->enquiry_update_status($data, $ids);
+            return back()->with('success', ui_change('updated_successfully'));
         }
+        // $lastRun = Cache::get('last_enquiry_expiry_run');
+        // if (! $lastRun || now()->diffInHours($lastRun) >= 24) {
+        $enquiry_settings = get_business_settings('enquiry')->where('type', 'enquiry_expire_date')->first();
+        $expiry_days      = $enquiry_settings ? (int) $enquiry_settings->value : 0;
+
+        if ($expiry_days > 0) {
+            $this->expire_unit($expiry_days);
+            // Cache::put('last_enquiry_expiry_run', now(), now()->addDay());
+        }
+        // }
 
         $search      = $request['search'];
         $query_param = $search ? ['search' => $request['search']] : '';
@@ -580,8 +586,10 @@ class EnquiryController extends Controller
         $views                    = DB::connection('tenant')->table('views')->get();
         $property_types           = DB::connection('tenant')->table('property_types')->get();
         $services_master          = (new ServiceMaster())->setConnection('tenant')->select('id', 'name', 'vat')->get();
+        $dail_code_main = DB::connection('tenant')->table('countries')->select('id', 'dial_code')->get();
 
         $data = [
+            'dail_code_main'               => $dail_code_main,
             'unit_types'               => $unit_types,
             'services_master'          => $services_master,
             'property_types'           => $property_types,
@@ -616,7 +624,7 @@ class EnquiryController extends Controller
             }
             if (Str::startsWith($key, 'unit-')) {
                 $rules[$key] = 'required';
-            } 
+            }
         }
 
         $validatedData = $request->validate($rules);
@@ -1111,23 +1119,23 @@ class EnquiryController extends Controller
     {
         DB::transaction(function () use ($expiry_days) {
             // Get expired enquiry details IDs first
-            $expiredEnquiries = (new EnquiryDetails())->setConnection('tenant')->where('enquiry_request_status_id', 1)
+            $expiredEnquiries = EnquiryDetails::where('enquiry_request_status_id', 1)
                 ->whereRaw("DATEDIFF(NOW(), created_at) > ?", [$expiry_days])
                 ->pluck('enquiry_id');
-
+            // dd($expiredEnquiries);
             if ($expiredEnquiries->isNotEmpty()) {
                 // Update enquiry details
-                (new EnquiryDetails())->setConnection('tenant')->whereIn('enquiry_id', $expiredEnquiries)
+                EnquiryDetails::whereIn('enquiry_id', $expiredEnquiries)
                     ->where('enquiry_request_status_id', 1)
                     ->update(['enquiry_request_status_id' => 3]);
 
                 // Get unit management IDs in one query
-                $unitManagementIds = (new EnquiryUnitSearchDetails())->setConnection('tenant')->whereIn('enquiry_id', $expiredEnquiries)
+                $unitManagementIds = EnquiryUnitSearchDetails::whereIn('enquiry_id', $expiredEnquiries)
                     ->pluck('unit_management_id');
 
                 // Update unit management in bulk
                 if ($unitManagementIds->isNotEmpty()) {
-                    (new UnitManagement())->setConnection('tenant')->whereIn('id', $unitManagementIds)
+                    UnitManagement::whereIn('id', $unitManagementIds)
                         ->update(['booking_status' => 'empty']);
                 }
             }
@@ -1220,11 +1228,18 @@ class EnquiryController extends Controller
         ];
         return view('admin-views.property_transactions.enquiries.general_list_view', $data);
     }
+
+    public function enquiry_update_status($data, $ids)
+    {
+
+        $status =  EnquiryRequestStatus::where('id', $data['enquiry_request_status_id'])->first();
+        if ($status->name == 'Canceled' || $status->name == 'canceled') {
+            $units = EnquiryUnitSearchDetails::whereIn('enquiry_id', $ids)->pluck('unit_management_id');
+
+            UnitManagement::whereIn('id', $units)->update([
+                'booking_status' => 'empty'
+            ]);
+            EnquiryDetails::whereIn('enquiry_id', $ids)->update($data);
+        }
+    }
 }
-// App\Models\Admin::create([
-//     'name'                  => 'Eslam',
-//     'user_name'             => 'admin',
-//     'password'              => Hash::make('12345'),
-//     'role_id'               => 2,
-//     'role_name'             => 'admin',
-// ]);

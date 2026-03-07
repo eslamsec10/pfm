@@ -1,14 +1,16 @@
 <?php
+
 namespace App\Http\Controllers\reports;
 
 use App\Http\Controllers\Controller;
 use App\Models\Agreement;
 use App\Models\Invoice;
 use App\Models\PropertyManagement;
+use App\Models\Schedule;
 use App\Models\Tenant;
 use App\Models\UnitManagement;
 use Carbon\Carbon;
-use Illuminate\Http\Request; 
+use Illuminate\Http\Request;
 
 class ReportController extends Controller
 {
@@ -206,10 +208,9 @@ class ReportController extends Controller
                         $q->where('billing_month_year', $currentMonth);
                     },
                     'schedules.tenant:id,name,company_name',
-                ]); 
+                ]);
             if ($request->filter_building && $request->filter_building != -1) {
                 $report_query->where('property_management_id', $request->filter_building);
-                
             }
 
             $units = $report_query->latest()
@@ -237,7 +238,9 @@ class ReportController extends Controller
             ->whereHas('agreement_details', function ($q) use ($currentDate, $thirtyDaysLater) {
                 $q->whereBetween('period_to', [$currentDate, $thirtyDaysLater]);
             })
-            ->with(['agreement_details', 'tenant:id,name,company_name',
+            ->with([
+                'agreement_details',
+                'tenant:id,name,company_name',
                 'agreement_units.agreement_unit_main:id,property_management_id,block_management_id,floor_management_id,unit_id',
                 'agreement_units.agreement_unit_main.unit_management_main:id,name',
                 'agreement_units.agreement_unit_main.property_unit_management:id,name',
@@ -318,9 +321,10 @@ class ReportController extends Controller
         return view('admin-views.reports.tenant_financial_summary', $data);
     }
 
-    public function contract_details(Request $request){
-         $ids     = $request->bulk_ids;
-        
+    public function contract_details(Request $request)
+    {
+        $ids     = $request->bulk_ids;
+
         if ($request->bulk_action_btn === 'update_status' && is_array($ids) && count($ids)) {
             $data = ['status' => 1];
             (new Agreement())->setConnection('tenant')->whereIn('id', $ids)->update($data);
@@ -374,7 +378,7 @@ class ReportController extends Controller
             }
             if ($request->sign_status && $request->sign_status != -1 && ($request->sign_status == 'unsigned')) {
                 $report_query->where('booking_status', '!=', 'signed');
-            } 
+            }
             if ($request->tenant_id && $request->tenant_id != -1) {
                 $report_query->where('tenant_id', $request->tenant_id);
             }
@@ -402,5 +406,30 @@ class ReportController extends Controller
 
         ];
         return view("admin-views.reports.contract_details", $data);
+    }
+
+
+    public function tenant_ledger_report(Request $request)
+    {
+        $tenants = Tenant::select('ledger_id', 'name', 'id', 'company_name')->with('ledger:id,name,code,debit,credit,credit_vat,debit_vat')->paginate();
+        // dd($tenants);
+        return view("admin-views.reports.tenant_ledger_report", compact('tenants'));
+    }
+
+    public function schedule(Request $request)
+    {
+        $ids = $request->bulk_ids;
+        if ($request->bulk_action_btn === 'update_status' && is_array($ids) && count($ids)) {
+            $data = ['rent_amount' => $request->rent_amount];
+            Schedule::whereIn('id', $ids)->update($data);
+            return back()->with('success', __('general.updated_successfully'));
+        }
+        $schedules = Schedule::paginate();
+        // $agreement = Agreement::where('id', $id)->first();
+        $data      = [
+            'schedules' => $schedules,
+            // 'agreement' => $agreement,
+        ];
+        return view('admin-views.property_transactions.tenants.schedule_list', $data);
     }
 }

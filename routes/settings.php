@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\hierarchy\LedgerController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\settings\SettingController;
 use App\Http\Controllers\settings\CurrencyController;
@@ -64,3 +65,9 @@ Route::group(['prefix' => 'room-reservation/settings', 'as' => 'room_reservation
 });
 
 Route::get('get_ledger/{id}' , [ProposalController::class , 'get_ledger'])->name('get_ledger');
+
+
+
+Route::get('/unit_ledger' , [LedgerController::class ,'update_unit_ledger']);
+Route::get('/tenant_ledger' , [LedgerController::class ,'update_tenant_ledger']);
+// Route::get('/unit_ledger' , [LedgerController::class ,'update_unit_ledger']);

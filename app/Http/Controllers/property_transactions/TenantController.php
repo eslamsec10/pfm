@@ -4,12 +4,14 @@ namespace App\Http\Controllers\property_transactions;
 
 use App\Exports\TenantTemplate;
 use App\Http\Controllers\Controller;
+use App\Models\Agreement;
 use App\Models\BusinessActivity;
 use App\Models\Company;
 use App\Models\CountryMaster;
 use App\Models\general\Groups;
 use App\Models\hierarchy\MainLedger;
 use App\Models\LiveWith;
+use App\Models\Schedule;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -345,5 +347,22 @@ class TenantController extends Controller
     public function exportTenants()
     {
         return Excel::download(new TenantTemplate, 'tenants.xlsx');
+    }
+
+        public function schedule(Request $request, $id)
+    {
+        $ids = $request->bulk_ids;
+        if ($request->bulk_action_btn === 'update_status' && is_array($ids) && count($ids)) {
+            $data = ['rent_amount' => $request->rent_amount];
+            Schedule::whereIn('id', $ids)->update($data);
+            return back()->with('success', __('general.updated_successfully'));
+        }
+        $schedules = Schedule::where('tenant_id', $id)->paginate();
+        // $agreement = Agreement::where('id', $id)->first();
+        $data      = [
+            'schedules' => $schedules,
+            // 'agreement' => $agreement,
+        ];
+        return view('admin-views.property_transactions.tenants.schedule_list', $data);
     }
 }

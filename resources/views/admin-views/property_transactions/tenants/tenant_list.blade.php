@@ -145,6 +145,11 @@
                                                         href="{{ route('tenant.edit', [$tenant_item->id]) }}">
                                                         <i class="tio-edit"></i>
                                                     </a>
+                                                    <a class="btn btn-outline--primary  "
+                                                        title="{{ ui_change('schedule' , 'property_master') }}"
+                                                        href="{{ route('tenant.schedule', [$tenant_item->id]) }}">
+                                                         {{ ui_change('schedule' , 'property_master') }} 
+                                                    </a>
                                                 {{-- @endcan
                                                 @can('delete_tenant') --}}
                                                 <a class="btn btn-outline-danger btn-sm delete square-btn"

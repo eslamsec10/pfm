@@ -1,15 +1,17 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Models\View;
-use App\Models\Tenant;
+use App\Models\BlockManagement;
 use App\Models\Company;
+use App\Models\FloorManagement;
 use App\Models\PropertyManagement;
-use App\Models\UnitType;
-use Illuminate\Http\Request;
+use App\Models\Tenant;
 use App\Models\UnitCondition;
-use App\Models\UnitManagement;
 use App\Models\UnitDescription;
+use App\Models\UnitManagement;
+use App\Models\UnitType;
+use App\Models\View;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -108,96 +110,87 @@ class DashboardController extends Controller
 
     public function general_search_units_in_dashboard(Request $request)
     {
-        
-        // $query = (new UnitManagement())->setConnection('tenant') ;
+ $report_query = UnitManagement::select(
+        'id',
+        'unit_id',
+        'property_management_id',
+        'block_management_id',
+        'floor_management_id',
+        'unit_description_id',
+        'unit_condition_id',
+        'unit_type_id',
+        'unit_parking_id',
+        'view_id',
+        'status',
+        'booking_status'
+    )
+    ->with([
+        'property_unit_management:id,name',
+        'block_unit_management:id,block_id',
+        'block_unit_management.block:id,name',
+        'floor_unit_management:id,floor_id',
+        'floor_unit_management.floor_management_main:id,name',
+        'unit_management_main:id,name',
+        'unit_description:id,name',
+        'unit_type:id,name',
+        'unit_condition:id,name',
+        'view:id,name',
+        'latest_rent_schedule',
+        'rent_schedules',
+    ])
 
-        // $query->where(function ($q) use ($request) {
-        //     $q->orWhere(function ($subQuery) use ($request) {
-        //         if (! empty($request->unit_description_id) && $request->unit_description_id != "") {
-                    
-        //             $subQuery->where('unit_description_id', $request->unit_description_id);
-        //         }
+    ->when($request->property_id && $request->property_id != -1, function ($q) use ($request) {
+        $q->where('property_management_id', $request->property_id);
+    })
 
-        //         if (! empty($request->property_id) && $request->property_id != "" && $request->property_id != "-1") {
-        //             $subQuery->where('property_management_id', $request->property_id);
-                    
-        //         }
+    ->when($request->unit_description_id && $request->unit_description_id != -1, function ($q) use ($request) {
+        $q->where('unit_description_id', $request->unit_description_id);
+    })
 
-        //         if (! empty($request->unit_type_id) && $request->unit_type_id != "" && $request->unit_type_id != "-1") {
-        //             $subQuery->where('unit_type_id', $request->unit_type_id);
-                    
-        //         }
+    ->when($request->unit_condition_id && $request->unit_condition_id != -1, function ($q) use ($request) {
+        $q->where('unit_condition_id', $request->unit_condition_id);
+    })
 
-        //         if (! empty($request->unit_condition_id) && $request->unit_condition_id != "") {
-        //             $subQuery->where('unit_condition_id', $request->unit_condition_id);
-        //         }
+    ->when($request->unit_type_id && $request->unit_type_id != -1, function ($q) use ($request) {
+        $q->where('unit_type_id', $request->unit_type_id);
+    })
 
-        //         if (! empty($request->view_id) && $request->view_id != "") {
-        //             $subQuery->where('view_id', $request->view_id);
-        //         }
-        //     });
-        // });
- $report_query = (new UnitManagement())->setConnection('tenant')->with([
-                'property_unit_management',
-                'block_unit_management',
-                'block_unit_management.block',
-                'floor_unit_management',
-                'floor_unit_management.floor_management_main',
-                'unit_management_main',
-                'unit_description',
-                'unit_type',
-                'unit_condition',
-                'view',
-            ]); 
+    ->when($request->view_id && $request->view_id != -1, function ($q) use ($request) {
+        $q->where('view_id', $request->view_id);
+    });
 
-            
-            if ($request->property_id && $request->property_id != -1) {
-                $report_query->whereHas('property_unit_management', function ($query) use ($request) {
-                    $query->where('id', $request->property_id);
-                });
-            }
-            
-            if ($request->unit_description_id && $request->unit_description_id != -1) {
-                $report_query->whereHas('unit_description', function ($query) use ($request) {
-                    $query->where('id', $request->unit_description_id);
-                });
-            }
+$units = $report_query
+    // ->orderBy('created_at', 'desc')
+    ->paginate(20);
 
-            if ($request->unit_condition_id && $request->unit_condition_id != -1) {
-                $report_query->whereHas('unit_condition', function ($query) use ($request) {
-                    $query->where('id', $request->unit_condition_id);
-                });
-            }
-
-            if ($request->unit_type_id && $request->unit_type_id != -1) {
-                $report_query->whereHas('unit_type', function ($query) use ($request) {
-                    $query->where('id', $request->unit_type_id);
-                });
-            }
-
-            if ($request->view_id && $request->view_id != -1) {
-                $report_query->whereHas('view', function ($query) use ($request) {
-                    $query->where('id', $request->view_id);
-                });
-            }
-
-            $units = $report_query->orderBy('created_at', 'desc')->paginate(20);
+            // $units = $report_query->orderBy('created_at', 'desc')->paginate(20);
         // $all_units_filter = $query->get();
         // dd($units);
         $unit_descriptions = (new UnitDescription())->setConnection('tenant')->select('id', 'name')->get();
         $unit_conditions   = (new UnitCondition())->setConnection('tenant')->select('id', 'name')->get();
         $unit_types        = (new UnitType())->setConnection('tenant')->select('id', 'name')->get();
         $unit_views        = (new View())->setConnection('tenant')->select('id', 'name')->get();
-
+        $tenants           = Tenant::select('id', 'name', 'company_name')->orderBy('created_at', 'desc')->get();
+                
+        $floors            = FloorManagement::select('id', 'floor_id')->with('floor_management_main')->get();
+        $blocks            = BlockManagement::select('id', 'block_id')->with('block')->get();
+        $buildings         = PropertyManagement::select('id', 'name')->forUser()->get();
+        
         $data = [ 
+            'floors'            => $floors,
+            'blocks'            => $blocks,
+            'buildings'         => $buildings,
             'units'             => $units,
             'unit_descriptions' => $unit_descriptions,
             'unit_conditions'   => $unit_conditions,
             'unit_types'        => $unit_types,
             'unit_views'        => $unit_views,
+            'tenants'           => $tenants,
         ];
 
         return view('admin-views.property_transactions.enquiries.general_check_property', $data);
+                // return view('admin-views.property_transactions.enquiries.general_check_property', $data);
+
     }
     public function get_unit_details(Request $request, $id)
     {

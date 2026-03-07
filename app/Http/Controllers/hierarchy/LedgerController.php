@@ -3,9 +3,14 @@
 namespace App\Http\Controllers\hierarchy;
 
 use App\Http\Controllers\Controller;
+use App\Models\Company;
 use App\Models\Country;
 use App\Models\general\Groups;
+use App\Models\hierarchy\CostCenter;
+use App\Models\hierarchy\CostCenterCategory;
 use App\Models\hierarchy\MainLedger;
+use App\Models\Tenant;
+use App\Models\UnitManagement;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -179,5 +184,120 @@ class LedgerController extends Controller
             // 'countries' => $countries,
         ];
         return view("admin-views.hierarchy.ledgers.show", $data);
+    }
+
+    public function update_unit_ledger(Request $request)
+    {
+        $units = UnitManagement::whereNull('ledger_id')->get();
+
+        $company =   (new Company())->setConnection('tenant')->first();
+
+        // ================= GROUP (PROPERTY GROUP) =================
+        foreach ($units as $unitManagement) {
+
+
+            $group = Groups::where('property_id', $unitManagement->property_management_id)
+                ->first();
+
+            // ================= LEDGER =================
+            $ledger = MainLedger::create([
+                'code' => $unitManagement->unit_management_main?->name,
+                'name' =>
+                $unitManagement->property_unit_management?->code . '-' .
+                    $unitManagement->block_unit_management?->block?->code . '-' .
+                    $unitManagement->floor_unit_management?->floor_management_main?->name . '-' .
+                    $unitManagement->unit_management_main?->name,
+                'currency'  => $company?->currency_code,
+                'country_id' =>
+                $unitManagement->property_unit_management
+                    ?->country_master
+                    ?->country
+                    ?->id ?? 1,
+                'group_id'            => $group?->id,
+                'main_id'             => $unitManagement->id,
+                'main_type'           => 'unit',
+                'is_taxable'          => $group?->is_taxable ?? 0,
+                'vat_applicable_from' => $group?->vat_applicable_from,
+                'tax_rate'            => $group?->tax_rate ?? $company?->tax_rate,
+                'tax_applicable'      => $group?->tax_applicable ?? 0,
+                'status'              => 'active',
+            ]);
+
+            // ================= COST CENTER =================
+            $propertyCost = CostCenterCategory::where('main_id', $unitManagement->property_management_id)
+                ->where('main_type', 'property')
+                ->first();
+
+            $costCenter = CostCenter::create([
+                'name' =>
+                $unitManagement->property_unit_management?->name . '-' .
+                    $unitManagement->unit_management_main?->name . '-' .
+                    $unitManagement->block_unit_management?->block?->name . '-' .
+                    $unitManagement->floor_unit_management?->floor_management_main?->name,
+                'main_id'   => $unitManagement->id,
+                'main_type' => 'unit',
+                'cost_center_category_id' => $propertyCost?->id,
+                'status'    => 'active',
+            ]);
+
+            // ================= UPDATE UNIT =================
+            $unitManagement->update([
+                'ledger_id'       => $ledger->id,
+                'cost_center_id'  => $costCenter->id,
+            ]);
+        }
+    }
+
+    public function update_tenant_ledger(Request $request)
+    {
+        $tenants = Tenant::WhereNull('ledger_id')->get();
+        $company = Company::on('tenant')
+            ->where('id', optional(auth()->user())->company_id)
+            ->first()
+            ?? Company::on('tenant')->first();
+        foreach ($tenants as $tenant) {
+
+
+
+
+
+            $group = Groups::on('tenant')
+                ->where('name', 'LIKE', '%Tenants%')
+                ->first();
+
+            if (!$group) {
+                return;
+            }
+            if (MainLedger::on('tenant')
+                ->where('main_id', $tenant->id)->where('group_id', $group->id)
+                ->exists()
+            ) {
+                return;
+            }
+            $ledger = MainLedger::on('tenant')->create([
+                'code'                => $tenant->type === 'individual'
+                    ? $tenant->nick_name
+                    : $tenant->company_name,
+
+                'name'                => $tenant->type === 'individual'
+                    ? $tenant->name
+                    : $tenant->company_name,
+
+                'currency'            => $company->currency_code,
+                'country_id'          => $company->countryid,
+                'group_id'            => $group->id,
+                'main_id'             => $tenant->id,
+
+                'is_taxable'          => $group->is_taxable ?? 0,
+                'vat_applicable_from' => $group->vat_applicable_from,
+                'tax_rate'            => $group->tax_rate ?? 0,
+                'tax_applicable'      => $group->tax_applicable ?? 0,
+
+                'status'              => 'active',
+            ]);
+            $tenant->update([
+                'ledger_id' => $ledger->id,
+            ]);
+        }
     }
 }

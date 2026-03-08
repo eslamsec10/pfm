@@ -1233,7 +1233,7 @@ class EnquiryController extends Controller
     {
 
         $status =  EnquiryRequestStatus::where('id', $data['enquiry_request_status_id'])->first();
-        if ($status->name == 'Canceled' || $status->name == 'canceled') {
+        if ($status && stripos($status->name, 'cancel') !== false) {
             $units = EnquiryUnitSearchDetails::whereIn('enquiry_id', $ids)->pluck('unit_management_id');
 
             UnitManagement::whereIn('id', $units)->update([

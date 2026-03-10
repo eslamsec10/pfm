@@ -34,6 +34,7 @@
                                         <option value="">{{ ui_change('Set_Status','property_report')  }}</option>
                                         <option value="paid">{{ ui_change('Paid','property_report')  }}</option>
                                         <option value="unpaid">{{ ui_change('Unpaid','property_report')  }}</option>
+                                        <option value="partially_paid">{{ ui_change('partially_paid','property_report')  }}</option>
                                     </select>
                                 </div>
                                 <button type="submit" name="bulk_action_btn" value="update_status"

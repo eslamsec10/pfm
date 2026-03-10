@@ -353,7 +353,11 @@ class ReceiptController extends Controller
         })->sum('paid_amount');
         $receipt_settings       = (new ReceiptSettings())->setConnection('tenant')->get();
         $receipt_settings_first = (new ReceiptSettings())->setConnection('tenant')->first();
-        $main_ledgers           = $receipt_settings_first->main_ledgers;
+        $main_ledgers = [];
+        if($receipt_settings_first){
+
+            $main_ledgers           = $receipt_settings_first->main_ledgers  ;
+        }
         $total_debit            = ($total - $total_paid);
 
         $data = [

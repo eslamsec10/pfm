@@ -82,7 +82,7 @@
                             <div class="col-md-3">
                                 <label class="form-label">Receipt Amount</label>
                                 <input type="number" id="receipt-amount" name="receipt_amount" class="form-control mb-3"
-                                    max="{{ $invoice->total }}">
+                                    max="{{ $invoice->total }}" step="0.01">
                             </div>
 
                             <div class="col-md-3">
@@ -187,7 +187,7 @@
                                                 <input
                                                     onfocus="payTotalAmount(this); focus_amount_fn(this, {{ $invoice_item_item->total - $invoice_item_item->paid_amount }}, {{ $company->decimals }})"
                                                     {{-- onfocus="checkTotalAmount(this, 100); focus_amount_fn(this, {{ $invoice_item_item->total - $invoice_item_item->paid_amount }}, {{ $company->decimals }})" --}} {{-- oninput="checkTotalAmount(this, 100)"
-                                                        onchange="checkTotalAmount(this, 100)"  --}} type="number"
+                                                        onchange="checkTotalAmount(this, 100)"  --}} type="number" step="0.01"
                                                     onkeyup="payTotalAmount(this)" class="form-control amount-input-table"
                                                     name="pay_amount[{{ $invoice_item_item->id }}]" disabled>
                                             </td>
@@ -283,7 +283,7 @@
             <div class="col-md-3 input-container" id="input-${method.replace(/\s+/g, '-')}">
                 <strong>${payment_method_name}</strong>
                 <label class="form-label d-block">Cheque Amount</label>
-                <input type="number" class="form-control amount-input" data-method="${method}" 
+                <input type="number" step="0.01" class="form-control amount-input" data-method="${method}" 
                     name="payment_amount[${method}]" min="0" placeholder="Enter amount"  >
             </div>  
             <div class="col-md-3 input-container" id="input_bank_name-${method.replace(/\s+/g, '-')}">
@@ -324,7 +324,7 @@
             <div class="col-md-3 input-container" id="input-${method.replace(/\s+/g, '-')}">
                 <strong>${payment_method_name}</strong>
                 <label class="form-label d-block">Amount</label>
-                <input type="number" class="form-control amount-input" data-method="${method}" 
+                <input type="number" step="0.01" class="form-control amount-input" data-method="${method}" 
                     name="payment_amount[${method}]" min="0" placeholder="Enter amount"  >
             </div>`;
                     container.append(inputField);

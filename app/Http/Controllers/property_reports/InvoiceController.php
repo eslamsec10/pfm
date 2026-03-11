@@ -122,10 +122,10 @@ class InvoiceController extends Controller
             DB::commit();
             return redirect()->route('invoices.all_invoices')->with('success', 'Invoice All Added Successfully');
         } else {
-              $data['invoice_month'] = $request->invoice_month;
+            $data['invoice_month'] = $request->invoice_month;
             $data['formattedDate'] = $formattedDate;
             $data['building_id']   = $request->building_id;
-            $data['tenant_id']   =  $request->tenant_id ;
+            $data['tenant_id']   =  $request->tenant_id;
             $this->one_tenant($data);
             DB::commit();
 
@@ -582,11 +582,17 @@ class InvoiceController extends Controller
                 if ($schedule_item->category == 'service') {
 
                     $service = ServiceMaster::find($schedule_item->service_id);
-                    $service->service_ledger?->increment('credit', $lineTotal);
+                    $service_ledger = MainLedger::where('id', $tenant->service_id)->first();
+                    if ($service && $service_ledger) {
+                        $service_ledger->debit = $service_ledger->debit + $lineTotal;
+                    }
                 } elseif ($schedule_item->category == 'rent') {
 
                     $unit_management = UnitManagement::find($schedule_item->unit_id);
-                    $unit_management->unit_ledger?->increment('credit', $lineTotal);
+                    $unit_ledger = MainLedger::where('id', $tenant->unit_id)->first();
+                    if ($unit_management && $unit_ledger) {
+                        $unit_ledger->debit = $unit_ledger->debit + $lineTotal;
+                    }
                 }
 
                 $schedule_item->update([
@@ -628,10 +634,10 @@ class InvoiceController extends Controller
                 'status'             => "unpaid",
                 'total'              => 0,
             ]);
-             $tenantDebit  = 0;
+            $tenantDebit  = 0;
             // create invoice items if there is tenant
             $grand_total = 0;
-            if (isset($invoice)) { 
+            if (isset($invoice)) {
 
                 foreach ($schedules as $schedule) {
                     $schedule->update([
@@ -662,18 +668,17 @@ class InvoiceController extends Controller
                     $grand_total += $invoice_item->total;
                     $tenantDebit  += $invoice_item->total;
                 }
-            }  
+            }
             $invoice->update([
                 'total' => $grand_total,
             ]);
-              $ledger = MainLedger::where('id', $tenant->ledger_id)
+            $ledger = MainLedger::where('id', $tenant->ledger_id)
                 ->first();
             if ($ledger) {
                 $ledger->debit = $ledger->debit + $tenantDebit;
                 $ledger->save();
             }
-             
-        }  
+        }
     }
     // public function one_tenant($data)
     // {

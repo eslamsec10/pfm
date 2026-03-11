@@ -544,7 +544,7 @@
                                             <label for="area-measurement">{{ ui_change('payment_mode' , 'property_transaction')  }}
                                                 <span class="starColor " style="font-size: 18px; "> *</span> </label>
                                             <select id="area-measurement" name="payment_mode-{{ $loop->index + 1 }}"
-                                                onchange="payment_mode_func({{ $loop->index + 1 }})"
+                                                onchange="payment_mode_func({{ $loop->index + 1 }});calculateRent($loop->index + 1)"
                                                 class="js-select2-custom form-control" required>
                                                 <option value="">
                                                     {{ ui_change('select_payment_mode' , 'property_transaction') }}
@@ -639,7 +639,7 @@
                                             <label
                                                 for="area-measurement">{{ ui_change('rent_mode' , 'property_transaction') }}</label>
                                             <select id="area-measurement" name="rent_mode-{{ $loop->index + 1 }}"
-                                                class="js-select2-custom form-control">
+                                                class="js-select2-custom form-control" onchange="calculateRent({{ $loop->index + 1 }})">
                                                 <option value="0" {{ 0 == $item->rent_mode ? 'selected' : '' }}>
                                                     {{ ui_change('select_rent_mode' , 'property_transaction')  }} </option>
                                                 <option value="1" {{ 1 == $item->rent_mode ? 'selected' : '' }}>
@@ -668,16 +668,9 @@
                                             <select id="area-measurement" name="rental_gl-{{ $loop->index + 1 }}"
                                                 class="js-select2-custom form-control"
                                                 onchange="vat_amount_func({{ $loop->index + 1 }})">
-                                                <option value="0">{{ ui_change('select_rental_gl' , 'property_transaction') }}
+                                                <option value="{{ $item->unit_ledger?->tax_rate }}">
+                                                    {{ $item->unit_ledger?->name }}
                                                 </option>
-                                                <option value="0" {{ 0 == $item->rental_gl ? 'selected' : '' }}>
-                                                    {{ ui_change('Rental_Income_0%' , 'property_transaction') }}</option>
-                                                <option value="10" {{ 10 == $item->rental_gl ? 'selected' : '' }}>
-                                                    {{ ui_change('Rental_Income_10%' , 'property_transaction') }}</option>
-                                                <option value="20" {{ 20 == $item->rental_gl ? 'selected' : '' }}>
-                                                    {{ ui_change('Rental_Income_20%' , 'property_transaction') }}</option>
-                                                <option value="30" {{ 30 == $item->rental_gl ? 'selected' : '' }}>
-                                                    {{ ui_change('Rental_Income_30%' , 'property_transaction') }}</option>
                                             </select>
                                         </div>
                                     </div>
@@ -687,7 +680,7 @@
                                                 for="total-area">{{ ui_change('vat_percentage' , 'property_transaction') }}</label>
                                             <input type="number" readonly name="vat_percentage-{{ $loop->index + 1 }}"
                                                 class="form-control text-white" step="0.001" placeholder="{{ number_format(0,$company->decimals,'.','') }}"
-                                                value="{{ number_format($item->vat_percentage , $company->decimals,'.','') }}">
+                                                value="{{ number_format($item->unit_ledger?->tax_rate , $company->decimals,'.','') }}">
                                         </div>
                                     </div>
                                     <div class="col-md-6 col-lg-4 col-xl-3">
@@ -884,6 +877,32 @@
 
 @push('script')
     <script>
+           function calculateRent(index) {
+
+            let payment_mode = document.querySelector('[name="payment_mode-' + index + '"]').value;
+            let rent_mode = document.querySelector('[name="rent_mode-' + index + '"]').value;
+
+            if (!payment_mode || !rent_mode) return;
+
+            let base_rent = parseFloat(document.querySelector('[name="rent_amount-' + index + '"]').value) || 0;
+
+            let multipliers = {
+                1: 1, // daily
+                2: 30, // monthly
+                3: 60, // bi_monthly
+                4: 90, // quarterly
+                5: 180, // half_yearly
+                6: 365 // yearly
+            };
+
+            let paymentDays = multipliers[payment_mode];
+            let rentDays = multipliers[rent_mode];
+
+            let result = (base_rent / rentDays) * paymentDays;
+
+            document.querySelector('[name="total_net_rent_amount-' + index + '"]').value = result.toFixed(2);
+        }
+
          $(".type_link_create").click(function(e) {
             e.preventDefault();
             $(".type_link_create").removeClass('active');

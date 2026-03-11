@@ -1188,7 +1188,7 @@ class AgreementController extends Controller
         $enquiry_request_statuses = (new EnquiryRequestStatus())->setConnection('tenant')->select('id', 'name')->lazy();
         $employees                = (new Employee())->setConnection('tenant')->select('id', 'name')->lazy();
         $country_master           = (new CountryMaster())->setConnection('tenant')->select('id', 'country_id')->with('country')->lazy();
-        $all_units                = (new UnitManagement())->setConnection('tenant')->select('id', 'property_management_id', 'booking_status', 'view_id', 'unit_type_id', 'unit_condition_id', 'unit_description_id', 'unit_id', 'block_management_id', 'floor_management_id')->whereIn('id', $ids)
+        $all_units                = (new UnitManagement())->setConnection('tenant')->select('id', 'property_management_id', 'booking_status', 'view_id', 'unit_type_id', 'unit_condition_id', 'unit_description_id', 'unit_id', 'block_management_id', 'floor_management_id','ledger_id')->whereIn('id', $ids)
             ->with(
                 'block_unit_management',
                 'property_unit_management',
@@ -1199,7 +1199,7 @@ class AgreementController extends Controller
                 'unit_description',
                 'unit_type',
                 'view',
-                'unit_condition'
+                'unit_condition','unit_ledger'
             )->lazy();
         $live_withs          = (new LiveWith())->setConnection('tenant')->select('id', 'name')->lazy();
         $business_activities = (new BusinessActivity())->setConnection('tenant')->select('id', 'name')->lazy();

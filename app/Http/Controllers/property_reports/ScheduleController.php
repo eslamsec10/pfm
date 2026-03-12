@@ -125,8 +125,8 @@ class ScheduleController extends Controller
                 'main_unit.floor_unit_management', 'main_unit.floor_unit_management.floor_management_main', 'main_unit.unit_description',
                 'main_unit.unit_type', 'main_unit.unit_condition']);
                 if ($request->start_date && $request->end_date) {
-                    $startDate = Carbon::createFromFormat('d/m/Y', $request->start_date)->format('Y-m');  
-                    $endDate   = Carbon::createFromFormat('d/m/Y', $request->end_date)->format('Y-m');
+                    $startDate = Carbon::createFromFormat('d-m-Y', $request->start_date)->format('Y-m');  
+                    $endDate   = Carbon::createFromFormat('d-m-Y', $request->end_date)->format('Y-m');
                 
                     $report_query->whereBetween('billing_month_year', [$startDate, $endDate]);
                 }

@@ -139,6 +139,11 @@
                                                         href="{{ route('unit_management.edit', [$unit_management_item->id]) }}">
                                                         <i class="tio-edit"></i>
                                                     </a>
+                                                    <a class="btn btn-outline--primary  "
+                                                        title="{{ ui_change('invoices' , 'property_config') }}"
+                                                        href="{{ route('unit_management.invoices', [$unit_management_item->id]) }}">
+                                                         {{ ui_change('invoices' , 'property_config') }}
+                                                    </a>
                                                 {{-- @endcan --}}
                                                 @can('delete_unit_management')
                                                 <a class="btn btn-outline-danger btn-sm delete square-btn"

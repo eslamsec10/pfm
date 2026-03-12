@@ -2,26 +2,28 @@
 
 namespace App\Http\Controllers\property_management;
 
-use App\Models\Unit;
-use App\Models\User;
-use App\Models\View;
-use App\Models\UnitType;
-use App\Models\UnitParking;
-use App\Models\RoomFacility;
-use App\Models\UserSettings;
-use Illuminate\Http\Request;
-use App\Models\UnitCondition;
-use App\Models\general\Groups;
-use App\Models\UnitManagement;
+use App\Http\Controllers\Controller;
 use App\Models\BlockManagement;
 use App\Models\FloorManagement;
-use App\Models\UnitDescription;
-use App\Models\PropertyManagement;
-use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
+use App\Models\general\Groups;
 use App\Models\hierarchy\CostCenter;
-use App\Models\hierarchy\MainLedger;
 use App\Models\hierarchy\CostCenterCategory;
+use App\Models\hierarchy\MainLedger;
+use App\Models\Invoice;
+use App\Models\InvoiceItems;
+use App\Models\PropertyManagement;
+use App\Models\RoomFacility;
+use App\Models\Unit;
+use App\Models\UnitCondition;
+use App\Models\UnitDescription;
+use App\Models\UnitManagement;
+use App\Models\UnitParking;
+use App\Models\UnitType;
+use App\Models\User;
+use App\Models\UserSettings;
+use App\Models\View;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class UnitManagementController extends Controller
 {
@@ -715,5 +717,14 @@ class UnitManagementController extends Controller
         }
 
         return response()->json(['status' => 'success']);
+    }
+
+    public function invoices($id){
+        $invoice_items = InvoiceItems::where('unit_id' , $id)->get();
+        $invoice_items_ids = InvoiceItems::where('unit_id', $id)->pluck('invoice_id');
+
+        $invoices = Invoice::whereIn('id', $invoice_items_ids)->paginate(); 
+        return view('admin-views.property_management.unit_management.unit_invoice', compact('invoices'  ));
+
     }
 }

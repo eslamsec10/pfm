@@ -573,6 +573,7 @@ Route::group(['prefix' => 'unit_management', 'middleware' => 'auth:web'], functi
     Route::get('get_blocks_by_property_id/{id}', [UnitManagementController::class, 'get_blocks_by_property_id'])->name('unit_management.get_blocks_by_property_id');
     Route::get('get_floors_by_block_id/{id}', [UnitManagementController::class, 'get_floors_by_block_id'])->name('unit_management.get_floors_by_block_id');
     Route::get('get_units_by_floor_id/{floor_id}/{block_id}/{property_id}', [UnitManagementController::class, 'get_units_by_floor_id'])->name('unit_management.get_units_by_floor_id');
+    Route::get('invoices/{id}', [UnitManagementController::class, 'invoices'])->name('unit_management.invoices');
 });
 Route::group(['prefix' => 'rent_price_list', 'middleware' => 'auth:web'], function () {
     Route::get('/', [RentPriceListController::class, 'index'])->name('rent_price.index');

@@ -964,8 +964,7 @@ if (!function_exists('sendWhatsApp')) {
 
             return $results;
         }
-
-        Log::info($file);
+ 
         return $service->send(
             $to,
             $message,

@@ -445,39 +445,39 @@
                                                         <div class="unit-tooltip" style="text-align: left;">
                                                             <strong>{{ ui_change('Agreement_Ref', 'property_transaction') }}
                                                                 :
-                                                                {{ optional(optional($unit->agreement_main)->agreement)->agreement_no }}</strong><br>
+                                                                {{ optional(optional($unit->currentAgreement)->agreement)->agreement_no }}</strong><br>
                                                             {{ ui_change('Agreement_Date', 'property_transaction') }} :
-                                                            {{ optional(optional($unit->agreement_main)->agreement)->agreement_date }}<br>
+                                                            {{ optional(optional($unit->currentAgreement)->agreement)->agreement_date }}<br>
                                                             {{ ui_change('Rent_Mode', 'property_transaction') }} :
                                                             @php
-                                                                $rentMode = optional($unit->agreement_main)->rent_mode;
+                                                                $rentMode = optional($unit->currentAgreement)->rent_mode;
                                                                 $agreement_setting = optional(
                                                                     App\Models\BusinessSetting::whereType(
                                                                         'agreement_expire_date',
                                                                     )->first(),
                                                                 )->value;
-                                                                $agreement_main = optional(
-                                                                    optional($unit->agreement_main)->agreement,
+                                                                $currentAgreement = optional(
+                                                                    optional($unit->currentAgreement)->agreement,
                                                                 );
                                                             @endphp
 
                                                             {{ $rentMode && array_key_exists($rentMode, $paymentModes) ? $paymentModes[$rentMode] : '' }}
                                                             <br>
                                                             {{ ui_change('Rent_Amount', 'property_transaction') }} :
-                                                            {{ optional($unit->rent_schedules->first())->rent_amount ?? optional($unit->agreement_main)->rent_amount }}
+                                                            {{ optional($unit->rent_schedules->first())->rent_amount ?? optional($unit->currentAgreement)->rent_amount }}
                                                             (BHD)<br>
                                                             {{ ui_change('Contact_Number', 'property_transaction') }} :
-                                                            {{ optional(optional(optional($unit->agreement_main)->agreement)->tenant)->contact_no }}<br>
+                                                            {{ optional(optional(optional($unit->currentAgreement)->agreement)->tenant)->contact_no }}<br>
                                                             {{ ui_change('Tenant', 'property_transaction') }} :
-                                                            {{ optional(optional(optional($unit->agreement_main)->agreement)->tenant)->name ?? optional(optional(optional($unit->agreement_main)->agreement)->tenant)->company_name }}
+                                                            {{ optional(optional(optional($unit->currentAgreement)->agreement)->tenant)->name ?? optional(optional(optional($unit->currentAgreement)->agreement)->tenant)->company_name }}
 
-                                                            @if ($agreement_setting && $agreement_main)
+                                                            @if ($agreement_setting && $currentAgreement)
                                                                  <br>{{ ui_change('Period_From', 'property_transaction') }}
                                                                 :
-                                                                {{ \Carbon\Carbon::parse($agreement_main->agreement_details->period_from)->format('d-m-Y') }}
+                                                                {{ \Carbon\Carbon::parse($currentAgreement->agreement_details->period_from)->format('d-m-Y') }}
                                                                 <br>{{ ui_change('Period_to', 'property_transaction') }}
                                                                 :
-                                                                {{ \Carbon\Carbon::parse($agreement_main->agreement_details->period_to)->format('d-m-Y') }}
+                                                                {{ \Carbon\Carbon::parse($currentAgreement->agreement_details->period_to)->format('d-m-Y') }}
                                                             @endif
                                                         </div>
                                                     @endif

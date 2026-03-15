@@ -50,8 +50,7 @@ class UnitManagementExport implements FromCollection, WithHeadings, WithEvents
 
             $ledgerName = $unit->unit_ledger
                 ? $unit->unit_ledger?->name
-                : ' ';
-                Log::info( $unit->unit_ledger);
+                : ' '; 
             return [
                 '',
                 '',

@@ -15,6 +15,7 @@ use App\Models\Unit;
 use App\Models\UnitManagement;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
@@ -144,7 +145,6 @@ class ContractTemplate implements ToCollection, WithHeadingRow
                 $unit_management = null;
 
                 $unit = Unit::where('unit_no', $row['unit'])->first();
-
                 if ($unit) {
                     $unit_management = UnitManagement::where([
                         'unit_id'                => $unit->id,
@@ -173,6 +173,8 @@ class ContractTemplate implements ToCollection, WithHeadingRow
                         'floor_management_id'    => $floor->id,
                     ]);
                 }
+                                Log::info($unit_management);
+
                 // lease agreement
                 $agreement = Agreement::updateOrCreate(
                     ['agreement_no' => $row['lease_agreement_no']],

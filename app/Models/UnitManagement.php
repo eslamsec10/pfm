@@ -110,6 +110,12 @@ class UnitManagement extends Model
     {
         return $this->belongsTo(AgreementUnits::class, "id", "unit_id");
     }
+    public function currentAgreement()
+    {
+        return $this->hasOne(AgreementUnits::class, 'unit_id', 'id')
+            ->whereDate('commencement_date', '<=', now())
+            ->whereDate('expiry_date', '>=', now());
+    }
     public function facilities()
     {
         return $this->belongsToMany(RoomFacility::class, 'unit_management_options', 'unit_management_id', 'facility_id');

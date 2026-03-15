@@ -2,23 +2,24 @@
 
 namespace App\Http\Controllers\import;
 
-use Exception;
-use App\Models\Unit;
-use App\Models\View;
-use App\Models\Block;
-use App\Models\Floor;
-use App\Models\PropertyType;
-use Illuminate\Http\Request;
-use App\Models\UnitCondition;
-use App\Models\UnitManagement;
-use App\Models\BlockManagement;
-use App\Models\FloorManagement;
-use App\Models\UnitDescription;
-use App\Models\PropertyManagement;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\PropertyMasterTemplate;
+use App\Models\Block;
+use App\Models\BlockManagement;
+use App\Models\Floor;
+use App\Models\FloorManagement;
+use App\Models\PropertyManagement;
+use App\Models\PropertyType;
+use App\Models\Unit;
+use App\Models\UnitCondition;
+use App\Models\UnitDescription;
+use App\Models\UnitManagement;
+use App\Models\UnitType;
+use App\Models\View;
+use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PropertyMasterImportController extends Controller
 {
@@ -174,13 +175,24 @@ class PropertyMasterImportController extends Controller
 
             /*
     |--------------------------------------------------------------------------
+    | Unit Type
+    |--------------------------------------------------------------------------
+    */
+    $unit_type = !empty($normalizedRow['unit_type'])
+                ? UnitType::firstOrCreate(
+                    ['name' => $normalizedRow['unit_type']],
+                    ['code' => $normalizedRow['unit_type']]
+                )
+                : null;
+            /*
+    |--------------------------------------------------------------------------
     | Unit Description
     |--------------------------------------------------------------------------
     */
-            $unit_description = !empty($normalizedRow['unit_type'])
+            $unit_description = !empty($normalizedRow['description'])
                 ? UnitDescription::firstOrCreate(
-                    ['name' => $normalizedRow['unit_type']],
-                    ['code' => $normalizedRow['unit_type']]
+                    ['name' => $normalizedRow['description']],
+                    ['code' => $normalizedRow['description']]
                 )
                 : null;
 
@@ -221,9 +233,10 @@ class PropertyMasterImportController extends Controller
                     'floor_management_id'    => $floor->id,
                 ],
                 [
-                    'unit_description_id' => $unit_description->id ?? null,
-                    'unit_condition_id'   => $unit_condition->id ?? null,
-                    'view_id'             => $view->id ?? null,
+                    'unit_description_id'   => $unit_description->id ?? null,
+                    'unit_type_id'          => $unit_type->id ?? null,
+                    'unit_condition_id'     => $unit_condition->id ?? null,
+                    'view_id'               => $view->id ?? null,
                 ]
             );
         }

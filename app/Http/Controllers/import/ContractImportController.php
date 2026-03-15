@@ -20,8 +20,10 @@ use App\Models\ServiceMaster;
 use App\Models\Tenant;
 use App\Models\Unit;
 use App\Models\UnitManagement;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -137,14 +139,14 @@ class ContractImportController extends Controller
         session([
             'agreement_import_preview' => $validRows,
             'agreement_import_skipped' => $skippedRows,
-        ]); 
+        ]);
         return view(
             'import_excel.agreement_preview',
             compact('validRows', 'skippedRows')
         );
     }
 
-    
+
     public function confirm_agreement(Request $request)
     {
         $data = session('agreement_import_preview');
@@ -152,7 +154,6 @@ class ContractImportController extends Controller
         if (! $data) {
             return redirect()->back()->with('error', 'No data found in session.');
         }
-
         DB::beginTransaction();
         try {
             foreach ($data as $rowIndex => $normalizedRow) {
@@ -176,7 +177,7 @@ class ContractImportController extends Controller
                         $normalizedRow[$col] = normalizeDate($normalizedRow[$col]);
                     }
                 }
-              
+
                 $validator = Validator::make($normalizedRow, [
                     'lease_agreement_no' => 'required',
                     'tenant_name'        => 'required',
@@ -196,7 +197,7 @@ class ContractImportController extends Controller
                 if ($validator->fails()) {
                     continue;
                 }
-               
+
                 $country = CountryMaster::select('id', 'country_id', 'country_code')->first();
 
                 $tenant = Tenant::firstOrCreate(
@@ -209,6 +210,7 @@ class ContractImportController extends Controller
                 );
 
                 $blockName = Block::firstOrCreate(
+                    ['name' => $normalizedRow['block_name']],
                     ['name' => $normalizedRow['block_name'], 'code' => $normalizedRow['block_code'] ?? null]
                 );
                 $block = BlockManagement::firstOrCreate([
@@ -217,6 +219,7 @@ class ContractImportController extends Controller
                 ]);
 
                 $floorName = Floor::firstOrCreate(
+                    ['name' => $normalizedRow['floor_name']],
                     ['name' => $normalizedRow['floor_name'], 'code' => $normalizedRow['floor_code'] ?? null]
                 );
                 $floor = FloorManagement::firstOrCreate([
@@ -225,11 +228,21 @@ class ContractImportController extends Controller
                     'property_management_id' => $property->id,
                 ]);
 
-                $unit = Unit::firstOrCreate(
-                    ['unit_no' => $normalizedRow['unit']],
-                    ['name' => $normalizedRow['unit'], 'code' => $normalizedRow['unit']]
-                );
+                // $unit = Unit::firstOrCreate(
+                //     ['unit_no' => $normalizedRow['unit']],
+                //     ['name' => $normalizedRow['unit'], 'code' => $normalizedRow['unit']]
+                // );
+                $unit = Unit::where('unit_no', $normalizedRow['unit'])
+                    ->orWhere('name', $normalizedRow['unit'])
+                    ->first();
 
+                if (!$unit) {
+                    $unit = Unit::create([
+                        'unit_no' => $normalizedRow['unit'],
+                        'name'    => $normalizedRow['unit'],
+                        'code'    => $normalizedRow['unit']
+                    ]);
+                }
                 $unit_management = UnitManagement::firstOrCreate([
                     'unit_id'                => $unit->id,
                     'property_management_id' => $property->id,
@@ -257,7 +270,7 @@ class ContractImportController extends Controller
                     ]
                 );
 
-              
+
                 $rentModes = [
                     0 => ['select', 'select_rent_mode'],
                     1 => ['daily', 'per day'],
@@ -274,11 +287,11 @@ class ContractImportController extends Controller
                 });
 
                 $paymentModeKey = $paymentModeKey ?? 0;
-                $ledger = MainLedger::where('id' ,$unit_management->ledger_id )->select('id','name')->first();
+                $ledger = MainLedger::where('id', $unit_management->ledger_id)->select('id', 'name')->first();
                 $agreementUnit = AgreementUnits::updateOrCreate(
                     [
                         'agreement_id' => $agreement->id,
-                        'unit_id'      => $unit->id,
+                        'unit_id'      => $unit_management->id,
                     ],
                     [
                         'property_id'           => $property->id,
@@ -291,9 +304,21 @@ class ContractImportController extends Controller
                         'rental_gl'             => ($ledger) ? $ledger->id : $normalizedRow['rental_income_ledger'],
                     ]
                 );
+                $now = Carbon::now();
+                $rentFrom = $normalizedRow['rent_start_date']
+                    ? Carbon::parse($normalizedRow['rent_start_date'])
+                    : null;
 
+                $rentTo = $normalizedRow['rent_end_date']
+                    ? Carbon::parse($normalizedRow['rent_end_date'])
+                    : null;
+
+                if ($rentFrom && $rentTo && $now->between($rentFrom, $rentTo)) { 
+                    $unit_management->booking_status = 'agreement';
+                    $unit_management->save();
+                }
                 if (! empty($normalizedRow['service_start_date'])) {
-                    $chargeMode = ServiceMaster::where('name' ,'LIKE','%'.$normalizedRow['service_type'].'%')->firstOrCreate();
+                    $chargeMode = ServiceMaster::where('name', 'LIKE', '%' . $normalizedRow['service_type'] . '%')->firstOrCreate();
                     AgreementUnitsService::updateOrCreate(
                         ['agreement_unit_id' => $agreementUnit->id],
                         [
@@ -511,7 +536,6 @@ class ContractImportController extends Controller
         $request->validate([
             'file' => 'required|mimes:xlsx,csv,xls',
         ]);
-
         Excel::import(new ContractTemplate, $request->file('file'));
 
         return back()->with('success', ui_change('imported_successfully'));

@@ -64,8 +64,7 @@ class CompanyManagementController extends Controller
             // $data         = ['status' => 1];
             $report_query = Company::query();
 
-            if ($request->request_status && $request->request_status != -1) {
-                // Log::info($request->request_status);
+            if ($request->request_status && $request->request_status != -1) { 
                 $report_query->where('request_status', $request->request_status);
 
             }

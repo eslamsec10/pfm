@@ -19,6 +19,7 @@ use App\Models\View;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
 class PropertyMasterImportController extends Controller
@@ -101,7 +102,16 @@ class PropertyMasterImportController extends Controller
             if (empty(array_filter($normalizedRow))) {
                 continue;
             }
+             $dateColumns = [
+                    'installation_date_1',
+                    'installation_date', 
+                ];
 
+                foreach ($dateColumns as $col) {
+                    if (isset($normalizedRow[$col]) && $normalizedRow[$col] !== '') {
+                        $normalizedRow[$col] = normalizeDate($normalizedRow[$col]);
+                    }
+                }
             /*
     |--------------------------------------------------------------------------
     | Property Type (unique by name)
@@ -224,7 +234,7 @@ class PropertyMasterImportController extends Controller
     |--------------------------------------------------------------------------
     | Unit Management
     |--------------------------------------------------------------------------
-    */
+    */  
             UnitManagement::firstOrCreate(
                 [
                     'unit_id'                => $unitName->id,
@@ -236,7 +246,23 @@ class PropertyMasterImportController extends Controller
                     'unit_description_id'   => $unit_description->id ?? null,
                     'unit_type_id'          => $unit_type->id ?? null,
                     'unit_condition_id'     => $unit_condition->id ?? null,
-                    'view_id'               => $view->id ?? null,
+                    'area'            => $normalizedRow['total_area'] ?? null, 
+                    'area_unit'            => $normalizedRow['total_area_measurement_unit'] ?? null, 
+                    'area_inside'            => $normalizedRow['area_inside'] ?? null, 
+                    'area_inside_unit'            => $normalizedRow['area_inside_measurement_unit'] ?? null, 
+                    'area_terrace'            => $normalizedRow['area_terrace'] ?? null, 
+                    'area_terrace_unit'            => $normalizedRow['area_terrace_measurement_unit'] ?? null, 
+                    'rate'            => $normalizedRow['rate'] ?? null, 
+                    'rate_unit'            => $normalizedRow['rate_measurement_unit'] ?? null, 
+                    'rent_amount_per_month'            => $normalizedRow['rent_amount_per_month'] ?? null, 
+                    'security_deposit_amount'            => $normalizedRow['security_deposit_amount'] ?? null, 
+                    'municipality_nos'            => $normalizedRow['municipality_nos'] ?? null, 
+                    'installation_date'            => $normalizedRow['installation_date'] ?? null, 
+                    'electricity_meter_no'            => $normalizedRow['electricity_meter_no'] ?? null, 
+                    'installation_date_1'            => $normalizedRow['installation_date1'] ?? null, 
+                    'water_meter_no'            => $normalizedRow['water_meter_no'] ?? null,  
+                    'electricity_ac_no'            => $normalizedRow['electricity_ac_no'] ?? null, 
+                    
                 ]
             );
         }

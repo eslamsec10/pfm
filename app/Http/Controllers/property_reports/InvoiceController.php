@@ -23,7 +23,6 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Mpdf\Mpdf;
 
@@ -80,21 +79,21 @@ class InvoiceController extends Controller
             ->startOfMonth()
             ->format('Y-m-d');
         $diffMonths = $start_date->diffInMonths($date);
-        $start_date = $start_date->addMonths($diffMonths+1);
+        $start_date = $start_date->addMonths($diffMonths + 1);
 
-       if ($period->payment_mode == 2) {
-    $end_date = $start_date->copy()->addMonth();
-} elseif ($period->payment_mode == 3) {
-    $end_date = $start_date->copy()->addMonths(2);
-} elseif ($period->payment_mode == 4) {
-    $end_date = $start_date->copy()->addMonths(3);
-} elseif ($period->payment_mode == 5) {
-    $end_date = $start_date->copy()->addMonths(6);
-} elseif ($period->payment_mode == 6) {
-    $end_date = $start_date->copy()->addMonths(12);
-} else {
-    $end_date = $start_date->copy()->addMonth();
-}
+        if ($period->payment_mode == 2) {
+            $end_date = $start_date->copy()->addMonth();
+        } elseif ($period->payment_mode == 3) {
+            $end_date = $start_date->copy()->addMonths(2);
+        } elseif ($period->payment_mode == 4) {
+            $end_date = $start_date->copy()->addMonths(3);
+        } elseif ($period->payment_mode == 5) {
+            $end_date = $start_date->copy()->addMonths(6);
+        } elseif ($period->payment_mode == 6) {
+            $end_date = $start_date->copy()->addMonths(12);
+        } else {
+            $end_date = $start_date->copy()->addMonth();
+        }
         // dd($start_date->format('Y-m-d') ,$end_date->format('Y-m-d') );
         $buildings = [];
         foreach ($invoice_items as $item) {
@@ -104,15 +103,41 @@ class InvoiceController extends Controller
         $company_settings    = (new CompanySettings())->setConnection('tenant')->first();
         $company             = auth()->user();
         ($invoice) ? $tenant = (new Tenant())->setConnection('tenant')->where('id', $invoice->tenant_id)->first() : $tenant = null;
-        return view('admin-views.property_reports.invoices.generate_invoice', compact('buildings','end_date', 'agreement', 'start_date', 'period', 'invoice', 'tenant', 'company_settings', 'company', 'invoice_settings', 'invoice_items'));
+        return view('admin-views.property_reports.invoices.generate_invoice', compact('buildings', 'end_date', 'agreement', 'start_date', 'period', 'invoice', 'tenant', 'company_settings', 'company', 'invoice_settings', 'invoice_items'));
     }
     public function storeInvoice(Request $request)
     {
+        // $company = (new Company())->setConnection('tenant')->select('id' , 'financial_year' , 'book_begining')->first();
+        // if(isset($company->book_begining)){
+
+        // }
+        // $request->validate([
+        //     'tenant_id'     => "required",
+        //     'invoice_date'  => "required",
+        //     'invoice_month' => "required",
+        // ]);
+        $company = (new Company())
+            ->setConnection('tenant')
+            ->select('id', 'financial_year', 'book_begining')
+            ->first();
+
         $request->validate([
             'tenant_id'     => "required",
-            'invoice_date'  => "required",
-            'invoice_month' => "required",
+            'invoice_date'  => "required|date",
+            'invoice_month' => "required|date_format:Y-m",
         ]);
+
+        if (isset($company->book_begining)) {
+
+            $invoiceMonth = Carbon::createFromFormat('Y-m', $request->invoice_month)->startOfMonth();
+            $bookingDate  = Carbon::parse($company->book_begining)->startOfMonth();
+
+            if ($invoiceMonth->lt($bookingDate)) {
+                return back()->withErrors([
+                    'invoice_month' => 'Invoice month must be after booking date'
+                ]);
+            }
+        }
         DB::beginTransaction();
 
         try {

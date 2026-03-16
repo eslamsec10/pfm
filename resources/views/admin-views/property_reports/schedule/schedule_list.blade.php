@@ -10,7 +10,7 @@
     <link href="{{ asset(main_path() . 'date/bootstrap-datepicker.min.css') }}" rel="stylesheet">
     <link href="{{ asset(main_path() . 'date/date.css') }}" rel="stylesheet">
     {{-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker.min.css"> --}}
-  
+    
 @endpush
 @php
     $company = App\Models\User::first();
@@ -116,8 +116,8 @@
                                             <div class="form-group">
                                                 <label
                                                     for="">{{ ui_change('Invoice_Date', 'property_report') }}</label>
-                                                <input type="text" id="invoice_date" name="invoice_date"
-                                                    class="form-control"> </select>
+                                                <input type="text" id="invoice_datee" name="invoice_date"
+                                                    class="form-control date_picker"> </select>
 
                                             </div>
                                         </div>

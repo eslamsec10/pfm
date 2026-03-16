@@ -70,23 +70,32 @@ class InvoiceController extends Controller
     }
     public function print($id)
     {
-        $invoice       = (new Invoice())->setConnection('tenant')->findOrFail($id);
+        $invoice       = (new Invoice())->setConnection('tenant')->findOrFail($id); // invoice_month_year
         $invoice_items = (new InvoiceItems())->setConnection('tenant')->where('invoice_id', $id)->get();
         $invoice_per_item = $invoice_items->first();
         $agreement = (new Agreement())->setConnection('tenant')->select('id', 'agreement_no')->where('id', $invoice_per_item->agreement_id)->first();
         $period = (new AgreementUnits())->setConnection('tenant')->select('commencement_date', 'payment_mode', 'expiry_date', 'id', 'agreement_id')->where('agreement_id', $invoice_per_item->agreement_id)->first();
         $start_date = Carbon::parse($period->commencement_date);
-        if ($period->payment_mode == 2) {
-            $start_date->addMonth();
-        } elseif ($period->payment_mode == 3) {
-            $start_date->addMonths(2);
-        } elseif ($period->payment_mode == 4) {
-            $start_date->addMonths(3);
-        } elseif ($period->payment_mode == 5) {
-            $start_date->addMonths(6);
-        } elseif ($period->payment_mode == 6) {
-            $start_date->addMonths(12);
-        }
+        $date = Carbon::parse($invoice->invoice_month_year)
+            ->startOfMonth()
+            ->format('Y-m-d');
+        $diffMonths = $start_date->diffInMonths($date);
+        $start_date = $start_date->addMonths($diffMonths+1);
+
+       if ($period->payment_mode == 2) {
+    $end_date = $start_date->copy()->addMonth();
+} elseif ($period->payment_mode == 3) {
+    $end_date = $start_date->copy()->addMonths(2);
+} elseif ($period->payment_mode == 4) {
+    $end_date = $start_date->copy()->addMonths(3);
+} elseif ($period->payment_mode == 5) {
+    $end_date = $start_date->copy()->addMonths(6);
+} elseif ($period->payment_mode == 6) {
+    $end_date = $start_date->copy()->addMonths(12);
+} else {
+    $end_date = $start_date->copy()->addMonth();
+}
+        // dd($start_date->format('Y-m-d') ,$end_date->format('Y-m-d') );
         $buildings = [];
         foreach ($invoice_items as $item) {
             $buildings[] = (new UnitManagement())->setConnection('tenant')->find($item->unit_id)->property_unit_management?->name;
@@ -95,7 +104,7 @@ class InvoiceController extends Controller
         $company_settings    = (new CompanySettings())->setConnection('tenant')->first();
         $company             = auth()->user();
         ($invoice) ? $tenant = (new Tenant())->setConnection('tenant')->where('id', $invoice->tenant_id)->first() : $tenant = null;
-        return view('admin-views.property_reports.invoices.generate_invoice', compact('buildings', 'agreement', 'start_date', 'period', 'invoice', 'tenant', 'company_settings', 'company', 'invoice_settings', 'invoice_items'));
+        return view('admin-views.property_reports.invoices.generate_invoice', compact('buildings','end_date', 'agreement', 'start_date', 'period', 'invoice', 'tenant', 'company_settings', 'company', 'invoice_settings', 'invoice_items'));
     }
     public function storeInvoice(Request $request)
     {
@@ -104,38 +113,38 @@ class InvoiceController extends Controller
             'invoice_date'  => "required",
             'invoice_month' => "required",
         ]);
-        // DB::beginTransaction();
+        DB::beginTransaction();
 
-        // try {
-        $formattedDate = Carbon::createFromFormat('d/m/Y', $request->invoice_date)->format('Y-m-d');
-        $date          = explode('-', $request->invoice_month);
-        $month         = $date[0];
-        $year          = $date[1];
-        $tenant        = $request->tenant_id != 0 ? Tenant::find($request->tenant_id) : null;
+        try {
+            $formattedDate = Carbon::createFromFormat('d-m-Y', $request->invoice_date)->format('Y-m-d');
+            $date          = explode('-', $request->invoice_month);
+            $month         = $date[0];
+            $year          = $date[1];
+            $tenant        = $request->tenant_id != 0 ? Tenant::find($request->tenant_id) : null;
 
-        if ($request->tenant_id == 0) {
-            $data['invoice_month'] = $request->invoice_month;
-            $data['formattedDate'] = $formattedDate;
-            $data['building_id']   = $request->building_id;
-            $this->all_tenants($data);
+            if ($request->tenant_id == 0) {
+                $data['invoice_month'] = $request->invoice_month;
+                $data['formattedDate'] = $formattedDate;
+                $data['building_id']   = $request->building_id;
+                $this->all_tenants($data);
 
-            DB::commit();
-            return redirect()->route('invoices.all_invoices')->with('success', 'Invoice All Added Successfully');
-        } else {
-            $data['invoice_month'] = $request->invoice_month;
-            $data['formattedDate'] = $formattedDate;
-            $data['building_id']   = $request->building_id;
-            $data['tenant_id']   =  $request->tenant_id;
-            $this->one_tenant($data);
-            DB::commit();
+                DB::commit();
+                return redirect()->route('invoices.all_invoices')->with('success', 'Invoice All Added Successfully');
+            } else {
+                $data['invoice_month'] = $request->invoice_month;
+                $data['formattedDate'] = $formattedDate;
+                $data['building_id']   = $request->building_id;
+                $data['tenant_id']   =  $request->tenant_id;
+                $this->one_tenant($data);
+                DB::commit();
 
-            return redirect()->route('invoices.all_invoices')->with('success', 'Invoice Added Successfully');
+                return redirect()->route('invoices.all_invoices')->with('success', 'Invoice Added Successfully');
+            }
+        } catch (Exception $e) {
+
+            DB::rollBack();
+            return back()->with('error', 'Something went wrong');
         }
-        // } catch (Exception $e) {
-
-        //     DB::rollBack();
-        //     return back()->with('error', 'Something went wrong');
-        // }
     }
     public function paid(Request $request)
     {

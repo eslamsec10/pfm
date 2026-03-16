@@ -219,8 +219,8 @@
                                 <p><span class="bold-two">{{ ui_change('invoice_date', 'property_report') }}:</span>
                                     {{ \Carbon\Carbon::parse($invoice->invoice_date)->format('j-M-Y') }} </p>
                                 <p><span class="bold-two">{{ ui_change('invoice_for_period', 'property_report') }}:</span>
-                                    {{ \Carbon\Carbon::parse($period->commencement_date)->format('j-M-Y') }} to
-                                    {{ \Carbon\Carbon::parse($start_date)->format('j-M-Y') }}</p>
+                                    {{ \Carbon\Carbon::parse($start_date)->format('j-M-Y') }} to
+                                    {{ \Carbon\Carbon::parse($end_date)->format('j-M-Y') }}</p>
                                 <p><span class="bold-two">{{ ui_change('agreement_no', 'property_report') }}:</span>
                                     {{ $agreement->agreement_no }}</p>
                                 <p><span class="bold-two">{{ ui_change('buildings', 'property_report') }}:</span>

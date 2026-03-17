@@ -432,4 +432,9 @@ class ReportController extends Controller
         ];
         return view('admin-views.property_transactions.tenants.schedule_list', $data);
     }
+
+
+    public function Accrued_Income(Request $request){
+        return view('admin-views.reports.accrued_income');
+    }
 }

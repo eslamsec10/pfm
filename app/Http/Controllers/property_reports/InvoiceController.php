@@ -74,34 +74,66 @@ class InvoiceController extends Controller
         $invoice_per_item = $invoice_items->first();
         $agreement = (new Agreement())->setConnection('tenant')->select('id', 'agreement_no')->where('id', $invoice_per_item->agreement_id)->first();
         $period = (new AgreementUnits())->setConnection('tenant')->select('commencement_date', 'payment_mode', 'expiry_date', 'id', 'agreement_id')->where('agreement_id', $invoice_per_item->agreement_id)->first();
-        $start_date = Carbon::parse($period->commencement_date);
-        $date = Carbon::parse($invoice->invoice_month_year)
-            ->startOfMonth()
-            ->format('Y-m-d');
-        $diffMonths = $start_date->diffInMonths($date);
-        $start_date = $start_date->addMonths($diffMonths + 1);
+        $commencement = Carbon::parse($period->commencement_date);
+        $invoiceMonth = Carbon::parse($invoice->invoice_month_year)->startOfMonth();
 
-        if ($period->payment_mode == 2) {
-            $end_date = $start_date->copy()->addMonth();
-        } elseif ($period->payment_mode == 3) {
-            $end_date = $start_date->copy()->addMonths(2);
-        } elseif ($period->payment_mode == 4) {
-            $end_date = $start_date->copy()->addMonths(3);
-        } elseif ($period->payment_mode == 5) {
-            $end_date = $start_date->copy()->addMonths(6);
-        } elseif ($period->payment_mode == 6) {
-            $end_date = $start_date->copy()->addMonths(12);
-        } else {
-            $end_date = $start_date->copy()->addMonth();
+        $months = $commencement->diffInMonths($invoiceMonth);
+
+        if ($invoiceMonth->day < $commencement->day) {
+            $months++;
         }
+
+        $start_date = $commencement->copy()->addMonths($months);
+        switch ($period->payment_mode) {
+
+            case 2:
+                $end_date = $start_date->copy()->addMonth()->subDay();
+                break;
+
+            case 3:
+                $end_date = $start_date->copy()->addMonths(2)->subDay();
+                break;
+
+            case 4:
+                $end_date = $start_date->copy()->addMonths(3)->subDay();
+                break;
+
+            case 5:
+                $end_date = $start_date->copy()->addMonths(6)->subDay();
+                break;
+
+            case 6:
+                $end_date = $start_date->copy()->addMonths(12)->subDay();
+                break;
+        }
+        // $start_date = Carbon::parse($period->commencement_date);
+        // $date = Carbon::parse($invoice->invoice_month_year)
+        //     ->startOfMonth()
+        //     ->format('Y-m-d');
+        // $diffMonths = $start_date->diffInMonths($date);
+        // $start_date = $start_date->addMonths($diffMonths + 1);
+
+        // if ($period->payment_mode == 2) {
+        //     $end_date = $start_date->copy()->addMonth();
+        // } elseif ($period->payment_mode == 3) {
+        //     $end_date = $start_date->copy()->addMonths(2);
+        // } elseif ($period->payment_mode == 4) {
+        //     $end_date = $start_date->copy()->addMonths(3);
+        // } elseif ($period->payment_mode == 5) {
+        //     $end_date = $start_date->copy()->addMonths(6);
+        // } elseif ($period->payment_mode == 6) {
+        //     $end_date = $start_date->copy()->addMonths(12);
+        // } else {
+        //     $end_date = $start_date->copy()->addMonth();
+        // }
         // dd($start_date->format('Y-m-d') ,$end_date->format('Y-m-d') );
         $buildings = [];
         foreach ($invoice_items as $item) {
             $buildings[] = (new UnitManagement())->setConnection('tenant')->find($item->unit_id)->property_unit_management?->name;
         }
-        $invoice_settings    = (new InvoiceSettings())->setConnection('tenant')->where('invoice_type', 'LIKE', "%{$invoice->invoice_type}%")->first();
+        $invoice_settings    = (new InvoiceSettings())->setConnection('tenant')->first();
         $company_settings    = (new CompanySettings())->setConnection('tenant')->first();
-        $company             = auth()->user();
+        $company = (new Company())->setConnection('tenant')->first();
         ($invoice) ? $tenant = (new Tenant())->setConnection('tenant')->where('id', $invoice->tenant_id)->first() : $tenant = null;
         return view('admin-views.property_reports.invoices.generate_invoice', compact('buildings', 'end_date', 'agreement', 'start_date', 'period', 'invoice', 'tenant', 'company_settings', 'company', 'invoice_settings', 'invoice_items'));
     }

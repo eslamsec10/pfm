@@ -68,7 +68,13 @@
                          <h2 class="accordion-header list-group-item">
                              <a class="accordion-button"
                                  href="{{ route('tenant_schedule') }}">{{ ui_change('tenant_schedule', 'property_report') }}</a>
-                             {{-- <span class="arrow">&rsaquo;</span> --}}
+                             
+                         </h2>
+                     </div>
+                     <div class="accordion-item ">
+                         <h2 class="accordion-header list-group-item">
+                             <a class="accordion-button"
+                                 href="{{ route('reports.accrued_income_report.list') }}">{{ ui_change('accrued_income_report', 'property_report') }}</a> 
                          </h2>
                      </div>
                      {{-- <div class="accordion-item ">

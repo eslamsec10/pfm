@@ -2,7 +2,7 @@
 
 @section('title', ui_change('print', 'property_report'))
 @php
- 
+
     $lang = session()->get('locale');
     $dir = session()->get('direction');
     $signature_mode = App\Models\CompanySettings::where('type', 'signature_mode')->first();
@@ -131,6 +131,7 @@
 @endpush
 
 @section('content')
+    {{-- {{ dd($invoice_settings) }} --}}
     <div class="content container-fluid">
         <button class="btn btn--primary mt-3" onclick="printInvoice()">{{ ui_change('print', 'property_report') }}</button>
         {{-- <a class="btn btn--primary mt-3" target="_blank" href="{{ route('invoice.pdf' , $invoice->id) }}">{{ ui_change('print', 'property_report') }}</a> --}}
@@ -189,27 +190,39 @@
                                         {{ ui_change('not_available', 'property_report') }}
                                     @endif
                                 </p>
+                                @if (isset($invoice_settings) && $invoice_settings->tenant_address != 0)
+                                    @if (isset($tenant->address1))
+                                        <p>{{ $tenant->address1 }}</p>
+                                    @endif
+                                    @if (isset($tenant->address2))
+                                        <p>{{ $tenant->address2 }}</p>
+                                    @endif
 
-                                @if (isset($tenant->address1))
-                                    <p>{{ $tenant->address1 }}</p>
+                                    @if (isset($tenant->country_id))
+                                        <p>{{ ui_change('country', 'property_report') }} :
+                                            {{ $tenant->country_master?->country?->name }}</p>
+                                    @endif
                                 @endif
-                                @if (isset($tenant->address2))
-                                    <p>{{ $tenant->address2 }}</p>
-                                @endif
-                                @if (isset($tenant->country_id))
-                                    <p>{{ ui_change('country', 'property_report') }} :
-                                        {{ $tenant->country_master->country->name }}</p>
-                                @endif
-                                @if (isset($tenant->contact_person))
+                                {{-- @if (isset($tenant->contact_person))
                                     <p>{{ ui_change('contact_person', 'property_report') }} : {{ $tenant->contact_person }}
                                     </p>
+                                @endif --}}
+                                @if (isset($invoice_settings) && $invoice_settings->tenant_email != 0)
+                                    @if (isset($tenant->email1))
+                                        <p>{{ ui_change('email', 'property_report') }} : {{ $tenant->email1 }}</p>
+                                    @endif
                                 @endif
-                                @if (isset($tenant->email1))
-                                    <p>{{ ui_change('email', 'property_report') }} : {{ $tenant->email1 }}</p>
+                                @if (isset($invoice_settings) && $invoice_settings->tenant_phone != 0)
+                                    @if (isset($tenant->telephone_no))
+                                        <p>{{ ui_change('phone', 'property_report') }} : {{ $tenant->telephone_no }}</p>
+                                    @endif
                                 @endif
-                                @if (isset($tenant->telephone_no))
-                                    <p>{{ ui_change('phone', 'property_report') }} : {{ $tenant->telephone_no }}</p>
+                                @if (isset($invoice_settings) && $invoice_settings->tenant_fax != 0)
+                                    @if (isset($tenant->fax_no))
+                                        <p>{{ ui_change('fax_no', 'property_report') }} : {{ $tenant->fax_no }}</p>
+                                    @endif
                                 @endif
+                                
                             </div>
 
                             <div class="invoice-section-two">
@@ -259,7 +272,7 @@
                                     @if ($invoice_item_main->category == 'rent')
                                         {{ ucfirst($invoice_item_main->category) }}
                                     @else
-                                        {{   $invoice_item_main->service_master?->name  }}
+                                        {{ $invoice_item_main->service_master?->name }}
                                     @endif
                                 </td>
 

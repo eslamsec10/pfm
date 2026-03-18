@@ -4,6 +4,7 @@ namespace App\Http\Controllers\reports;
 
 use App\Http\Controllers\Controller;
 use App\Models\Agreement;
+use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\PropertyManagement;
 use App\Models\Schedule;
@@ -324,7 +325,10 @@ class ReportController extends Controller
     public function contract_details(Request $request)
     {
         $ids     = $request->bulk_ids;
-
+        $company = (new Company())
+            ->setConnection('tenant')
+            ->select('id', 'financial_year', 'book_begining')
+            ->first();
         if ($request->bulk_action_btn === 'update_status' && is_array($ids) && count($ids)) {
             $data = ['status' => 1];
             (new Agreement())->setConnection('tenant')->whereIn('id', $ids)->update($data);
@@ -434,7 +438,8 @@ class ReportController extends Controller
     }
 
 
-    public function Accrued_Income(Request $request){
+    public function Accrued_Income(Request $request)
+    {
         return view('admin-views.reports.accrued_income');
     }
 }

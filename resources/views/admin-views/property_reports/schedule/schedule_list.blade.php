@@ -1,8 +1,8 @@
 @extends('layouts.back-end.app')
 @php
     $lang = session()->get('locale');
-    $firstDay = Carbon\Carbon::now()->startOfMonth()->format('d/m/Y');
-    $lastDay = Carbon\Carbon::now()->endOfMonth()->format('d/m/Y');
+    $firstDay = Carbon\Carbon::now()->startOfMonth()->format('d-m-Y');
+    $lastDay = Carbon\Carbon::now()->endOfMonth()->format('d-m-Y');
 @endphp
 @section('title', ui_change('pre_bill_checking', 'property_report'))
 

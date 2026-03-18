@@ -1,8 +1,10 @@
 <?php
+
 namespace App\Http\Controllers\property_reports;
 
 use App\Http\Controllers\Controller;
 use App\Models\collections\InvoiceSettings;
+use App\Models\Company;
 use App\Models\PropertyManagement;
 use App\Models\Schedule;
 use App\Models\UnitManagement;
@@ -99,6 +101,15 @@ class ScheduleController extends Controller
     public function index(Request $request)
     {
         // $this->authorize('agreement');
+        $company = (new Company())
+            ->setConnection('tenant')
+            ->select('id', 'financial_year', 'book_begining')
+            ->first();
+        $companyStartMonth = null;
+
+        if ($company && $company->book_begining) {
+            $companyStartMonth = Carbon::parse($company->book_begining)->format('Y-m');
+        }
         $ids = $request->bulk_ids;
         if ($request->bulk_action_btn === 'update_status' && is_array($ids) && count($ids)) {
             $data = ['status' => 1];
@@ -116,22 +127,30 @@ class ScheduleController extends Controller
                 $q->Where('agreement_no', 'like', "%{$value}%")
                     ->orWhere('id', $value);
             }
-        })->where('category', 'rent')
+        })->where('category', 'rent')->where('billing_month_year', '>=', $companyStartMonth)
             ->with('tenant', 'agreement', 'main_unit')->where('billing_month_year', Carbon::now()->format('Y-m'))->latest()->orderBy('created_at', 'asc')->paginate()->appends($query_param);
         // }else{
         if ($request->bulk_action_btn === 'filter') {
             $report_query = (new Schedule())->setConnection('tenant')->query()
-                ->with(['main_unit', 'main_unit.property_unit_management', 'main_unit.block_unit_management' , 'main_unit.block_unit_management.block',
-                'main_unit.floor_unit_management', 'main_unit.floor_unit_management.floor_management_main', 'main_unit.unit_description',
-                'main_unit.unit_type', 'main_unit.unit_condition']);
-                if ($request->start_date && $request->end_date) {
-                    $startDate = Carbon::createFromFormat('d-m-Y', $request->start_date)->format('Y-m');  
-                    $endDate   = Carbon::createFromFormat('d-m-Y', $request->end_date)->format('Y-m');
-                
-                    $report_query->whereBetween('billing_month_year', [$startDate, $endDate]);
-                }
-                
-                
+                ->with([
+                    'main_unit',
+                    'main_unit.property_unit_management',
+                    'main_unit.block_unit_management',
+                    'main_unit.block_unit_management.block',
+                    'main_unit.floor_unit_management',
+                    'main_unit.floor_unit_management.floor_management_main',
+                    'main_unit.unit_description',
+                    'main_unit.unit_type',
+                    'main_unit.unit_condition'
+                ]);
+            if ($request->start_date && $request->end_date) {
+                $startDate = Carbon::createFromFormat('d-m-Y', $request->start_date)->format('Y-m');
+                $endDate   = Carbon::createFromFormat('d-m-Y', $request->end_date)->format('Y-m');
+
+                $report_query->where('billing_month_year', '>=', $companyStartMonth)->whereBetween('billing_month_year', [$startDate, $endDate]);
+            }
+
+
             if ($request->report_tenant && $request->report_tenant != -1) {
                 $report_query->where('tenant_id', $request->report_tenant);
             }
@@ -152,11 +171,18 @@ class ScheduleController extends Controller
             if (! $request->report_unit_management && ! $request->report_building && ! $request->report_tenant && ! $request->start_date && ! $request->end_date) {
                 $report_query->whereMonth('billing_month_year', Carbon::now()->month);
             }
-            $schedules = $report_query->where('category', 'rent')->orderBy('created_at', 'asc')->paginate();
+            $schedules = $report_query->where('billing_month_year', '>=', $companyStartMonth)->where('category', 'rent')->orderBy('created_at', 'asc')->paginate();
         }
         $all_building    = (new PropertyManagement())->setConnection('tenant')->forUser()->get();
-        $unit_management = (new UnitManagement())->setConnection('tenant')->with(['property_unit_management', 'block_unit_management', 'block_unit_management.block',
-         'floor_unit_management', 'floor_unit_management.floor_management_main', 'unit_management_main', 'unit_description'])->get();
+        $unit_management = (new UnitManagement())->setConnection('tenant')->with([
+            'property_unit_management',
+            'block_unit_management',
+            'block_unit_management.block',
+            'floor_unit_management',
+            'floor_unit_management.floor_management_main',
+            'unit_management_main',
+            'unit_description'
+        ])->get();
         $tenants         = DB::connection('tenant')->table('tenants')->get();
         $invoice_types = (new InvoiceSettings())->setConnection('tenant')->get();
         $data = [

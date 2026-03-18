@@ -18,7 +18,10 @@ class PropertyManagementObserver
             ->setConnection('tenant')
             ->where('id', 48)
             ->first();
-
+        $second_master_group = (new Groups())
+            ->setConnection('tenant')
+            ->where('name', 'LIKE', '%Advances Received from Tenants%')
+            ->first();
         if (!$master_group) {
             return;
         }
@@ -53,6 +56,27 @@ class PropertyManagementObserver
             'group_id'        => $group->id,
             'cost_center_category_id'  => $costCenter->id,
         ]);
+        if (!$second_master_group) {
+            return;
+        }
+
+        $group = (new Groups())->setConnection('tenant')->create([
+            'code'                     => $property->code,
+            'property_id'              => $property->id,
+            'name'                     => $property->name,
+            'display_name'             => $property->name,
+            'group_id'                 => $second_master_group->id,
+            'is_projects_parent_group' => $second_master_group->is_projects_parent_group ?? 0,
+            'enable_auto_code'         => $second_master_group->enable_auto_code ?? 0,
+            'status'                   => 'active',
+            'tax_applicable'           => $second_master_group->tax_applicable ?? 0,
+            'is_taxable'               => $second_master_group->is_taxable ?? 0,
+            'vat_applicable_from'      => $second_master_group->vat_applicable_from,
+            'tax_rate'                 => $second_master_group->tax_rate ?? 0,
+        ]);
+         $property->update([
+            'advanced_group_id'        => $second_master_group->id, 
+        ]);
     }
     public function updated(PropertyManagement $property)
     {
@@ -70,8 +94,7 @@ class PropertyManagementObserver
             'tax_rate' => $property->tax_rate,
         ]);
         foreach ($unit_management as $unit) {
-            $ledger = MainLedger::where('group_id', $group->id)->where('main_id' , $unit->id)->first();
-            Log::info($ledger);
+            $ledger = MainLedger::where('group_id', $group->id)->where('main_id', $unit->id)->first(); 
             $ledger->update([
                 'main_type'         => 'unit',
                 'tax_rate'          =>  $group->tax_rate,

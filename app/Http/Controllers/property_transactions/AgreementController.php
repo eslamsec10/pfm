@@ -2,37 +2,38 @@
 
 namespace App\Http\Controllers\property_transactions;
 
-use Throwable;
-use Carbon\Carbon;
+use App\Http\Controllers\Controller;
+use App\Models\Agent;
+use App\Models\Agreement;
+use App\Models\AgreementDetails;
+use App\Models\AgreementUnits;
+use App\Models\AgreementUnitsService;
+use App\Models\BusinessActivity;
+use App\Models\Company;
+use App\Models\CountryMaster;
+use App\Models\Employee;
+use App\Models\EnquiryRequestStatus;
+use App\Models\EnquiryStatus;
+use App\Models\LiveWith;
+use App\Models\PropertyManagement;
+use App\Models\PropertyType;
+use App\Models\Schedule;
+use App\Models\ServiceMaster;
+use App\Models\Tenant;
+use App\Models\UnitCondition;
+use App\Models\UnitDescription;
+use App\Models\UnitManagement;
+use App\Models\UnitType;
 use App\Models\User;
 use App\Models\View;
-use App\Models\Agent;
-use App\Models\Tenant;
-use App\Models\Employee;
-use App\Models\LiveWith;
-use App\Models\Schedule;
-use App\Models\UnitType;
-use App\Models\Agreement;
-use Illuminate\Support\Str;
-use App\Models\PropertyType;
-use Illuminate\Http\Request;
-use App\Models\CountryMaster;
-use App\Models\EnquiryStatus;
-use App\Models\ServiceMaster;
-use App\Models\UnitCondition;
-use App\Models\AgreementUnits;
-use App\Models\UnitManagement;
-use App\Models\UnitDescription;
-use App\Models\AgreementDetails;
-use App\Models\BusinessActivity;
-use App\Models\PropertyManagement;
-use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
-use App\Models\EnquiryRequestStatus;
 use Brian2694\Toastr\Facades\Toastr;
-use App\Models\AgreementUnitsService;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
+use Throwable;
 
 class AgreementController extends Controller
 {
@@ -44,6 +45,11 @@ class AgreementController extends Controller
     {
         // $this->authorize('agreement'); 
         $ids     = $request->bulk_ids;
+        $company = (new Company())
+            ->setConnection('tenant')
+            ->select('id', 'financial_year', 'book_begining')
+            ->first();
+        $companyStartMonth = null;
         // $lastRun = Cache::get('last_agreement_expiry_run');
         // if (! $lastRun || now()->diffInHours($lastRun) >= 24) {
         $agreement_settings = get_business_settings('agreement')->where('type', 'agreement_expire_date')->first();
@@ -78,7 +84,9 @@ class AgreementController extends Controller
         }
         $search      = $request['search'];
         $query_param = $search ? ['search' => $request['search']] : '';
-        $agreements  = (new Agreement())->setConnection('tenant')->when($request['search'], function ($q) use ($request) {
+        $agreements  = (new Agreement())->setConnection('tenant')
+        // ->where('agreement_date' , '>=' ,$company->book_begining)
+        ->when($request['search'], function ($q) use ($request) {
             $key = explode(' ', $request['search']);
             foreach ($key as $value) {
                 $q->Where('agreement_no', 'like', "%{$value}%")
@@ -87,7 +95,13 @@ class AgreementController extends Controller
                         $query->where('name', 'like', "%{$value}%")->orWhere('company_name', 'like', "%{$value}%");
                     });
             }
-        }) //->where('status', 'pending')
+        })->whereHas('agreement_details', function ($query) use ($company) {
+            if($company->book_begining){
+
+                $query->where('period_to', '>=',  $company->book_begining);
+            }
+                    })
+        //->where('status', 'pending')
             ->with(
                 'agreement_units:id,agreement_id,property_id,unit_id,commencement_date,expiry_date',
                 'agreement_units.agreement_unit_main:id,property_management_id,block_management_id,floor_management_id,unit_id',
@@ -100,7 +114,9 @@ class AgreementController extends Controller
             ->latest()->orderBy('created_at', 'asc')->paginate()->appends($query_param);
         if ($request->bulk_action_btn === 'filter') {
             $data         = ['status' => 1];
-            $report_query = (new Agreement())->setConnection('tenant')->query();
+            $report_query = (new Agreement())->setConnection('tenant')
+            // ->where('agreement_date' , '>=' ,$company->book_begining)
+            ->query();
             if ($request->booking_status && $request->booking_status != -1 && ($request->booking_status == 'signed')) {
                 $report_query->where('booking_status', $request->booking_status);
             }
@@ -1188,7 +1204,7 @@ class AgreementController extends Controller
         $enquiry_request_statuses = (new EnquiryRequestStatus())->setConnection('tenant')->select('id', 'name')->lazy();
         $employees                = (new Employee())->setConnection('tenant')->select('id', 'name')->lazy();
         $country_master           = (new CountryMaster())->setConnection('tenant')->select('id', 'country_id')->with('country')->lazy();
-        $all_units                = (new UnitManagement())->setConnection('tenant')->select('id', 'property_management_id', 'booking_status', 'view_id', 'unit_type_id', 'unit_condition_id', 'unit_description_id', 'unit_id', 'block_management_id', 'floor_management_id','ledger_id')->whereIn('id', $ids)
+        $all_units                = (new UnitManagement())->setConnection('tenant')->select('id', 'property_management_id', 'booking_status', 'view_id', 'unit_type_id', 'unit_condition_id', 'unit_description_id', 'unit_id', 'block_management_id', 'floor_management_id', 'ledger_id')->whereIn('id', $ids)
             ->with(
                 'block_unit_management',
                 'property_unit_management',
@@ -1199,7 +1215,8 @@ class AgreementController extends Controller
                 'unit_description',
                 'unit_type',
                 'view',
-                'unit_condition','unit_ledger'
+                'unit_condition',
+                'unit_ledger'
             )->lazy();
         $live_withs          = (new LiveWith())->setConnection('tenant')->select('id', 'name')->lazy();
         $business_activities = (new BusinessActivity())->setConnection('tenant')->select('id', 'name')->lazy();
@@ -1247,12 +1264,21 @@ class AgreementController extends Controller
     public function schedule(Request $request, $id)
     {
         $ids = $request->bulk_ids;
+        $company = (new Company())
+            ->setConnection('tenant')
+            ->select('id', 'financial_year', 'book_begining')
+            ->first();
+        $companyStartMonth = null;
+
+        if ($company && $company->book_begining) {
+            $companyStartMonth = Carbon::parse($company->book_begining)->format('Y-m');
+        }
         if ($request->bulk_action_btn === 'update_status' && is_array($ids) && count($ids)) {
             $data = ['rent_amount' => $request->rent_amount];
             (new Schedule())->setConnection('tenant')->whereIn('id', $ids)->update($data);
             return back()->with('success', __('general.updated_successfully'));
         }
-        $schedules = Schedule::where('agreement_id', $id)->paginate();
+        $schedules = Schedule::where('agreement_id', $id)->where('billing_month_year', '>=', $companyStartMonth)->paginate();
         $agreement = Agreement::where('id', $id)->first();
         $data      = [
             'schedules' => $schedules,

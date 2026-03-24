@@ -38,7 +38,7 @@ class PropertyMasterImportController extends Controller
         $data = [
             'instructions' => $instructions,
             'file'         => 'property',
-            'file_name'         => 'property_headers_only',
+            'file_name'         => 'property_master',
         ];
 
         return view('import_excel.upload_page', $data);

@@ -234,6 +234,48 @@
 @endsection
 @push('script')
     <script>
+         function calculateRent(index) {
+
+            let payment_mode = document.querySelector('[name="payment_mode-' + index + '"]').value;
+            let rent_mode = document.querySelector('[name="rent_mode-' + index + '"]').value;
+
+            if (!payment_mode || !rent_mode) return;
+
+            let base_rent = parseFloat(document.querySelector('[name="rent_amount-' + index + '"]').value) || 0;
+
+            let multipliers = {
+                1: 1, // daily
+                2: 30, // monthly
+                3: 60, // bi_monthly
+                4: 90, // quarterly
+                5: 180, // half_yearly
+                6: 365 // yearly
+            };
+
+            let paymentDays = multipliers[payment_mode];
+            let rentDays = multipliers[rent_mode];
+
+            let result = (base_rent / rentDays) * paymentDays;
+
+            document.querySelector('[name="total_net_rent_amount-' + index + '"]').value = result.toFixed(2);
+        }
+         function ledger(element, id) { 
+            var unit_id = element.value;
+            $.ajax({
+                url: "{{ route('get_ledger',':id') }}".replace(':id' ,unit_id ),
+                type: "GET", 
+                dataType: "json",
+                success: function(data) { 
+                    $('select[name="rental_gl-' + id + '"]').append(
+                            '<option value="'+data.id +'">'+ data.name +'</option>'
+                        );
+                    $('input[name="vat_percentage-' + id+ '"]' ).val(data.tax_rate);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error occurred:', error);
+                }
+            });
+        }
         function setFormAction(actionUrl) {
             document.getElementById('productForm').action = actionUrl;
         }
@@ -384,6 +426,9 @@
                 success: function(data) {
                     if (data.length > 0) {
                         $('select[name="unit-' + i + '"]').empty();
+                         $('select[name="unit-' + i + '"]').append(
+                            '<option value="">select</option>'
+                        );
                         $.each(data, function(key, value) {
                             let isBooked = '';
                             if (value.booking_status === 'agreement') {
@@ -866,7 +911,7 @@
             <div class="form-group">
                 <label for="area-measurement">{{ ui_change('unit', 'property_transaction') }} <span class="starColor " style="font-size: 18px; "> *</span></label>
                 <select id="area-measurement" name="unit-${i}"
-                    class="js-select2-custom form-control" onchange="(rent_amount_from_unit(${i}))">
+                    class="js-select2-custom form-control" onchange="(rent_amount_from_unit(${i}));ledger(this,${i})">
                     <option>{{ ui_change('select_unit', 'property_transaction') }}</option>
                 </select>
             </div>
@@ -875,7 +920,7 @@
 
             <div class="form-group">
                 <label for="area-measurement">{{ ui_change('payment_mode', 'property_transaction') }} <span class="starColor " style="font-size: 18px; "> *</span></label>
-                <select id="area-measurement" name="payment_mode-${i}" required onchange="payment_mode_func(${i})"
+                <select id="area-measurement" name="payment_mode-${i}" required onchange="payment_mode_func(${i});calculateRent(${i})"
                     class="js-select2-custom form-control">
                     <option value="0">{{ ui_change('select_payment_mode', 'property_transaction') }}</option>
                     <option value="1">{{ ui_change('daily', 'property_transaction') }}</option>
@@ -938,7 +983,7 @@
         <div class="col-md-6 col-lg-4 col-xl-3">
             <div class="form-group">
                 <label for="total-area">{{ ui_change('rent_amount', 'property_transaction') }} <span class="starColor " style="font-size: 18px; "> *</span></label>
-                <input type="number"   name="rent_amount-${i}" class="form-control" required onkeyup="rent_mode_amount(${i}), vat_amount_func(${i}) , deposite(${i})"
+                <input type="number"   name="rent_amount-${i}" class="form-control" required onkeyup="rent_mode_amount(${i});calculateRent(${i});vat_amount_func(${i});deposite(${i})"
                     step="0.001" placeholder="0.000">
             </div>
         </div>
@@ -946,7 +991,7 @@
         <div class="col-md-6 col-lg-4 col-xl-3">
             <div class="form-group">
                 <label for="area-measurement">{{ ui_change('rent_mode', 'property_transaction') }}</label>
-                <select id="area-measurement" name="rent_mode-${i}"
+                <select id="area-measurement" name="rent_mode-${i}" onchange="calculateRent(${i})"
                     class="js-select2-custom form-control" required>
                     <option value="0">{{ ui_change('select_rent_mode', 'property_transaction') }}</option>
                     <option value="1">{{ ui_change('daily', 'property_transaction') }}</option>
@@ -963,12 +1008,7 @@
             <div class="form-group">
                 <label for="area-measurement">{{ ui_change('rental_gl', 'property_transaction') }}</label>
                 <select id="area-measurement" name="rental_gl-${i}"
-                    class="js-select2-custom form-control"  onchange="vat_amount_func(${i})">
-                    <option value="0">{{ ui_change('select_rental_gl', 'property_transaction') }}</option>
-                    <option value="0">{{ ui_change('Rental_Income_0%', 'property_transaction') }}</option>
-                    <option value="10">{{ ui_change('Rental_Income_10%', 'property_transaction') }}</option>
-                    <option value="20">{{ ui_change('Rental_Income_20%', 'property_transaction') }}</option>
-                    <option value="30">{{ ui_change('Rental_Income_30%', 'property_transaction') }}</option>
+                    class="js-select2-custom form-control"  onchange="vat_amount_func(${i})"> 
                 </select>
             </div>
         </div>

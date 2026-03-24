@@ -585,9 +585,9 @@
                                                 for="area-measurement">{{ ui_change('payment_mode', 'property_transaction') }}
                                                 <span class="starColor " style="font-size: 18px; "> *</span></label>
                                             <select id="area-measurement" name="payment_mode-{{ $loop->index + 1 }}"
-                                                onchange="payment_mode_func({{ $loop->index + 1 }})"
+                                                {{-- onchange="payment_mode_func({{ $loop->index + 1 }})" --}}
                                                 class="js-select2-custom form-control" required
-                                                onchange="calculateRent({{ $loop->index + 1 }})">
+                                                onchange="calculateRent({{ $loop->index + 1 }});payment_mode_func({{ $loop->index + 1 }})">
                                                 <option value="">
                                                     {{ ui_change('select_payment_mode', 'property_transaction') }}
                                                 </option>

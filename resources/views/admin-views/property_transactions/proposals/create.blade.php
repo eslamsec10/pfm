@@ -233,6 +233,31 @@
 @endsection
 @push('script')
     <script>
+         function calculateRent(index) {
+
+            let payment_mode = document.querySelector('[name="payment_mode-' + index + '"]').value;
+            let rent_mode = document.querySelector('[name="rent_mode-' + index + '"]').value;
+
+            if (!payment_mode || !rent_mode) return;
+
+            let base_rent = parseFloat(document.querySelector('[name="rent_amount-' + index + '"]').value) || 0;
+
+            let multipliers = {
+                1: 1, // daily
+                2: 30, // monthly
+                3: 60, // bi_monthly
+                4: 90, // quarterly
+                5: 180, // half_yearly
+                6: 365 // yearly
+            };
+
+            let paymentDays = multipliers[payment_mode];
+            let rentDays = multipliers[rent_mode];
+
+            let result = (base_rent / rentDays) * paymentDays;
+
+            document.querySelector('[name="total_net_rent_amount-' + index + '"]').value = result.toFixed(2);
+        }
         function setFormAction(actionUrl) {
             document.getElementById('productForm').action = actionUrl;
         }
@@ -875,7 +900,7 @@
 
             <div class="form-group">
                 <label for="area-measurement">{{ ui_change('payment_mode', 'property_transaction') }}</label>
-                <select id="area-measurement" name="payment_mode-${i}" onchange="payment_mode_func(${i})"
+                <select id="area-measurement" name="payment_mode-${i}" onchange="payment_mode_func(${i});calculateRent(${i})"
                     class="js-select2-custom form-control" required>
                     <option value="">{{ ui_change('select_payment_mode', 'property_transaction') }}</option>
                     <option value="1">{{ ui_change('daily', 'property_transaction') }}</option>
@@ -946,7 +971,7 @@
         <div class="col-md-6 col-lg-4 col-xl-3">
             <div class="form-group">
                 <label for="area-measurement">{{ ui_change('rent_mode', 'property_transaction') }}</label>
-                <select id="area-measurement" name="rent_mode-${i}"
+                <select id="area-measurement" name="rent_mode-${i}" onchange="calculateRent(${i})"
                     class="js-select2-custom form-control">
                     <option value="0">{{ ui_change('select_rent_mode', 'property_transaction') }}</option>
                     <option value="1">{{ ui_change('daily', 'property_transaction') }}</option>

@@ -879,6 +879,46 @@ if (! function_exists('get_employees_by_department_id')) {
     }
 }
 
+if (! function_exists('getMonthlyAmount')) {
+    function getMonthlyAmount($amount, $mode)
+    {
+        return match ($mode) {
+            2 => $amount,          // monthly
+            3 => $amount / 2,      // bi-monthly
+            4 => $amount / 3,      // quarterly
+            5 => $amount / 6,      // semi-annual
+            6 => $amount / 12,     // yearly
+            default => $amount,
+        };
+    }
+}
+if (! function_exists('convertToMonthly')) {
+    function convertToMonthly($amount, $rent_mode)
+    {
+        switch ($rent_mode) {
+            case 1: // daily
+                return $amount * 30;
+
+            case 2: // monthly
+                return $amount;
+
+            case 3: // bi-monthly
+                return $amount / 2;
+
+            case 4: // quarterly
+                return $amount / 3;
+
+            case 5: // half yearly
+                return $amount / 6;
+
+            case 6: // yearly
+                return $amount / 12;
+
+            default:
+                return $amount;
+        }
+    }
+}
 if (! function_exists('calc_rent_amount')) {
     function calc_rent_amount($rentMode, $paymentMode, $baseAmount,  $rentAmount)
     {
@@ -964,7 +1004,7 @@ if (!function_exists('sendWhatsApp')) {
 
             return $results;
         }
- 
+
         return $service->send(
             $to,
             $message,
@@ -1018,7 +1058,7 @@ if (! function_exists('SalesEnquiryNo')) {
             $newId = $table[0]->AUTO_INCREMENT;
         } else {
             $getId = DB::connection('tenant')->table('sales_enquiries')->orderBy('id', 'desc')->limit(1)->first();
-            $newId = $getId ? $getId->id + 1 : 1; 
+            $newId = $getId ? $getId->id + 1 : 1;
         }
 
         $newIdFormatted = str_pad($newId, 4, '0', STR_PAD_LEFT);
@@ -1029,7 +1069,7 @@ if (! function_exists('SalesEnquiryNo')) {
 if (! function_exists('SalesProposalNo')) {
     function SalesProposalNo()
     {
-  
+
         define('sales_proposal_no_prefix', 'PRO-');
 
         $newId = 1;
@@ -1051,7 +1091,7 @@ if (! function_exists('SalesProposalNo')) {
 if (! function_exists('SalesBookingNo')) {
     function SalesBookingNo()
     {
-  
+
         define('sales_booking_no_prefix', 'Book-');
 
         $newId = 1;
@@ -1073,7 +1113,7 @@ if (! function_exists('SalesBookingNo')) {
 if (! function_exists('SalesAgreementNo')) {
     function SalesAgreementNo()
     {
-  
+
         define('sales_agreement_no_prefix', 'Agr-');
 
         $newId = 1;

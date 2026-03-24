@@ -640,6 +640,7 @@ class InvoiceController extends Controller
                     'total'          => $lineTotal,
                     'service_id'     => $schedule_item->service_id,
                     'category'       => $schedule_item->category ?? 'rent',
+                    'rent_mode'      => $schedule_item->rent_mode ?? 2,
                     'balance_due'    => $lineTotal,
                 ]);
 
@@ -729,7 +730,7 @@ class InvoiceController extends Controller
                         'total' => $rent + $vat,
                         'category'       => $schedule->category ?? 'rent',
                         'balance_due'    => ($schedule->rent_amount + ((isset($schedule->vat_amount)) ? $schedule->vat_amount : 0)),
-
+                        'rent_mode'      => $schedule->rent_mode ?? 2,
                     ]);
                     $grand_total += $invoice_item->total;
                     $tenantDebit  += $invoice_item->total;

@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\reports;
 
 use App\Http\Controllers\Controller;
+use App\Models\AccruedIncome;
 use App\Models\Agreement;
 use App\Models\Company;
 use App\Models\Invoice;
+use App\Models\InvoiceItems;
 use App\Models\PropertyManagement;
 use App\Models\Schedule;
 use App\Models\Tenant;
@@ -440,6 +442,50 @@ class ReportController extends Controller
 
     public function Accrued_Income(Request $request)
     {
-        return view('admin-views.reports.accrued_income');
+        $accrued_incomes = AccruedIncome::whereMonth('applicable_date', today()->month)
+            ->whereYear('applicable_date', today()->year)
+            ->with('accrued_income_ledger:id,name', 'income_ledger:id,name')
+            ->paginate();
+        $data = [
+            'accrued_incomes'       => $accrued_incomes,
+        ];
+
+        return view('admin-views.reports.accrued_income', $data);
+    }
+    public function distributeRentMonthly($startDate, $endDate, $monthlyAmount)
+    {
+        $results = [];
+
+        $current = Carbon::parse($startDate);
+        $endDate = Carbon::parse($endDate);
+
+        while ($current->lte($endDate)) {
+
+            $endOfMonth = $current->copy()->endOfMonth();
+
+            $periodStart = $current->copy();
+
+            $periodEnd = $endOfMonth->lt($endDate)
+                ? $endOfMonth
+                : $endDate->copy();
+
+            $daysInMonth = $current->daysInMonth;
+            $daysUsed = $periodStart->diffInDays($periodEnd) + 1;
+
+            $dailyRate = $monthlyAmount / $daysInMonth;
+            $amount = $dailyRate * $daysUsed;
+
+            $results[] = [
+                'month' => $periodStart->format('Y-m'),
+                'from'  => $periodStart->toDateString(),
+                'to'    => $periodEnd->toDateString(),
+                'days'  => $daysUsed,
+                'amount' => round($amount, 2),
+            ];
+
+            $current = $periodEnd->copy()->addDay();
+        }
+
+        return $results;
     }
 }

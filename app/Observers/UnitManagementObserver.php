@@ -39,8 +39,8 @@ class UnitManagementObserver
             ->create([
                 'code' => $unitManagement->unit_management_main?->name,
                 'name' =>
-                $unitManagement->property_unit_management?->code . '-' .
-                    $unitManagement->block_unit_management?->block?->code . '-' .
+                $unitManagement->property_unit_management?->name . '-' .
+                    $unitManagement->block_unit_management?->block?->name . '-' .
                     $unitManagement->floor_unit_management?->floor_management_main?->name . '-' .
                     $unitManagement->unit_management_main?->name,
                 'currency'  => $company?->currency_code,
@@ -81,7 +81,7 @@ class UnitManagementObserver
                 'status'    => 'active',
             ]);
         // ================= LEDGER =================
-        $ledger = (new MainLedger())
+        $advanced_ledger = (new MainLedger())
             ->setConnection('tenant')
             ->create([
                 'code' => $unitManagement->unit_management_main?->name,
@@ -107,8 +107,9 @@ class UnitManagementObserver
             ]);
         // ================= UPDATE UNIT =================
         $unitManagement->update([
-            'ledger_id'       => $ledger->id,
-            'cost_center_id'  => $costCenter->id,
+            'ledger_id'                 => $ledger->id,
+            'advanced_group_id'         => $advanced_ledger->id,
+            'cost_center_id'            => $costCenter->id,
         ]);
     }
 

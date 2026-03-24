@@ -92,6 +92,8 @@
                                         <th class="text-center">{{ ui_change('block', 'property_transaction') }}</th>
                                         <th class="text-center">{{ ui_change('floor', 'property_transaction') }}</th>
                                         <th class="text-center">{{ ui_change('unit', 'property_transaction') }}</th>
+                                        <th class="text-center">{{ ui_change('Actions', 'property_transaction') }}
+                                        </th>
                                         <th class="text-center">{{ ui_change('start_Date', 'property_transaction') }}</th>
                                         <th class="text-center">{{ ui_change('end_Date', 'property_transaction') }}</th>
                                         <th class="text-center">{{ ui_change('tenant', 'property_transaction') }}</th>
@@ -100,8 +102,7 @@
                                         <th class="text-center">
                                             {{ ui_change('booking_status', 'property_transaction') }}</th>
                                         <th class="text-center">{{ ui_change('status', 'property_transaction') }}</th>
-                                        <th class="text-center">{{ ui_change('Actions', 'property_transaction') }}
-                                        </th>
+                                        
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -159,44 +160,7 @@
                                             <td class="text-center">{!! implode('<br>', $blocks) !!}</td>
                                             <td class="text-center">{!! implode('<br>', $floors) !!}</td>
                                             <td class="text-center">{!! implode('<br>', $units) !!}</td>
-                                            {{-- Commencement Date --}}
-                                            <td class="text-center">{!! implode('<br>', $commencements) !!}</td>
-
-                                            {{-- Expiry Date --}}
-                                            <td class="text-center">{!! implode('<br>', $expiries) !!}</td>
-                                            <td class="text-center">
-                                                {{ $agreement_item->tenant->type == 'individual' ? $agreement_item->tenant?->name ?? ui_change('not_available', 'property_transaction') : $agreement_item->tenant?->company_name ?? ui_change('not_available', 'property_transaction') }}
-                                            </td>
-                                            <td class="text-center">
-                                                {{ ucfirst($agreement_item->tenant->type) ?? ui_change('not_available', 'property_transaction') }}
-                                            </td>
-
-
-                                            <td class="text-center">
-                                                <span
-                                                    class="{{ strtolower($agreement_item->booking_status) == 'agreement'
-                                                        ? 'bg-warning p-2 text-dark border border-warning rounded'
-                                                        : (strtolower($agreement_item->booking_status) == 'signed'
-                                                            ? 'bg-success p-2 text-white border border-success rounded'
-                                                            : (strtolower($agreement_item->booking_status) == 'canceled'
-                                                                ? 'bg-danger p-2 text-white border border-danger rounded'
-                                                                : '')) }}">
-                                                    {{ ($agreement_item->booking_status == 'signed' ? ucfirst($agreement_item->booking_status) : ui_change('unsigned', 'property_transaction')) ?? ui_change('not_available', 'property_transaction') }}
-                                                </span>
-                                            </td>
-                                            <td class="text-center">
-                                                <span
-                                                    class="{{ strtolower($agreement_item->status) == 'pending'
-                                                        ? 'bg-warning p-2 text-dark border border-warning rounded'
-                                                        : (strtolower($agreement_item->status) == 'completed'
-                                                            ? 'bg-success p-2 text-white border border-success rounded'
-                                                            : (strtolower($agreement_item->status) == 'canceled'
-                                                                ? 'bg-danger p-2 text-white border border-danger rounded'
-                                                                : '')) }}">
-                                                    {{ ucfirst($agreement_item->status) ?? ui_change('not_available', 'property_transaction') }}
-                                                </span>
-                                            </td>
-                                            <td>
+                                              <td>
                                                 <div class="dropdown">
                                                     <button type="button" class="btn btn-sm btn-light dropdown-toggle"
                                                         data-toggle="dropdown" data-boundary="viewport"
@@ -280,6 +244,44 @@
                                                 </div>
 
                                             </td>
+                                            {{-- Commencement Date --}}
+                                            <td class="text-center">{!! implode('<br>', $commencements) !!}</td>
+
+                                            {{-- Expiry Date --}}
+                                            <td class="text-center">{!! implode('<br>', $expiries) !!}</td>
+                                            <td class="text-center">
+                                                {{ $agreement_item->tenant->type == 'individual' ? $agreement_item->tenant?->name ?? ui_change('not_available', 'property_transaction') : $agreement_item->tenant?->company_name ?? ui_change('not_available', 'property_transaction') }}
+                                            </td>
+                                            <td class="text-center">
+                                                {{ ucfirst($agreement_item->tenant->type) ?? ui_change('not_available', 'property_transaction') }}
+                                            </td>
+
+
+                                            <td class="text-center">
+                                                <span
+                                                    class="{{ strtolower($agreement_item->booking_status) == 'agreement'
+                                                        ? 'bg-warning p-2 text-dark border border-warning rounded'
+                                                        : (strtolower($agreement_item->booking_status) == 'signed'
+                                                            ? 'bg-success p-2 text-white border border-success rounded'
+                                                            : (strtolower($agreement_item->booking_status) == 'canceled'
+                                                                ? 'bg-danger p-2 text-white border border-danger rounded'
+                                                                : '')) }}">
+                                                    {{ ($agreement_item->booking_status == 'signed' ? ucfirst($agreement_item->booking_status) : ui_change('unsigned', 'property_transaction')) ?? ui_change('not_available', 'property_transaction') }}
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span
+                                                    class="{{ strtolower($agreement_item->status) == 'pending'
+                                                        ? 'bg-warning p-2 text-dark border border-warning rounded'
+                                                        : (strtolower($agreement_item->status) == 'completed'
+                                                            ? 'bg-success p-2 text-white border border-success rounded'
+                                                            : (strtolower($agreement_item->status) == 'canceled'
+                                                                ? 'bg-danger p-2 text-white border border-danger rounded'
+                                                                : '')) }}">
+                                                    {{ ucfirst($agreement_item->status) ?? ui_change('not_available', 'property_transaction') }}
+                                                </span>
+                                            </td>
+                                          
                                         </tr>
                                     @endforeach
                                 </tbody>

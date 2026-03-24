@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\property_transactions;
 
 use App\Http\Controllers\Controller;
+use App\Models\AccruedIncome;
 use App\Models\Agent;
 use App\Models\Agreement;
 use App\Models\AgreementDetails;
@@ -14,6 +15,7 @@ use App\Models\CountryMaster;
 use App\Models\Employee;
 use App\Models\EnquiryRequestStatus;
 use App\Models\EnquiryStatus;
+use App\Models\hierarchy\MainLedger;
 use App\Models\LiveWith;
 use App\Models\PropertyManagement;
 use App\Models\PropertyType;
@@ -31,6 +33,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Throwable;
@@ -85,23 +88,23 @@ class AgreementController extends Controller
         $search      = $request['search'];
         $query_param = $search ? ['search' => $request['search']] : '';
         $agreements  = (new Agreement())->setConnection('tenant')
-        // ->where('agreement_date' , '>=' ,$company->book_begining)
-        ->when($request['search'], function ($q) use ($request) {
-            $key = explode(' ', $request['search']);
-            foreach ($key as $value) {
-                $q->Where('agreement_no', 'like', "%{$value}%")
+            // ->where('agreement_date' , '>=' ,$company->book_begining)
+            ->when($request['search'], function ($q) use ($request) {
+                $key = explode(' ', $request['search']);
+                foreach ($key as $value) {
+                    $q->Where('agreement_no', 'like', "%{$value}%")
 
-                    ->orWhereHas('tenant', function ($query) use ($value) {
-                        $query->where('name', 'like', "%{$value}%")->orWhere('company_name', 'like', "%{$value}%");
-                    });
-            }
-        })->whereHas('agreement_details', function ($query) use ($company) {
-            if($company->book_begining){
+                        ->orWhereHas('tenant', function ($query) use ($value) {
+                            $query->where('name', 'like', "%{$value}%")->orWhere('company_name', 'like', "%{$value}%");
+                        });
+                }
+            })->whereHas('agreement_details', function ($query) use ($company) {
+                if ($company->book_begining) {
 
-                $query->where('period_to', '>=',  $company->book_begining);
-            }
-                    })
-        //->where('status', 'pending')
+                    $query->where('period_to', '>=',  $company->book_begining);
+                }
+            })
+            //->where('status', 'pending')
             ->with(
                 'agreement_units:id,agreement_id,property_id,unit_id,commencement_date,expiry_date',
                 'agreement_units.agreement_unit_main:id,property_management_id,block_management_id,floor_management_id,unit_id',
@@ -115,8 +118,8 @@ class AgreementController extends Controller
         if ($request->bulk_action_btn === 'filter') {
             $data         = ['status' => 1];
             $report_query = (new Agreement())->setConnection('tenant')
-            // ->where('agreement_date' , '>=' ,$company->book_begining)
-            ->query();
+                // ->where('agreement_date' , '>=' ,$company->book_begining)
+                ->query();
             if ($request->booking_status && $request->booking_status != -1 && ($request->booking_status == 'signed')) {
                 $report_query->where('booking_status', $request->booking_status);
             }
@@ -849,14 +852,16 @@ class AgreementController extends Controller
         $total_service_amount = 0;
         try {
             foreach ($units as $unit) {
-
+                // advanced_group_id
+                $main_unit = UnitManagement::where('id' , $unit->unit_id)->select('advanced_group_id' , 'ledger_id')->first(); 
                 $start_date = Carbon::parse($unit->commencement_date);
                 $end_date   = Carbon::parse($unit->expiry_date);
-
+                $unit_ledger = MainLedger::where('id', $main_unit->ledger_id)->first();
+                $advanced_unit_ledger = MainLedger::where('id', $main_unit->advanced_group_id)->first();
                 $company              = auth()->user() ?? User::first();
                 $total_service_amount = AgreementUnitsService::where('agreement_unit_id', $unit->id ?? 0)->sum('amount') ?? 0;
                 $total_services       = AgreementUnitsService::where('agreement_unit_id', $unit->id)->with('service_master:id,vat')->get();
-
+                // dd($advanced_unit_ledger);
                 $original_start_date = $start_date->copy();
                 if (isset($total_services)) {
                     if ($unit->rent_mode == null) {
@@ -1009,6 +1014,7 @@ class AgreementController extends Controller
                 $start_date = $original_start_date->copy();
 
                 if ($unit->rent_mode == 2) {
+                    $monthlyAmount = convertToMonthly($unit->rent_amount, $unit->rent_mode);
                     while ($start_date <= $end_date) {
                         $rent_intervals[] = [
                             'rent_amount'          => $unit->rent_amount,
@@ -1150,6 +1156,91 @@ class AgreementController extends Controller
                         'created_at'           => now(),
 
                     ];
+                } 
+                if ($advanced_unit_ledger) {
+                    // Log::info($advanced_unit_ledger);
+                    $start_date = Carbon::parse($unit->commencement_date);
+                    $end_date   = Carbon::parse($unit->expiry_date);
+                    $monthlyAmount = convertToMonthly($unit->rent_amount, $unit->rent_mode);
+                    // dd( $monthlyAmount);
+                    $current = $start_date->copy();
+
+                    while ($current <= $end_date) {
+ 
+                        $daysInMonth = $current->daysInMonth;
+ 
+                        $periodStart = $current->copy()->startOfMonth();
+                        if ($current->isSameMonth($start_date)) {
+                            $periodStart = $start_date->copy();
+                        }
+ 
+                        $periodEnd = $current->copy()->endOfMonth();
+                        if ($current->isSameMonth($end_date)) {
+                            $periodEnd = $end_date->copy();
+                        }
+ 
+                        $daysUsed = $periodStart->diffInDays($periodEnd) + 1;
+ 
+                        $proRatedAmount = ($monthlyAmount / $daysInMonth) * $daysUsed;
+
+                        $rent_intervals_for_accrud[] = [
+                            'rent_amount'          => round($proRatedAmount, 5),
+                            'rent_mode'            => $unit->rent_mode,
+                            'total_service_amount' => $total_service_amount ?? 0,
+                            'unit_id'              => $unit->unit_id,
+                            'agreement_id'         => $agreement->id,
+                            'vat_amount'           => $unit->vat_amount ?? 0,
+                            'vat'                  => $unit->vat_percentage ?? 0,
+                            'tenant_id'            => $agreement->tenant_id,
+                            'currency'             => $company->currency_code ?? 'BHD',
+                            'billing_month_year'   => $current->format('Y-m'),
+                            'service'              => 'no',
+                            'category'             => 'rent',
+                            'service_id'           => null,
+                            'invoice_status'       => null,
+                            'branch_id'            => 1,
+                            'created_at'           => now(),
+                        ];
+
+                        $current->addMonth();
+                    }
+                    //  Log::info($rent_intervals_for_accrud);
+                    foreach ($rent_intervals_for_accrud as $interval) {
+
+                        $billingDate = Carbon::parse($interval['billing_month_year'] . '-01');
+
+                        $accruedAmount = $interval['rent_amount'] + $interval['total_service_amount'];
+                        AccruedIncome::create([
+                            'ledger_id'         => $advanced_unit_ledger->id,
+                            'income_ledger_id'  => $unit_ledger->id,
+
+                            'status'            => 'unpaid',
+                            'voucher_date'      =>  now(),
+                            'applicable_date'   => $billingDate,
+                            'receivable_upto'   => $billingDate->copy()->endOfMonth(),
+                            // 'billing_month'     => $billingDate,
+                            'accrued_amount'    => $accruedAmount,
+                            'received_amount'   => 0,
+                            'balance_amount'    => $accruedAmount,
+                            'balance_for'       => '1 Month',
+                        ]);
+                        // DB::table('accrued_incomes')->insert([
+                        //     'ledger_id'         => $unit_ledger->id,
+                        //     'income_ledger_id'  => $unit_ledger->id,
+
+                        //     'status'            => 'unpaid',
+                        //     'voucher_date'      => now(),
+                        //     'applicable_date'   => $billingDate,
+                        //     'receivable_upto'   => $billingDate->copy()->endOfMonth(),
+                        //     'billing_month'     => $billingDate,
+                        //     'accrued_amount'    => $accruedAmount,
+                        //     'received_amount'   => 0,
+                        //     'balance_amount'    => $accruedAmount,
+                        //     'balance_for'       => '1 Month',
+                        //     'created_at'        => now(),
+                        //     'updated_at'        => now(),
+                        // ]);
+                    }
                 }
             }
             DB::connection('tenant')->table('schedules')->insert($rent_intervals);

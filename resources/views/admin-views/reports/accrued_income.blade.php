@@ -71,17 +71,41 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {{-- @foreach ($agreements as $agreements_item)  
+                                    @foreach ($accrued_incomes as $accrued_incomes_item)  
                                         <tr>
                                             <th scope="row"><input class="check_bulk_item" name="bulk_ids[]"
                                                     type="checkbox" value="" />
                                                  {{ $loop->index + 1 }}  
                                             </th>
                                             <td class="text-center">
-                                                 
+                                                 {{ $accrued_incomes_item->accrued_income_ledger?->name }}
+                                            </td> 
+                                            <td class="text-center">
+                                                 {{ $accrued_incomes_item->income_ledger?->name }}
+                                            </td> 
+                                            <td class="text-center">
+                                                 {{ $accrued_incomes_item->voucher_date  }}
+                                            </td> 
+                                            <td class="text-center">
+                                                 {{ $accrued_incomes_item->applicable_date  }}
+                                            </td> 
+                                            <td class="text-center">
+                                                 {{ $accrued_incomes_item->receivable_upto  }}
+                                            </td> 
+                                            <td class="text-center">
+                                                 {{ $accrued_incomes_item->accrued_amount  }}
+                                            </td> 
+                                            <td class="text-center">
+                                                 {{ $accrued_incomes_item->received_amount  }}
+                                            </td> 
+                                            <td class="text-center">
+                                                 {{ $accrued_incomes_item->balance_amount  }}
+                                            </td> 
+                                            <td class="text-center">
+                                                 {{ $accrued_incomes_item->balance_for  }}
                                             </td> 
                                         </tr>
-                               @endforeach --}}
+                               @endforeach
 
                                 </tbody>
                             </table>
@@ -90,17 +114,17 @@
                         <div class="table-responsive mt-4">
                             <div class="px-4 d-flex justify-content-lg-end">
                                 <!-- Pagination -->
-                                {{-- {{ $agreements->links() }} --}}
+                                {{ $accrued_incomes->links() }}
                             </div>
                         </div>
                     </form>
-                    {{-- @if (count($agreements) == 0) --}}
+                    @if (count($accrued_incomes) == 0)
                         <div class="text-center p-4">
                             <img class="mb-3 w-160" src="{{ asset(main_path() . 'back-end') }}/svg/illustrations/sorry.svg"
                                 alt="Image Description">
                             <p class="mb-0">{{ ui_change('no_data_to_show') }}</p>
                         </div>
-                    {{-- @endif --}}
+                    @endif
                 </div>
             </div>
         </div>

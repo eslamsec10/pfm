@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Models\Agreement;
 use App\Models\BlockManagement;
 use App\Models\Company;
 use App\Models\FloorManagement;
@@ -72,7 +73,11 @@ class DashboardController extends Controller
         $agreements_canceled = DB::table('agreements')
             ->where('status', 'canceled')
             ->count();
-
+        $agreements_expired = Agreement::whereHas('agreement_details' , function($q){
+            $q->where('period_to' , '>' , today());
+        })
+            ->count();
+        // dd($agreements_expired);
         $buildings         = PropertyManagement::forUser()->select('name' , 'id' , 'code' )->get();
         $unit_descriptions = DB::table('unit_descriptions')->select('id' ,'name' , 'code')->get();
         $unit_conditions   = DB::table('unit_conditions')->select('id' ,'name' , 'code')->get();
@@ -104,6 +109,7 @@ class DashboardController extends Controller
             'agreements_pending'   => $agreements_pending,
             'agreements_confirmed' => $agreements_confirmed,
             'agreements_canceled'  => $agreements_canceled,
+            'agreements_expired'   => $agreements_expired,
         ];
         return view("dashboard", $data);
     }

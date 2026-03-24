@@ -122,10 +122,7 @@
                     <p>{{ ui_change('welcome_message' , 'dashboard') }}.</p>
                 </div>
             </div>
-        </div>
-        <!-- End Page Header -->
-        {{-- {{ dd(amount_in_words(123.45, 1)) }} --}}
-        <!-- Business Analytics -->
+        </div> 
         <div class="card mb-2 remove-card-shadow">
             <div class="card-body">
                 <div class="row flex-between align-items-center g-2 mb-3">

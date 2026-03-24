@@ -15,6 +15,7 @@ use App\Models\UnitDescription;
 use App\Models\UnitManagement;
 use App\Models\View;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
@@ -98,7 +99,7 @@ class PropertyMasterTemplate implements ToCollection, WithHeadingRow
             $view = !empty($row['view'])
                 ? View::firstOrCreate(['name' => trim($row['view'])])
                 : null;
-
+            
             // ---------------------
             // Unit Management (NO DUPLICATE)
             // ---------------------

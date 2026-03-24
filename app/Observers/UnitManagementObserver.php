@@ -8,6 +8,7 @@ use App\Models\hierarchy\CostCenter;
 use App\Models\hierarchy\CostCenterCategory;
 use App\Models\hierarchy\MainLedger;
 use App\Models\UnitManagement;
+use Illuminate\Support\Facades\Log;
 
 
 
@@ -29,36 +30,37 @@ class UnitManagementObserver
             ->first();
         $master_group = (new Groups())
             ->setConnection('tenant')
-            ->where('property_id', $unitManagement->property_management_id)
             ->where('group_id', $second_master_group->id)
+            ->where('property_id', $unitManagement->property_management_id)
             ->first();
-
+        // Log::info( $unitManagement->property_management_id);
         // ================= LEDGER =================
-        $ledger = (new MainLedger())
-            ->setConnection('tenant')
-            ->create([
-                'code' => $unitManagement->unit_management_main?->name,
-                'name' =>
-                $unitManagement->property_unit_management?->name . '-' .
-                    $unitManagement->block_unit_management?->block?->name . '-' .
-                    $unitManagement->floor_unit_management?->floor_management_main?->name . '-' .
-                    $unitManagement->unit_management_main?->name,
-                'currency'  => $company?->currency_code,
-                'country_id' =>
-                $unitManagement->property_unit_management
-                    ?->country_master
-                    ?->country
-                    ?->id ?? 1,
-                'group_id'            => $group?->id,
-                'main_id'             => $unitManagement->id,
-                'main_type'           => 'unit',
-                'is_taxable'          => $group?->is_taxable ?? 0,
-                'vat_applicable_from' => $group?->vat_applicable_from,
-                'tax_rate'            => $group?->tax_rate ?? $company?->tax_rate,
-                'tax_applicable'      => $group?->tax_applicable ?? 0,
-                'status'              => 'active',
-            ]);
-
+        if ($group) {
+            $ledger = (new MainLedger())
+                ->setConnection('tenant')
+                ->create([
+                    'code' => $unitManagement->unit_management_main?->name,
+                    'name' =>
+                    $unitManagement->property_unit_management?->name . '-' .
+                        $unitManagement->block_unit_management?->block?->name . '-' .
+                        $unitManagement->floor_unit_management?->floor_management_main?->name . '-' .
+                        $unitManagement->unit_management_main?->name,
+                    'currency'  => $company?->currency_code,
+                    'country_id' =>
+                    $unitManagement->property_unit_management
+                        ?->country_master
+                        ?->country
+                        ?->id ?? 1,
+                    'group_id'            => $group?->id,
+                    'main_id'             => $unitManagement->id,
+                    'main_type'           => 'unit',
+                    'is_taxable'          => $group?->is_taxable ?? 0,
+                    'vat_applicable_from' => $group?->vat_applicable_from,
+                    'tax_rate'            => $group?->tax_rate ?? $company?->tax_rate,
+                    'tax_applicable'      => $group?->tax_applicable ?? 0,
+                    'status'              => 'active',
+                ]);
+        }
         // ================= COST CENTER =================
         $propertyCost = (new CostCenterCategory())
             ->setConnection('tenant')
@@ -81,36 +83,42 @@ class UnitManagementObserver
                 'status'    => 'active',
             ]);
         // ================= LEDGER =================
-        $advanced_ledger = (new MainLedger())
-            ->setConnection('tenant')
-            ->create([
-                'code' => $unitManagement->unit_management_main?->name,
-                'name' =>
-                $unitManagement->property_unit_management?->name . '-' .
-                    $unitManagement->block_unit_management?->block?->name . '-' .
-                    $unitManagement->floor_unit_management?->floor_management_main?->name . '-' .
-                    $unitManagement->unit_management_main?->name,
-                'currency'  => $company?->currency_code,
-                'country_id' =>
-                $unitManagement->property_unit_management
-                    ?->country_master
-                    ?->country
-                    ?->id ?? 1,
-                'group_id'            => $master_group?->id,
-                'main_id'             => $unitManagement->id,
-                'main_type'           => 'unit',
-                'is_taxable'          => $master_group?->is_taxable ?? 0,
-                'vat_applicable_from' => $master_group?->vat_applicable_from,
-                'tax_rate'            => $master_group?->tax_rate ?? $company?->tax_rate,
-                'tax_applicable'      => $master_group?->tax_applicable ?? 0,
-                'status'              => 'active',
+        if ($master_group) {
+            $advanced_ledger = (new MainLedger())
+                ->setConnection('tenant')
+                ->create([
+                    'code' => $unitManagement->unit_management_main?->name,
+                    'name' =>
+                    $unitManagement->property_unit_management?->name . '-' .
+                        $unitManagement->block_unit_management?->block?->name . '-' .
+                        $unitManagement->floor_unit_management?->floor_management_main?->name . '-' .
+                        $unitManagement->unit_management_main?->name,
+                    'currency'  => $company?->currency_code,
+                    'country_id' =>
+                    $unitManagement->property_unit_management
+                        ?->country_master
+                        ?->country
+                        ?->id ?? 1,
+                    'group_id'            => $master_group?->id,
+                    'main_id'             => $unitManagement->id,
+                    'main_type'           => 'unit',
+                    'is_taxable'          => $master_group?->is_taxable ?? 0,
+                    'vat_applicable_from' => $master_group?->vat_applicable_from,
+                    'tax_rate'            => $master_group?->tax_rate ?? $company?->tax_rate,
+                    'tax_applicable'      => $master_group?->tax_applicable ?? 0,
+                    'status'              => 'active',
+                ]);
+            $unitManagement->update([
+                'advanced_group_id'         => $advanced_ledger->id,
             ]);
-        // ================= UPDATE UNIT =================
-        $unitManagement->update([
-            'ledger_id'                 => $ledger->id,
-            'advanced_group_id'         => $advanced_ledger->id,
-            'cost_center_id'            => $costCenter->id,
-        ]);
+        }
+        if ($group) {
+            // ================= UPDATE UNIT =================
+            $unitManagement->update([
+                'ledger_id'                 => $ledger->id,
+                'cost_center_id'            => $costCenter->id,
+            ]);
+        }
     }
 
     public function deleted(UnitManagement $unitManagement)

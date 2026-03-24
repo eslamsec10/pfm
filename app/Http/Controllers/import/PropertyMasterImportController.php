@@ -229,7 +229,7 @@ class PropertyMasterImportController extends Controller
                     ['code' => $normalizedRow['view']]
                 )
                 : null;
-
+            // Log::info($view);
             /*
     |--------------------------------------------------------------------------
     | Unit Management
@@ -246,6 +246,7 @@ class PropertyMasterImportController extends Controller
                     'unit_description_id'   => $unit_description->id ?? null,
                     'unit_type_id'          => $unit_type->id ?? null,
                     'unit_condition_id'     => $unit_condition->id ?? null,
+                    'view_id'     => $view->id ?? null,
                     'area'            => $normalizedRow['total_area'] ?? null, 
                     'area_unit'            => $normalizedRow['total_area_measurement_unit'] ?? null, 
                     'area_inside'            => $normalizedRow['area_inside'] ?? null, 

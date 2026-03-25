@@ -446,8 +446,10 @@ class ReportController extends Controller
             ->whereYear('applicable_date', today()->year)
             ->with('accrued_income_ledger:id,name', 'income_ledger:id,name')
             ->paginate();
+            $company = (new Company())->setConnection('tenant')->first();
         $data = [
             'accrued_incomes'       => $accrued_incomes,
+            'company'       => $company,
         ];
 
         return view('admin-views.reports.accrued_income', $data);

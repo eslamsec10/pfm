@@ -64,10 +64,101 @@ Route::group(['prefix' => 'room-reservation/settings', 'as' => 'room_reservation
     Route::patch('/update', [ReservationSettingsController::class, 'room_reservation_update'])->name('room_reservation_settings.store');
 });
 
-Route::get('get_ledger/{id}' , [ProposalController::class , 'get_ledger'])->name('get_ledger');
+Route::get('get_ledger/{id}', [ProposalController::class, 'get_ledger'])->name('get_ledger');
 
 
 
-Route::get('/unit_ledger' , [LedgerController::class ,'update_unit_ledger']);
-Route::get('/tenant_ledger' , [LedgerController::class ,'update_tenant_ledger']);
+Route::get('/unit_ledger', [LedgerController::class, 'update_unit_ledger']);
+Route::get('/tenant_ledger', [LedgerController::class, 'update_tenant_ledger']);
 // Route::get('/unit_ledger' , [LedgerController::class ,'update_unit_ledger']);
+
+Route::get('advance_group', function () {
+    $groupModel = (new App\Models\general\Groups())->setConnection('tenant');
+
+    $second_master_group = (new App\Models\general\Groups())
+        ->setConnection('tenant')
+        ->where('name', 'LIKE', '%Advances Received from Tenants%')
+        ->first();
+    if (!$second_master_group) {
+
+        $master_group = (new App\Models\general\Groups())
+            ->setConnection('tenant')
+            ->where('name', 'LIKE', '%Current Liabilities%')
+            ->first();
+        $second_master_group = $groupModel->create([
+            'code'                     => 'ART',
+            'name'                     => 'Advances Received from Tenants',
+            'display_name'             => 'Advances Received from Tenants',
+            'group_id'                 => $master_group->id ?? null,
+            'is_projects_parent_group' => 0,
+            'enable_auto_code'         => 1,
+            'status'                   => 'active',
+            'tax_applicable'           => 0,
+            'is_taxable'               => 0,
+            'tax_rate'                 => 0,
+        ]);
+    }
+    $properties =  App\Models\PropertyManagement::whereNull('advanced_group_id')->get();
+    foreach ($properties as $property) {
+        $group = (new App\Models\general\Groups())->setConnection('tenant')->create([
+            'code'                     => $property->code,
+            'property_id'              => $property->id,
+            'name'                     => $property->name,
+            'display_name'             => $property->name,
+            'group_id'                 => $second_master_group->id,
+            'is_projects_parent_group' => $second_master_group->is_projects_parent_group ?? 0,
+            'enable_auto_code'         => $second_master_group->enable_auto_code ?? 0,
+            'status'                   => 'active',
+            'tax_applicable'           => $second_master_group->tax_applicable ?? 0,
+            'is_taxable'               => $second_master_group->is_taxable ?? 0,
+            'vat_applicable_from'      => $second_master_group->vat_applicable_from,
+            'tax_rate'                 => $second_master_group->tax_rate ?? 0,
+        ]);
+        $property->update([
+            'advanced_group_id'        => $second_master_group->id,
+        ]);
+    }
+});
+Route::get('advance_ledger', function () {
+    $groupModel = (new App\Models\general\Groups())->setConnection('tenant');
+    $second_master_group =  $groupModel
+        ->where('name', 'LIKE', '%Advances Received from Tenants%')
+        ->first();
+        
+         $company = (new App\Models\Company())->setConnection('tenant')->first();
+    $units = App\Models\UnitManagement::whereNull('advanced_group_id')->get();
+    foreach ($units as $unitManagement) {
+        $master_group = $groupModel
+            ->where('group_id', $second_master_group->id)
+            ->where('property_id', $unitManagement->property_management_id)
+            ->first();
+
+                        $advanced_ledger = (new  App\Models\hierarchy\MainLedger())
+                ->setConnection('tenant')
+                ->create([
+                    'code' => $unitManagement->unit_management_main?->name,
+                    'name' =>
+                    $unitManagement->property_unit_management?->name . '-' .
+                        $unitManagement->block_unit_management?->block?->name . '-' .
+                        $unitManagement->floor_unit_management?->floor_management_main?->name . '-' .
+                        $unitManagement->unit_management_main?->name,
+                    'currency'  => $company?->currency_code,
+                    'country_id' =>
+                    $unitManagement->property_unit_management
+                        ?->country_master
+                        ?->country
+                        ?->id ?? 1,
+                    'group_id'            => $master_group?->id,
+                    'main_id'             => $unitManagement->id,
+                    'main_type'           => 'unit',
+                    'is_taxable'          => $master_group?->is_taxable ?? 0,
+                    'vat_applicable_from' => $master_group?->vat_applicable_from,
+                    'tax_rate'            => $master_group?->tax_rate ?? $company?->tax_rate,
+                    'tax_applicable'      => $master_group?->tax_applicable ?? 0,
+                    'status'              => 'active',
+                ]);
+            $unitManagement->update([
+                'advanced_group_id'         => $advanced_ledger->id,
+            ]);
+    }
+});

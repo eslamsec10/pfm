@@ -6,11 +6,13 @@
 @endphp
 @section('title', ui_change('pre_bill_checking', 'property_report'))
 
-@push('css_or_js') 
+@push('css_or_js')
     <link href="{{ asset(main_path() . 'date/bootstrap-datepicker.min.css') }}" rel="stylesheet">
     <link href="{{ asset(main_path() . 'date/date.css') }}" rel="stylesheet">
     {{-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker.min.css"> --}}
-    
+    <link href="{{ asset(main_path() . 'datetimepicker/bootstrap-material-datetimepicker.css') }}" rel="stylesheet"
+        type="text/css" />
+    <link href="{{ asset(main_path() . 'datetimepicker/daterangepicker.css') }}" rel="stylesheet" type="text/css" />
 @endpush
 @php
     $company = App\Models\User::first();
@@ -82,7 +84,8 @@
 
                                                 <label for="">{{ ui_change('select', 'property_report') }}</label>
                                                 <select name="tenant_id" id="" class="form-control">
-                                                    <option value="0">{{ ui_change('all_tenants', 'property_report') }}
+                                                    <option value="0">
+                                                        {{ ui_change('all_tenants', 'property_report') }}
                                                     </option>
                                                     @foreach ($tenants as $item)
                                                         <option value="{{ $item->id }}">
@@ -117,7 +120,7 @@
                                                 <label
                                                     for="">{{ ui_change('Invoice_Date', 'property_report') }}</label>
                                                 <input type="text" id="invoice_datee" name="invoice_date"
-                                                    class="form-control date_picker"> </select>
+                                                     autocomplete="off" class="datepickers form-control" >  
 
                                             </div>
                                         </div>
@@ -159,17 +162,16 @@
                                                     <div class="input-group">
                                                         <input
                                                             class="form-control float-right date_picker {{ $lang == 'ar' ? 'mr-2' : 'ml-2' }}"
-                                                            type="text"   name="start_date"
+                                                            type="text" name="start_date"
                                                             value="{{ $firstDay }}">
-                                                       
+
                                                         <input
                                                             class="form-control date_picker float-right {{ $lang == 'ar' ? 'mr-2' : 'ml-2' }}"
-                                                            type="text"   name="end_date"
-                                                            value="{{ $lastDay }}">
+                                                            type="text" name="end_date" value="{{ $lastDay }}">
 
                                                     </div>
                                                 </div>
-                                                
+
                                                 <div class="col-md-6 col-lg-4 col-xl-6">
                                                     <label for="">
                                                         {{ ui_change('building', 'property_report') }}
@@ -593,14 +595,17 @@
             }
         }
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js">
+    </script>
     <script>
-        
         $('.date_picker').datepicker({
-    format: 'dd-mm-yyyy',
-    autoclose: true,
-    todayHighlight: true
-});
+            format: 'dd-mm-yyyy',
+            autoclose: true,
+            todayHighlight: true
+        });
     </script>
     
+<script src="{{ asset(main_path() . 'datetimepicker/bootstrap-material-datetimepicker.js') }}"></script>
+<script src="{{ asset(main_path() . 'datetimepicker/daterangepicker.js') }}"></script>
+<script src="{{ asset(main_path() . 'datetimepicker/global.js') }}"></script>
 @endpush

@@ -93,13 +93,13 @@
                                                  {{ $accrued_incomes_item->receivable_upto  }}
                                             </td> 
                                             <td class="text-center">
-                                                 {{ $accrued_incomes_item->accrued_amount  }}
+                                                 {{ number_format($accrued_incomes_item->accrued_amount,$company->decimals ?? 3)  }}
                                             </td> 
                                             <td class="text-center">
-                                                 {{ $accrued_incomes_item->received_amount  }}
+                                                 {{ number_format($accrued_incomes_item->received_amount,$company->decimals ?? 3)   }}
                                             </td> 
                                             <td class="text-center">
-                                                 {{ $accrued_incomes_item->balance_amount  }}
+                                                 {{ number_format($accrued_incomes_item->balance_amount,$company->decimals ?? 3)  }}
                                             </td> 
                                             <td class="text-center">
                                                  {{ $accrued_incomes_item->balance_for  }}

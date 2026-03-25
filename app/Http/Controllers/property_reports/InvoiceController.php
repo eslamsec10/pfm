@@ -173,7 +173,7 @@ class InvoiceController extends Controller
         DB::beginTransaction();
 
         try {
-            $formattedDate = Carbon::createFromFormat('d-m-Y', $request->invoice_date)->format('Y-m-d');
+            $formattedDate = Carbon::createFromFormat('Y-m-d', $request->invoice_date)->format('Y-m-d');
             $date          = explode('-', $request->invoice_month);
             $month         = $date[0];
             $year          = $date[1];

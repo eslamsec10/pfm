@@ -853,7 +853,7 @@ class AgreementController extends Controller
         try {
             foreach ($units as $unit) {
                 // advanced_group_id
-                $main_unit = UnitManagement::where('id' , $unit->unit_id)->select('advanced_group_id' , 'ledger_id')->first(); 
+                $main_unit = UnitManagement::where('id', $unit->unit_id)->select('advanced_group_id', 'ledger_id')->first();
                 $start_date = Carbon::parse($unit->commencement_date);
                 $end_date   = Carbon::parse($unit->expiry_date);
                 $unit_ledger = MainLedger::where('id', $main_unit->ledger_id)->first();
@@ -1156,7 +1156,7 @@ class AgreementController extends Controller
                         'created_at'           => now(),
 
                     ];
-                } 
+                }
                 if ($advanced_unit_ledger) {
                     // Log::info($advanced_unit_ledger);
                     $start_date = Carbon::parse($unit->commencement_date);
@@ -1166,23 +1166,23 @@ class AgreementController extends Controller
                     $current = $start_date->copy();
 
                     while ($current <= $end_date) {
- 
+
                         $daysInMonth = $current->daysInMonth;
- 
+
                         $periodStart = $current->copy()->startOfMonth();
                         if ($current->isSameMonth($start_date)) {
                             $periodStart = $start_date->copy();
                         }
- 
+
                         $periodEnd = $current->copy()->endOfMonth();
                         if ($current->isSameMonth($end_date)) {
                             $periodEnd = $end_date->copy();
                         }
- 
-                        $daysUsed = $periodStart->diffInDays($periodEnd) + 1;
- 
-                        $proRatedAmount = ($monthlyAmount / $daysInMonth) * $daysUsed;
 
+                        $daysUsed = $periodStart->diffInDays($periodEnd) + 1;
+
+                        $proRatedAmount = ($monthlyAmount / $daysInMonth) * $daysUsed;
+                        $remainingDays = $daysInMonth - $daysUsed;
                         $rent_intervals_for_accrud[] = [
                             'rent_amount'          => round($proRatedAmount, 5),
                             'rent_mode'            => $unit->rent_mode,
@@ -1200,11 +1200,12 @@ class AgreementController extends Controller
                             'invoice_status'       => null,
                             'branch_id'            => 1,
                             'created_at'           => now(),
+                            'days_used'            => $daysUsed,
+                            'remaining_days'       => $remainingDays,
                         ];
 
                         $current->addMonth();
                     }
-                    //  Log::info($rent_intervals_for_accrud);
                     foreach ($rent_intervals_for_accrud as $interval) {
 
                         $billingDate = Carbon::parse($interval['billing_month_year'] . '-01');
@@ -1213,33 +1214,16 @@ class AgreementController extends Controller
                         AccruedIncome::create([
                             'ledger_id'         => $advanced_unit_ledger->id,
                             'income_ledger_id'  => $unit_ledger->id,
-
                             'status'            => 'unpaid',
                             'voucher_date'      =>  now(),
                             'applicable_date'   => $billingDate,
                             'receivable_upto'   => $billingDate->copy()->endOfMonth(),
-                            // 'billing_month'     => $billingDate,
                             'accrued_amount'    => $accruedAmount,
                             'received_amount'   => 0,
                             'balance_amount'    => $accruedAmount,
-                            'balance_for'       => '1 Month',
+                            'balance_for'       => $interval['days_used'],
+                            'remaining_days'    => $interval['remaining_days'],
                         ]);
-                        // DB::table('accrued_incomes')->insert([
-                        //     'ledger_id'         => $unit_ledger->id,
-                        //     'income_ledger_id'  => $unit_ledger->id,
-
-                        //     'status'            => 'unpaid',
-                        //     'voucher_date'      => now(),
-                        //     'applicable_date'   => $billingDate,
-                        //     'receivable_upto'   => $billingDate->copy()->endOfMonth(),
-                        //     'billing_month'     => $billingDate,
-                        //     'accrued_amount'    => $accruedAmount,
-                        //     'received_amount'   => 0,
-                        //     'balance_amount'    => $accruedAmount,
-                        //     'balance_for'       => '1 Month',
-                        //     'created_at'        => now(),
-                        //     'updated_at'        => now(),
-                        // ]);
                     }
                 }
             }

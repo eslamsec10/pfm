@@ -442,11 +442,10 @@ class ReportController extends Controller
 
     public function Accrued_Income(Request $request)
     {
-        $accrued_incomes = AccruedIncome::whereMonth('applicable_date', today()->month)
-            ->whereYear('applicable_date', today()->year)
+        $accrued_incomes = AccruedIncome::whereYear('applicable_date', today()->year)
             ->with('accrued_income_ledger:id,name', 'income_ledger:id,name')
             ->paginate();
-            $company = (new Company())->setConnection('tenant')->first();
+        $company = (new Company())->setConnection('tenant')->first();
         $data = [
             'accrued_incomes'       => $accrued_incomes,
             'company'       => $company,
